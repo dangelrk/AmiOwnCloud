@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Ronny Krueger
 # webdavsync-Konfiguration (AmiOwnCloud) -- eigenes Profil, getrennt von
 # owncloud.cfg und AmiCloudSync.cfg (siehe config-examples/README.md).
 #
