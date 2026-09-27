@@ -39,7 +39,7 @@ EndIf
 ; ------------------------------------------------------------------
 ; 1. OWNCLOUD:-Handler + OwnCloudPrefs
 ; ------------------------------------------------------------------
-Ask "OWNCLOUD:-Handler (Laufwerk OWNCLOUD:) und OwnCloudPrefs installieren? (y/n)"
+Ask "Laufwerk OWNCLOUD: (Handler) und OwnCloudPrefs installieren? (y/n)"
 If WARN
   Copy C/owncloud-handler C/owncloud-worker TO L: QUIET
   If ERROR
@@ -112,7 +112,8 @@ EndIf
 ; ------------------------------------------------------------------
 ; 2. Commodity AmiCloudSync + AmiCloudSyncPrefs
 ; ------------------------------------------------------------------
-Ask "Commodity AmiCloudSync (Ordnerabgleich) und AmiCloudSyncPrefs installieren? (y/n)"
+Echo "Commodity AmiCloudSync (Ordnerabgleich) und AmiCloudSyncPrefs"
+Ask "Installieren? (y/n)"
 If WARN
   If NOT EXISTS SYS:Tools/Commodities
     MakeDir SYS:Tools/Commodities
@@ -169,7 +170,7 @@ EndIf
 ; ------------------------------------------------------------------
 ; 3. Kommandozeilenprogramme webdavsync + webdavsynctest
 ; ------------------------------------------------------------------
-Ask "Kommandozeilenprogramme webdavsync und webdavsynctest nach C: kopieren? (y/n)"
+Ask "webdavsync und webdavsynctest nach C: kopieren? (y/n)"
 If WARN
   Copy C/webdavsync C/webdavsynctest TO C: QUIET
   If ERROR

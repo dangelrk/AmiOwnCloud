@@ -87,7 +87,8 @@ Echo "Programme entfernt."
 Echo ""
 
 ; ---- Konfiguration (enthält Zugangsdaten)
-Ask "Auch die Einstellungen (owncloud.cfg, AmiCloudSync.cfg, webdavsync.cfg) löschen? (y/n)"
+Echo "Einstellungen: owncloud.cfg, AmiCloudSync.cfg, webdavsync.cfg"
+Ask "Auch die Einstellungen löschen? (y/n)"
 If WARN
   If EXISTS ENV:owncloud.cfg
     Delete ENV:owncloud.cfg QUIET
