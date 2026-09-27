@@ -14,4 +14,10 @@ AMIGA_DIRS = apps/webdavsync apps/webdavsynctest apps/amicloud-sync-cx apps/amic
 # DOSDriver fuer den OWNCLOUD:-Handler -> <Schublade>/Storage/DOSDrivers/
 DIST_EXTRA = handler/owncloudhandler/mount/OWNCLOUD:Storage/DOSDrivers
 
+# Without the AmiCloudCore submodule there is no core/mk/project.mk --
+# say so instead of make's bare "No such file or directory".
+ifeq ($(wildcard core/mk/project.mk),)
+$(error core/ fehlt -- das AmiCloudCore-Submodul holen: git submodule update --init)
+endif
+
 include core/mk/project.mk
