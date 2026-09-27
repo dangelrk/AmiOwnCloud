@@ -675,8 +675,12 @@ die Shell, bis es beendet wird.</p>
 
 <div class="callout"><strong>Netz muss laufen</strong><br>
 Beim Start müssen sich <code>bsdsocket.library</code> und AmiSSL&nbsp;5
-öffnen lassen, sonst beendet sich die Commodity sofort und ohne Meldung.
-Beim automatischen Start also erst den TCP/IP-Stack starten.</div>
+öffnen lassen. Sonst zeigt die Commodity einen Requester mit der Ursache
+(z.&nbsp;B. <code>cannot open bsdsocket.library</code>) und beendet sich,
+ebenso bei einem ungültigen Hotkey (<code>CX_POPKEY</code>). Beim
+automatischen Start also erst den TCP/IP-Stack starten. Läuft AmiCloudSync
+bereits, öffnet ein zweiter Start nur das Fenster der laufenden
+Commodity.</div>
 
 <p class="backtotop"><a href="#top">nach oben</a></p>
 

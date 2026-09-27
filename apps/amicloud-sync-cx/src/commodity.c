@@ -13,6 +13,7 @@
 #include <proto/commodities.h>
 
 #include <stddef.h>
+#include <stdio.h>
 
 struct Library *CxBase;
 
@@ -27,6 +28,14 @@ static CxObj           *g_sender;
 static CxObj           *g_translate;
 
 static struct NewBroker g_nb;
+
+static const char *g_error;
+static char        g_error_buf[160];
+
+const char *ac_commodity_error(void)
+{
+    return g_error;
+}
 
 static void cleanup_partial(void)
 {
@@ -46,11 +55,20 @@ static void cleanup_partial(void)
 int ac_commodity_open(const char *broker_name, const char *broker_title,
                       const char *broker_descr, const char *hotkey)
 {
+    LONG err = 0;
+
+    g_error = "Unbekannter Fehler beim Anmelden der Commodity.";
     CxBase = OpenLibrary((CONST_STRPTR)"commodities.library", 37L);
-    if (!CxBase) return 0;
+    if (!CxBase) {
+        g_error = "commodities.library V37 kann nicht geoeffnet werden.";
+        return 0;
+    }
 
     g_broker_port = CreateMsgPort();
-    if (!g_broker_port) return 0;
+    if (!g_broker_port) {
+        g_error = "Nicht genug Speicher (MsgPort).";
+        return 0;
+    }
 
     g_nb.nb_Version = NB_VERSION;
     g_nb.nb_Name    = (STRPTR)broker_name;
@@ -62,8 +80,13 @@ int ac_commodity_open(const char *broker_name, const char *broker_title,
     g_nb.nb_Port    = g_broker_port;
     g_nb.nb_ReservedChannel = 0;
 
-    g_broker = CxBroker(&g_nb, NULL);
-    if (!g_broker) { cleanup_partial(); return 0; }
+    g_broker = CxBroker(&g_nb, &err);
+    if (!g_broker) {
+        g_error = (err == CBERR_DUP) ? NULL
+                : "Die Commodity konnte nicht angemeldet werden.";
+        cleanup_partial();
+        return 0;
+    }
 
     if (hotkey && hotkey[0]) {
         g_filter = CxFilter((CONST_STRPTR)hotkey);
@@ -78,10 +101,17 @@ int ac_commodity_open(const char *broker_name, const char *broker_title,
         if (!g_translate) { cleanup_partial(); return 0; }
         AttachCxObj(g_filter, g_translate);
 
-        if (CxObjError(g_filter) != 0) { cleanup_partial(); return 0; }
+        if (CxObjError(g_filter) != 0) {
+            snprintf(g_error_buf, sizeof(g_error_buf),
+                     "Ungueltiger Hotkey \"%s\" (Tooltype CX_POPKEY).", hotkey);
+            g_error = g_error_buf;
+            cleanup_partial();
+            return 0;
+        }
     }
 
     ActivateCxObj(g_broker, 1L);
+    g_error = NULL;
     return 1;
 }
 

@@ -48,6 +48,7 @@
 
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/intuition.h>
 #include <dos/dos.h>
 
 #include <stdio.h>
@@ -207,6 +208,30 @@ static void reload_prefs(AcConfig *cfg, PairList *pl, char *prefs_path, size_t p
     }
 }
 
+/* A Workbench-launched commodity has no console: without a requester a
+ * startup failure would just make it vanish. IntuitionBase belongs to
+ * gui.c and is still NULL this early, so it is opened only for the
+ * requester. From a Shell the text also goes to stderr. */
+static void startup_error(int from_shell, const char *text)
+{
+    struct EasyStruct es;
+    ULONG args[1];
+
+    if (from_shell) fprintf(stderr, "AmiCloudSync: %s\n", text);
+
+    IntuitionBase = (struct IntuitionBase *)OpenLibrary((CONST_STRPTR)"intuition.library", 37L);
+    if (!IntuitionBase) return;
+    es.es_StructSize   = sizeof(es);
+    es.es_Flags        = 0;
+    es.es_Title        = (UBYTE *)"AmiCloudSync";
+    es.es_TextFormat   = (UBYTE *)"%s";
+    es.es_GadgetFormat = (UBYTE *)"OK";
+    args[0] = (ULONG)text;
+    EasyRequestArgs(NULL, &es, NULL, args);
+    CloseLibrary((struct Library *)IntuitionBase);
+    IntuitionBase = NULL;
+}
+
 int main(int argc, char *argv[])
 {
     AcConfig cfg;
@@ -244,13 +269,29 @@ int main(int argc, char *argv[])
      * "Speichern". */
     reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
 
-    if (!http_init()) return 1;
+    if (!http_init()) {
+        char msg[400];
+        const char *why = http_last_error();
+        snprintf(msg, sizeof(msg),
+                 "Netzwerk-Initialisierung fehlgeschlagen%s%s\n\n"
+                 "Benoetigt werden ein laufender TCP/IP-Stack\n"
+                 "(bsdsocket.library) und AmiSSL 5.",
+                 *why ? ":\n" : ".", why);
+        startup_error(argc > 0, msg);
+        pairs_free(&pl);
+        return 1;
+    }
 
     if (!ac_commodity_open("AMICLOUDSYNC", "AmiCloudSync",
                            "OwnCloud-Ordnerabgleich", hotkey)) {
+        /* NULL = another instance is already running and has been told
+         * to show its window -- quitting quietly is correct then. */
+        const char *why = ac_commodity_error();
+        if (why) startup_error(argc > 0, why);
+        ac_commodity_close();
         http_cleanup();
         pairs_free(&pl);
-        return 1;
+        return why ? 1 : 0;
     }
 
     autosync_enabled = (pl.interval_minutes > 0) && ac_timer_open();

@@ -647,8 +647,11 @@ Exchange:
 Beenden geht außerdem mit Ctrl-C an den Prozess (z.B. Break).
 
 Voraussetzungen beim Start: bsdsocket.library und AmiSSL 5 müssen sich
-öffnen lassen, sonst beendet sich die Commodity sofort und ohne
-Meldung. Beim automatischen Start also erst den TCP/IP-Stack starten.
+öffnen lassen. Sonst zeigt die Commodity einen Requester mit der
+Ursache (z.B. "cannot open bsdsocket.library") und beendet sich.
+Ebenso bei einem ungültigen Hotkey (CX_POPKEY). Beim automatischen
+Start also erst den TCP/IP-Stack starten. Läuft AmiCloudSync bereits,
+öffnet ein zweiter Start nur das Fenster der laufenden Commodity.
 
 Wie der Abgleich arbeitet:
 @{" So funktioniert der Abgleich " link Abgleich}
