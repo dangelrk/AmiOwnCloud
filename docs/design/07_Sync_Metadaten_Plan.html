@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AmiCloud — Implementierungsplan: Sync-Metadaten</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a2e; --muted: #5a5a72;
+    --accent: #1e5aa8; --accent2: #8a4d1f;
+    --card: #f4f6fa; --border: #d8dde6; --code-bg: #eef1f6;
+    --warn-bg: #fff6e8; --warn-border: #e0b060;
+    --rule-bg: #eef6ee; --rule-border: #6aa06a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e4e6eb; --muted: #9aa0ad;
+      --accent: #7ab0f0; --accent2: #e0a060;
+      --card: #1e222a; --border: #333a46; --code-bg: #242933;
+      --warn-bg: #2a2418; --warn-border: #8a6a30;
+      --rule-bg: #1b2a1b; --rule-border: #4a7a4a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 60rem; margin: 0 auto; }
+  h1 { font-size: 1.7rem; border-bottom: 3px solid var(--accent); padding-bottom: .4rem; }
+  h2 { font-size: 1.3rem; color: var(--accent); margin-top: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: .25rem; }
+  h3 { font-size: 1.05rem; color: var(--accent2); margin-top: 1.6rem; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: .875em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: .25rem 0; }
+  li > ul, li > ol { margin: .25rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  .tablewrap { overflow-x: auto; }
+  th, td { border: 1px solid var(--border); padding: .4rem .6rem; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  td.c { text-align: center; white-space: nowrap; }
+  .stage { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .2rem 1.2rem 1rem; margin: 1.4rem 0; }
+  .warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); border-radius: 6px; padding: .7rem 1rem; margin: 1rem 0; }
+  .rule { background: var(--rule-bg); border-left: 4px solid var(--rule-border); border-radius: 6px; padding: .7rem 1rem; margin: 1rem 0; }
+  .meta { color: var(--muted); font-size: .9rem; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  strong { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+<h1>Implementierungsplan: Sync-Metadaten</h1>
+<p class="meta">Stand: 2026-07-12 · Umsetzungsplan zum Konzept <code>docs/architecture/07_Sync_Metadaten.md</code> · Markdown-Fassung: <code>07_Sync_Metadaten_Plan.md</code> · Nur Planung — Umbau folgt nach Review.</p>
+
+<h2>Context</h2>
+<p><code>docs/architecture/07_Sync_Metadaten.md</code> beschreibt ein metadatenbasiertes Sync-Verfahren mit Last-Sync-Baseline, 3-Wege-Konflikterkennung, Löscherkennung, MD5-Cache sowie serverseitigen Revisionen und einer globalen Server-Revision. Die <strong>heutige Implementierung leistet nichts davon</strong>:</p>
+<ul>
+  <li><code>core/libcloudsync/src/sync.c</code> (<code>cloudsync_run()</code>) ist ein <strong>zustandsloser 2-Wege-Reconciler</strong>. Er baut bei jedem Lauf beide Bäume neu auf, vergleicht nur Local↔Remote (Größe → MD5 → mtime) und verwirft alles danach. Es gibt <strong>keine Baseline</strong>, daher:
+    <ul>
+      <li><strong>Löschungen werden nie erkannt</strong> — eine auf einer Seite fehlende Datei gilt immer als „neu auf der anderen Seite" und wird wieder angelegt (<code>sync.c:258-291</code>).</li>
+      <li><strong>Konflikte</strong> werden rein per mtime-Heuristik entschieden (<code>queue_transfer_by_mtime</code>, <code>sync.c:192</code>).</li>
+      <li>MD5 wird <strong>jedes Mal neu berechnet</strong>, kein Cache (<code>sync.c:311</code>).</li>
+    </ul>
+  </li>
+  <li>Server (<code>server/</code>): <code>files</code>-Tabelle hat <strong>keine</strong> <code>revision</code>, <strong>keinen</strong> globalen Zähler, und löscht <strong>hart</strong> (<code>FileStore.php</code> <code>deleteImpl()</code>), ohne Tombstone. <code>id</code>/<code>user_id</code>/<code>created_at</code> existieren, werden aber nicht an den Client ausgeliefert.</li>
+</ul>
+<p>Ziel dieses Plans: das in 07 beschriebene Modell voll umsetzen — serverseitige Revisionen + globale (pro-User) Revision + Soft-Delete, clientseitige Last-Sync-DB (<code>.amicloudsync</code> als JSON im Sync-Wurzelverzeichnis), 3-Wege-Diff mit Lösch- und Konflikterkennung, MD5-Cache und die Delta-Optimierung über die globale Revision.</p>
+<div class="rule">
+<strong>Grundregel aus dem Doc bleibt bindend:</strong> niemals eine Datei unbemerkt überschreiben, und die Baseline (Last Sync State) wird <strong>erst nach vollständig erfolgreichem Sync</strong> geschrieben.
+</div>
+<p><strong>Randbedingungen:</strong> <strong>PHP 7.4.33</strong> serverseitig (kein <code>match</code>/enums/union-types/<code>never</code>). Client muss auf <strong>vbcc/AmigaOS 3 (m68k, C89)</strong> cross-compilen; <code>long</code> ist dort 32-bit (mtime bis 2038 und Dateigrößen &lt; 2 GB unkritisch für Amiga-Ziele; parson führt Zahlen als <code>double</code>, Ganzzahlen &lt; 2⁵³ round-trippen über <code>%1.17g</code> exakt — siehe A1). Modul-Kapselung (<code>docs/architecture/05_Refactoring_Client_Handler.md:99-116</code>) bleibt bindend: Typen → core, Zeit → core, MD5 → core, HTTP/URL/Auth → http, FS → fs, Sync-Domäne → libcloudsync.</p>
+
+<hr>
+
+<h2>Phase B (Server) — Revision, globale Revision, Soft-Delete</h2>
+<p>Zuerst der Server, weil der Client die neuen Felder (<code>revision</code>, <code>id</code>, <code>change_seq</code>, <code>global_revision</code>) in den Responses konsumiert. Der 3-Wege-Diff des Clients funktioniert zwar auch ohne sie (über MD5), aber Lösch-Propagierung vom Server und die Delta-Optimierung brauchen sie.</p>
+
+<div class="stage">
+<h3>B1. Schema-Migration — <code>server/sql/migrate_003.sql</code> (neu)</h3>
+<p>Analog zu <code>migrate_001/002.sql</code>. Ergänzt:</p>
+<ul>
+  <li><code>users.global_revision BIGINT UNSIGNED NOT NULL DEFAULT 0</code> — monotoner <strong>pro-User</strong>-Zähler (jeder User hat sein eigenes Datenset, ADR 04).</li>
+  <li><code>files.revision INT UNSIGNED NOT NULL DEFAULT 1</code> — <strong>Inhalts</strong>-Revision (Doc: neu=1, <code>++</code> nur bei Inhaltsänderung; Rename/Move erhöht NICHT).</li>
+  <li><code>files.change_seq BIGINT UNSIGNED NOT NULL DEFAULT 0</code> — Wert von <code>global_revision</code> beim letzten Change dieser Zeile. Ermöglicht Delta-Abfrage „alles mit <code>change_seq &gt; N</code>".</li>
+  <li><code>files.deleted_at DATETIME NULL DEFAULT NULL</code> — Soft-Delete-Tombstone (<code>NULL</code> = lebendig).</li>
+  <li>Index <code>KEY idx_user_changeseq (user_id, change_seq)</code> für die Delta-Abfrage.</li>
+</ul>
+<p><code>schema.sql</code> (Neuinstallationen) spiegelbildlich um dieselben Spalten erweitern.</p>
+</div>
+
+<div class="stage">
+<h3>B2. Atomarer globaler Zähler — <code>server/includes/FileStore.php</code></h3>
+<p>Neue private Helfer, an einer Stelle gekapselt:</p>
+<pre><code>// Atomar: erhöht + liefert den neuen Wert (klassischer LAST_INSERT_ID-Trick).
+private function bumpGlobalRevision(): int {
+    DB::pdo()-&gt;prepare(
+        'UPDATE users SET global_revision = LAST_INSERT_ID(global_revision + 1) WHERE id = ?'
+    )-&gt;execute([Auth::$user_id]);
+    return (int) DB::pdo()-&gt;lastInsertId();
+}
+private function currentGlobalRevision(): int { /* SELECT global_revision FROM users WHERE id=? */ }</code></pre>
+<p>PHP-7.4-konform (kein <code>never</code>/union). Jeder schreibende Pfad, der einen Change bedeutet, ruft <code>bumpGlobalRevision()</code> <strong>einmal</strong> und schreibt den Rückgabewert in <code>files.change_seq</code> der betroffenen Zeile.</p>
+</div>
+
+<div class="stage">
+<h3>B3. Change-/Revisionslogik in den Endpoints (<code>FileStore.php</code>)</h3>
+<ul>
+  <li><strong><code>upload()</code></strong> (<code>FileStore.php:237</code>): vorhandene Zeile per <code>(user_id, path)</code> selektieren.
+    <ul>
+      <li>Neu → <code>revision = 1</code>.</li>
+      <li>Existiert, <strong>Inhalt geändert</strong> (<code>checksum != neuer md5</code>) → <code>revision = alt + 1</code>.</li>
+      <li>Existiert, Inhalt identisch → <code>revision</code> unverändert.</li>
+      <li>In <strong>allen drei</strong> Fällen <code>change_seq = bumpGlobalRevision()</code>, <code>deleted_at = NULL</code> (Re-Upload eines gelöschten Pfades belebt ihn wieder).</li>
+    </ul>
+  </li>
+  <li><strong><code>delete()</code> → Soft-Delete</strong> (<code>deleteImpl()</code>, <code>FileStore.php:311</code>): statt <code>DELETE FROM files</code> jetzt <code>UPDATE files SET deleted_at = NOW(), change_seq = bumpGlobalRevision()</code>. Bei <code>recursive</code> dieselbe Behandlung für die <code>LIKE 'prefix/%'</code>-Kinder (jeweils change_seq bumpen). <strong>Datei-Bytes auf der Platte werden weiterhin entfernt</strong> (Tombstone ist reine Metadaten-Zeile; Versionierung/Blob-Aufbewahrung ist ausdrücklich VCS-Thema, siehe 08/09, nicht dieser Plan).</li>
+  <li><strong><code>rename()</code></strong> (<code>FileStore.php:494</code>): <code>path</code> (+ Kinder-Präfixe) umschreiben, <code>revision</code> <strong>unverändert</strong> (Doc), <code>change_seq = bumpGlobalRevision()</code>.</li>
+  <li><strong><code>setdate()</code></strong> (<code>FileStore.php:534</code>): <strong>kein</strong> Bump, <strong>kein</strong> <code>revision++</code> — mtime ist laut Doc reine Information/Optimierung und entscheidet nie über Änderungen.</li>
+  <li><strong><code>list()</code>/<code>scanEntries()</code></strong> (<code>FileStore.php:159/196</code>): Tombstones (<code>deleted_at IS NOT NULL</code>) standardmäßig <strong>ausblenden</strong>.</li>
+</ul>
+</div>
+
+<div class="stage">
+<h3>B4. Response-Format erweitern</h3>
+<ul>
+  <li><code>list</code>/<code>info</code>-Einträge (<code>withMeta()</code>, <code>FileStore.php:126</code>) um <code>id</code> (= <code>files.id</code>), <code>revision</code>, <code>change_seq</code> ergänzen.</li>
+  <li>Neuer Endpoint <strong><code>action=changes&amp;since=N</code></strong> (<code>api.php</code>-Dispatch <code>:29-57</code> + <code>FileStore::changes()</code>): liefert <code>{ status, global_revision, entries: [...] }</code>, wobei <code>entries</code> <strong>alle</strong> Zeilen mit <code>change_seq &gt; N</code> sind — <strong>inklusive Tombstones</strong>, jeweils mit <code>deleted: true/false</code>. Das ist die Delta-Quelle des Clients.</li>
+  <li><code>status</code> (<code>api.php:30-33</code>) um <code>global_revision</code> (des aktuellen Users) ergänzen — erlaubt dem Client den billigen „nichts geändert seit N"-Kurzschluss ohne vollen List-Durchlauf.</li>
+</ul>
+</div>
+<p><strong>Kritische Server-Dateien:</strong> <code>server/sql/migrate_003.sql</code> (neu), <code>server/sql/schema.sql</code>, <code>server/includes/FileStore.php</code>, <code>server/api.php</code>, <code>docs/api/</code> (Endpoint-Doku für <code>changes</code> + neue Felder).</p>
+
+<hr>
+
+<h2>Phase A (Client) — JSON-Migration auf parson, Last-Sync-DB, 3-Wege-Sync</h2>
+
+<div class="stage">
+<h3>A1. JSON-Bibliothek: cJSON → parson (Vollmigration)</h3>
+<p>Grund: das abgespeckte cJSON in <code>core/libcloudcore/</code> kann <strong>nur lesen</strong>, für <code>.amicloudsync</code> brauchen wir aber auch <strong>Schreiben</strong>. Statt cJSON einen Writer aufzupfropfen, ersetzen wir cJSON komplett durch <strong>parson 1.1.0</strong> (MIT, C89, im Readme explizit für m68k-amigaos paketiert, <code>AmigaDoku/parson/source/</code>). parson kann parse <strong>und</strong> serialize inkl. Datei-I/O und ist damit die einzige JSON-Lib im Projekt.</p>
+<ul>
+  <li><strong>parson in die Lib ziehen</strong>: <code>parson.c</code> → <code>core/libcloudcore/src/</code>, <code>parson.h</code> → <code>core/libcloudcore/include/cloudcore/</code>. <code>cJSON.c</code>/<code>cJSON.h</code> aus libcloudcore <strong>entfernen</strong>.</li>
+  <li><strong>Umbrella-Include</strong>: <code>core/libcloudcore/include/cloudcore/amicloud.h:24</code> (<code>#include "cJSON.h"</code>) auf <code>parson.h</code> umstellen (oder entfernen und dort includen, wo real gebraucht).</li>
+  <li><strong>Makefiles</strong> (je <code>Makefile.pc</code> / <code>Makefile.amiga</code> / <code>Makefile.amiga-cross</code>): in <strong>libcloudcore</strong> <code>cJSON.o</code> → <code>parson.o</code>; im <strong>handler/cloudhandler</strong> und in Apps, die <code>core_cJSON.o</code> referenzieren, entsprechend anpassen (die vorhandenen <code>obj/*/core_cJSON.o</code> zeigen die betroffenen Ziele).</li>
+  <li><strong>Optional</strong>: <code>json_set_allocation_functions()</code> einmal beim Start setzen, falls auf dem Amiga eigene Pools gewünscht sind (nicht zwingend).</li>
+</ul>
+<p><strong>Parse-Migration</strong> — nur zwei Dateien nutzen cJSON, rein lesend. API-Abbildung (klein und mechanisch):</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th>cJSON (heute)</th><th>parson (neu)</th></tr></thead>
+<tbody>
+<tr><td><code>cJSON_Parse(body)</code></td><td><code>json_parse_string(body)</code> → <code>JSON_Value*</code>; <code>json_value_get_object(v)</code></td></tr>
+<tr><td><code>cJSON_Delete(root)</code></td><td><code>json_value_free(root)</code></td></tr>
+<tr><td><code>cJSON_GetObjectItem(o,k)</code></td><td><code>json_object_get_value(o,k)</code> bzw. typisiert <code>json_object_get_string/number</code></td></tr>
+<tr><td><code>jstr()</code> (<code>cmd.c:87</code>)</td><td><code>json_object_get_string(o,k)</code> (const char*, NULL bei Fehlen)</td></tr>
+<tr><td><code>jlong()</code> (<code>cmd.c:93</code>)</td><td><code>(long)json_object_get_number(o,k)</code></td></tr>
+<tr><td><code>cJSON_GetArraySize</code> / <code>GetArrayItem</code></td><td><code>json_object_get_array</code> + <code>json_array_get_count</code> / <code>json_array_get_object</code></td></tr>
+<tr><td><code>check_status()</code> (<code>cmd.c:113</code>)</td><td><code>json_object_get_string(root,"status")</code> vergleichen</td></tr>
+</tbody>
+</table>
+</div>
+<ul>
+  <li><code>core/libcloudhttp/src/cmd.c</code>: alle ~18 Parse-Stellen (Liste oben) umstellen; die zwei Helfer <code>jstr</code>/<code>jlong</code> einmal auf parson-Getter umschreiben, der Rest folgt fast automatisch.</li>
+  <li><code>handler/cloudhandler/src/worker.c</code>: dieselbe Parse-Umstellung (List-Response).</li>
+  <li><strong>Verhaltensgleich halten</strong>: parson-Getter liefern bei fehlenden Feldern definierte Defaults (<code>get_string</code>→NULL, <code>get_number</code>→0), exakt wie die heutigen <code>jstr</code>/<code>jlong</code> — Regression-Risiko gering, aber alle bestehenden Befehle (list/info/status/upload/…) müssen nachweislich weiter funktionieren (siehe Verifikation).</li>
+</ul>
+<div class="warn">
+<strong>Kostenpunkt (bekannt/akzeptiert):</strong> parson ist <code>double</code>-basiert (<code>#include &lt;math.h&gt;</code>, Zahlen via <code>sprintf(%1.17g)</code>, <code>parson.c:47/1011</code>) → zieht auf 68000 <strong>Soft-Float</strong> in Client <strong>und</strong> Handler. Unsere Werte sind Ganzzahlen &lt; 2⁵³ (mtime, size, revision, change_seq) und werden von <code>%1.17g</code> <strong>exakt ohne Exponent</strong> ausgegeben. Das Readme warnt vor Double-Parse-Bugs der mitgelieferten <strong>clib2</strong>-Testbinary — irrelevant für vbcc, aber im Cross-Build als Verifikationspunkt notieren.
+</div>
+</div>
+
+<div class="stage">
+<h3>A2. Neue Felder in <code>AcEntry</code> — <code>core/libcloudcore/include/cloudcore/entry.h</code></h3>
+<p><code>AcEntry</code> (<code>entry.h:16-25</code>) um <code>long id; long revision; long change_seq;</code> ergänzen (Server liefert sie jetzt). Parser in <code>core/libcloudhttp/src/cmd.c</code> (<code>cmd_list_raw</code>/<code>cmd_info_raw</code>, ~<code>:177-275</code>) füllt die neuen JSON-Felder; fehlen sie (alter Server), Default 0 → Client fällt automatisch auf reinen MD5-Vergleich zurück.</p>
+</div>
+
+<div class="stage">
+<h3>A3. Last-Sync-State-DB — <code>core/libcloudsync/src/syncstate.c</code> + <code>include/cloudsync/syncstate.h</code> (neu)</h3>
+<p>Persistente Baseline, als JSON in <code>&lt;local_root&gt;/.amicloudsync</code>. Repräsentiert exakt die Doc-Felder „Lokale Sync-Datenbank":</p>
+<pre><code>#define SYNCSTATE_FILE ".amicloudsync"
+
+typedef struct {
+    char *path;        /* relativ zur Sync-Wurzel, '/'-verbunden */
+    int   is_dir;
+    long  size;
+    long  mtime;       /* UTC-Epoche */
+    char  md5[33];
+    long  revision;    /* Server-Revision zum Zeitpunkt des letzten Syncs */
+    long  server_id;   /* Server-Datei-ID (optional, 0 = unbekannt) */
+    long  last_sync;   /* letzter erfolgreicher Sync-Zeitpunkt (optional) */
+} SyncStateEntry;
+
+typedef struct {
+    SyncStateEntry *items; int n, cap;
+    long global_revision;  /* globale Server-Revision, bis zu der zuletzt gesynct wurde */
+} SyncState;
+
+int  syncstate_load(const char *local_root, SyncState *st);   /* fehlt Datei -&gt; leerer State, ok */
+int  syncstate_save(const char *local_root, const SyncState *st); /* atomar: .tmp + rename */
+SyncStateEntry *syncstate_find(SyncState *st, const char *path);
+void syncstate_upsert(SyncState *st, const SyncStateEntry *e);
+void syncstate_remove(SyncState *st, const char *path);
+void syncstate_free(SyncState *st);</code></pre>
+<ul>
+  <li><code>load</code> nutzt <code>json_parse_file()</code> (parson, A1); <code>save</code> baut den DOM mit <code>json_value_init_object</code>/<code>json_value_init_array</code>/<code>json_object_set_number</code>/<code>set_string</code>/<code>json_array_append_value</code> und schreibt via <code>json_serialize_to_file(_pretty)</code>.</li>
+  <li><strong>Atomar speichern</strong>: erst nach <code>.amicloudsync.tmp</code> serialisieren, dann per <code>rename()</code> (C-stdlib, funktioniert auf PC und AmigaOS/dos) über die Zieldatei — ein abgebrochener Sync darf keine korrupte Baseline hinterlassen. (Falls libcloudfs eine eigene Rename-Kapselung braucht, <code>localfs_rename()</code> ergänzen, statt <code>rename()</code> direkt in der Sync-Domäne aufzurufen — FS-Semantik gehört in libcloudfs.)</li>
+</ul>
+</div>
+
+<div class="stage">
+<h3>A4. <code>sync.c</code> auf 3-Wege umbauen — <code>core/libcloudsync/src/sync.c</code></h3>
+<p>Kern der Änderung. <code>cloudsync_run()</code> bekommt drei Eingaben statt zwei: <strong>Remote-Index</strong>, <strong>Local-Index</strong>, <strong>Baseline</strong> (<code>SyncState</code>).</p>
+<ol>
+  <li><strong>Baseline laden</strong> (<code>syncstate_load(local_root, &amp;st)</code>) am Anfang.</li>
+  <li><strong>Delta-Optimierung</strong>: <code>status</code>/<code>global_revision</code> vom Server holen. Wenn <code>server_global == st.global_revision</code>, hat sich remote seit dem letzten Sync <strong>nichts</strong> geändert → Remote-Vollscan überspringen und statt <code>index_remote_tree_sync</code> <code>cmd_changes(since=global)</code> nutzen (liefert leere Delta). Andernfalls Remote wie bisher indizieren (oder inkrementell via <code>changes</code>).</li>
+  <li><strong>MD5-Cache</strong> im Local-Index: in <code>index_local_tree_sync</code> (<code>sync.c:115</code>) pro Datei zuerst <code>syncstate_find(path)</code>; wenn <code>size</code> <strong>und</strong> <code>mtime</code> (±2 s, <code>mtimes_equal</code>) mit der Baseline übereinstimmen → gecachten <code>md5</code> übernehmen statt <code>md5_file_hex()</code> neu zu rechnen. Nur bei Abweichung neu hashen. (Ersetzt das bedingungslose Neu-Hashen in <code>sync.c:311</code>.)</li>
+  <li><strong><code>.amicloudsync</code> vom Scan ausschließen</strong>: in <code>index_local_tree_sync</code> auf Wurzelebene <code>strcmp(e.name, SYNCSTATE_FILE)==0</code> überspringen, sonst lädt der Sync seine eigene DB hoch.</li>
+  <li><strong>3-Wege-Entscheidungsmatrix</strong> — Merge-Scan über die <strong>Vereinigung von Remote ∪ Local ∪ Baseline</strong> (Baseline liefert die Pfade, die auf beiden lebenden Seiten fehlen = echte Löschungen). Pro Pfad mit L=local?, R=remote-lebendig?, B=baseline?:
+    <div class="tablewrap">
+    <table>
+    <thead><tr><th>L</th><th>R</th><th>B</th><th>Bedingung</th><th>Aktion</th></tr></thead>
+    <tbody>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>keine Seite geändert (md5==B)</td><td>nichts (unchanged)</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>nur local geändert</td><td>Upload</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>nur remote geändert</td><td>Download</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>beide geändert, <code>Lmd5==Rmd5</code></td><td>konvergiert → nur Baseline aktualisieren</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>beide geändert, <code>Lmd5!=Rmd5</code></td><td><strong>Konflikt</strong> (skip, melden)</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✗</td><td><code>Lmd5==Rmd5</code></td><td>adoptieren, Baseline setzen</td></tr>
+    <tr><td class="c">✓</td><td class="c">✓</td><td class="c">✗</td><td><code>Lmd5!=Rmd5</code></td><td><strong>Konflikt</strong> (skip, melden)</td></tr>
+    <tr><td class="c">✓</td><td class="c">✗</td><td class="c">✓</td><td>local unverändert (==B)</td><td><strong>remote gelöscht → local löschen</strong></td></tr>
+    <tr><td class="c">✓</td><td class="c">✗</td><td class="c">✓</td><td>local geändert</td><td><strong>Konflikt</strong> (local behalten, melden)</td></tr>
+    <tr><td class="c">✓</td><td class="c">✗</td><td class="c">✗</td><td>—</td><td>neu local → Upload</td></tr>
+    <tr><td class="c">✗</td><td class="c">✓</td><td class="c">✓</td><td>remote unverändert (<code>rev==B.rev</code>)</td><td><strong>local gelöscht → remote (soft-)löschen</strong></td></tr>
+    <tr><td class="c">✗</td><td class="c">✓</td><td class="c">✓</td><td>remote geändert</td><td><strong>Konflikt</strong> (remote behalten, melden)</td></tr>
+    <tr><td class="c">✗</td><td class="c">✓</td><td class="c">✗</td><td>—</td><td>neu remote → Download</td></tr>
+    <tr><td class="c">✗</td><td class="c">✗</td><td class="c">✓</td><td>—</td><td>beidseitig weg → Baseline-Eintrag entfernen</td></tr>
+    </tbody>
+    </table>
+    </div>
+    <p>„remote geändert" bevorzugt über <code>revision</code>/<code>change_seq</code> bestimmen (Baseline speichert die Revision); MD5 bleibt Fallback bei altem Server. mtime bleibt <strong>nur</strong> Info/Tiebreak (Doc), nie allein ausschlaggebend. Verzeichnisse: <code>SA_MKDIR_*</code> wie bisher; Lösch-Propagierung erzeugt neue Aktionstypen <code>SA_RMDIR_LOCAL</code>/<code>SA_DEL_LOCAL</code>/<code>SA_DEL_REMOTE</code> (letzterer ruft <code>cmd_del</code>, das nun serverseitig Soft-Delete ist).</p>
+  </li>
+  <li><strong>Baseline erst nach vollständigem Erfolg schreiben</strong> (Doc-Anforderung): nach Pass 2 die Baseline aus dem <strong>konvergierten</strong> Zustand neu aufbauen (pro erfolgreich behandelten Pfad: aktuelle <code>size/mtime/md5/revision/server_id/last_sync=now</code>), <code>st.global_revision = server_global</code>, dann <code>syncstate_save()</code>. Bei <code>out-&gt;errors &gt; 0</code> <strong>nur</strong> die erfolgreich abgeschlossenen Pfade aktualisieren, die fehlgeschlagenen behalten ihren alten Baseline-Eintrag → nächster Lauf wiederholt sie. <code>dry_run</code> schreibt <strong>nie</strong> (weder Transfers noch Baseline).</li>
+</ol>
+<p>Signatur <code>cloudsync_run(cfg, local_root, remote_root, dry_run, verbose, Progress*, SyncSummary*)</code> bleibt unverändert → Aufrufer (<code>apps/cloudsync/src/main.c</code>) müssen nicht angepasst werden. <code>SyncSummary</code> (<code>sync.h:22</code>) um <code>int deleted;</code> erweitern, damit Löschungen in der Tally-Zeile sichtbar sind.</p>
+</div>
+
+<div class="stage">
+<h3>A5. HTTP-Kommandos — <code>core/libcloudhttp/include/cloudhttp/cmd.h</code> + <code>src/cmd.c</code></h3>
+<ul>
+  <li><code>cmd_status</code>/neuer Getter für <code>global_revision</code> (aus der <code>status</code>-Response).</li>
+  <li><strong><code>cmd_changes(cfg, remote_root, long since, AcEntry **out, int *n, long *global_out)</code></strong> — ruft <code>action=changes&amp;since=N</code>, parst Einträge inkl. <code>deleted</code>-Flag. Tombstones als eigenes Feld in <code>AcEntry</code> abbilden (<code>int deleted;</code>) oder über eine Parallel-Liste. URL-Bau bleibt in <code>cmd.c</code> (<code>cmd_resolve_path</code>), Kapselungsregel.</li>
+</ul>
+</div>
+
+<div class="stage">
+<h3>A6. Doku</h3>
+<p><code>docs/architecture/07_Sync_Metadaten.md</code> an die final gewählten Feldnamen angleichen (<code>change_seq</code>, <code>.amicloudsync</code>, per-User globale Revision, Soft-Delete). Kurzer Verweis auf den neuen <code>changes</code>-Endpoint. Kein Umschreiben, nur Präzisierung.</p>
+</div>
+<p><strong>Kritische Client-Dateien:</strong> <code>core/libcloudcore/src/parson.c</code> + <code>include/cloudcore/parson.h</code> (aus <code>AmigaDoku/parson/source/</code> übernommen; <code>cJSON.c</code>/<code>cJSON.h</code> entfernt), <code>core/libcloudcore/include/cloudcore/amicloud.h</code> (Include-Umstellung), <code>core/libcloudcore/include/cloudcore/entry.h</code> (neue <code>AcEntry</code>-Felder), <code>core/libcloudsync/src/syncstate.c</code> + <code>include/cloudsync/syncstate.h</code> (neu), <code>core/libcloudsync/src/sync.c</code>, <code>core/libcloudsync/include/cloudsync/sync.h</code>, <code>core/libcloudhttp/src/cmd.c</code> (Parse-Migration + <code>cmd_changes</code>) + <code>include/cloudhttp/cmd.h</code>, <code>handler/cloudhandler/src/worker.c</code> (Parse-Migration). Makefiles je <code>Makefile.pc</code> / <code>Makefile.amiga</code> / <code>Makefile.amiga-cross</code> von libcloudcore, dem Handler und allen Apps mit <code>core_cJSON.o</code>: <code>cJSON.o</code> → <code>parson.o</code>, neue Sync-Quellen ergänzen.</p>
+
+<hr>
+
+<h2>Verifikation</h2>
+
+<h3>Server (Test-DB)</h3>
+<ol>
+  <li><code>migrate_003.sql</code> einspielen. <code>curl</code> gegen <code>api.php</code>:
+    <ul>
+      <li>Upload neue Datei → Response enthält <code>revision=1</code>; <code>users.global_revision</code> +1, <code>files.change_seq</code> = dieser Wert.</li>
+      <li>Upload <strong>anderer</strong> Inhalt gleicher Pfad → <code>revision=2</code>, global +1.</li>
+      <li>Upload <strong>gleicher</strong> Inhalt → <code>revision</code> unverändert, global +1.</li>
+      <li><code>action=delete</code> → <code>deleted_at</code> gesetzt, Bytes weg, <code>list</code> zeigt Pfad <strong>nicht</strong> mehr, <code>changes?since=0</code> zeigt ihn <strong>mit</strong> <code>deleted:true</code>.</li>
+      <li><code>action=rename</code> → <code>revision</code> unverändert, <code>change_seq</code> erhöht, <code>changes</code> zeigt neuen Pfad.</li>
+      <li><code>action=setdate</code> → <strong>kein</strong> global-Bump, <code>revision</code> unverändert.</li>
+      <li><code>status</code> liefert aktuelles <code>global_revision</code>.</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="warn">
+<strong>parson-Migration (Regression, PC-Build):</strong> Zuerst isoliert prüfen, dass die JSON-Umstellung nichts kaputt macht — <strong>alle</strong> bestehenden Befehle gegen den Server müssen weiter korrekt parsen: <code>list</code>, <code>info</code>, <code>status</code>, <code>upload</code>, <code>download</code>, <code>delete</code>, <code>mkdir</code>, <code>rename</code> (CLI <code>amicloud</code> + <code>amicloud-shell</code>). Erwartete Felder (Name/Größe/mtime/md5/protection/comment) müssen unverändert ankommen; Handler (<code>worker.c</code>) an einem echten Mount gegentesten. Erst danach die Sync-Schritte.
+</div>
+
+<h3>Client (PC-Build)</h3>
+<p>Libs + <code>apps/cloudsync</code> per <code>Makefile.pc</code> bauen. Skript gegen den Test-Server, Baseline-Datei nach jedem Schritt inspizieren:</p>
+<ol>
+  <li>Leerer Start → Sync legt <code>.amicloudsync</code> an, <code>global_revision</code> gesetzt.</li>
+  <li>Lokale Datei anlegen → Sync: Upload, Baseline-Eintrag <code>revision=1</code>.</li>
+  <li>Remote ändern (2. Client/curl) → Sync: Download, Baseline-Revision steigt.</li>
+  <li><strong>Lokal löschen</strong> → Sync: remote Soft-Delete (Tombstone prüfen), nicht Re-Download. <em>(Der heutige Code würde die Datei fälschlich wieder herunterladen — Kern-Regression-Check.)</em></li>
+  <li><strong>Remote löschen</strong> → Sync: lokal gelöscht.</li>
+  <li><strong>Beidseitig unterschiedlich editieren</strong> → <strong>Konflikt gemeldet, nichts überschrieben</strong> (beide Versionen intakt).</li>
+  <li><strong>MD5-Cache</strong>: unveränderte Datei über <code>HLOG</code>/Debug-Zähler prüfen, dass <code>md5_file_hex</code> <strong>nicht</strong> erneut läuft.</li>
+  <li><strong>Delta-Kurzschluss</strong>: zweiter Sync ohne Änderungen ruft <code>changes</code> mit leerem Ergebnis, kein Remote-Vollscan.</li>
+  <li><code>.amicloudsync</code> taucht <strong>nie</strong> in Transfers/Server-Listing auf.</li>
+</ol>
+
+<h3>Cross-Compile (vbcc <code>+aos68k</code>)</h3>
+<p><strong>Alle</strong> Ziele bauen (nicht nur cloudsync — die parson-Migration berührt libcloudcore, libcloudhttp, den Handler und jede App). Verifiziert, dass <code>parson.c</code> und <code>syncstate.c</code> C89-/m68k-sauber übersetzen und dass das per parson reingezogene <strong>Soft-Float</strong> (<code>math.h</code>, <code>%1.17g</code>) sauber linkt (Achtung auf die im Readme erwähnten Double-Parse-Bugs — hier konkret prüfen, dass eine geschriebene und wieder gelesene Baseline mit großen <code>mtime</code>/<code>change_seq</code> bit-genau round-trippt). Kein Laufzeittest auf echter Hardware nötig, aber Übersetzen + Linken aller Ziele muss sauber durchgehen.</p>
+
+</main>
+</body>
+</html>

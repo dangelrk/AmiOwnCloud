@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Ronny Krueger
+# webdavsync — AmigaOS 3.x (VBCC), CROSS-compiled from a host (macOS/
+# Linux/Windows). Same source set as ../webdavsynctest/Makefile.amiga-cross
+# (links the lib .o files directly, no oml on the host); only the own
+# main.c and the output name differ.
+#
+# Build:  export VBCC=/path/to/vbcc     (see docs/BUILD.md)
+#         make -f Makefile.amiga-cross
+
+VBCC    ?= /opt/vbcc
+CC       = $(VBCC)/bin/vc
+TARGET   = +aos68k
+CPU      = 68000
+
+RUNTIME_INC = $(VBCC)/targets/m68k-amigaos/include
+RUNTIME_LIB = $(VBCC)/targets/m68k-amigaos/lib
+NDK_INC     = $(VBCC)/sdk/NDK_3.2/Include_H
+NET_INC     = $(VBCC)/sdk/Roadshow/netinclude
+AMISSL_INC  = $(VBCC)/sdk/AmiSSL-v5/Developer/include
+
+LIBS_DIR = ../../core
+CORE_DIR = $(LIBS_DIR)/libcloudcore
+HTTP_DIR = $(LIBS_DIR)/libcloudhttp
+FS_DIR   = $(LIBS_DIR)/libcloudfs
+SYNC_DIR = $(LIBS_DIR)/libcloudsync
+
+CORE_INC = $(CORE_DIR)/include/cloudcore
+HTTP_INC = $(HTTP_DIR)/include/cloudhttp
+FS_INC   = $(FS_DIR)/include/cloudfs
+SYNC_INC = $(SYNC_DIR)/include/cloudsync
+
+# AMISSL_INC before NDK_INC/RUNTIME_INC -- see libcloudhttp/Makefile.amiga-cross
+CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) \
+          -I$(SYNC_INC) -I$(CORE_INC) -I$(HTTP_INC) -I$(FS_INC) \
+          -I$(AMISSL_INC) -I$(NET_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
+# -lmieee: parson (libcloudcore) and syncstate.c/webdav.c both use double
+# arithmetic, which on a 68000 (no FPU) needs mathieeedoubbas.library's
+# stub routines -- undefined-symbol link errors otherwise.
+LDFLAGS = $(TARGET) -L$(RUNTIME_LIB) -lmieee
+
+OBJDIR = obj/amiga
+BINDIR = ../../bin/amiga
+TARGET_BIN = $(BINDIR)/webdavsync
+
+CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress
+CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
+HTTP_SRCS = cmd http_amiga
+HTTP_OBJS = $(HTTP_SRCS:%=$(OBJDIR)/http_%.o)
+FS_SRCS   = localfs_amiga localfs_util pattern_amiga
+FS_OBJS   = $(FS_SRCS:%=$(OBJDIR)/fs_%.o)
+SYNC_SRCS = sync syncstate webdav
+SYNC_OBJS = $(SYNC_SRCS:%=$(OBJDIR)/sync_%.o)
+
+OWN_OBJS = $(OBJDIR)/main.o
+
+all: $(OBJDIR) $(BINDIR) $(TARGET_BIN)
+
+$(OBJDIR) $(BINDIR):
+	mkdir -p $@
+
+$(TARGET_BIN): $(OWN_OBJS) $(SYNC_OBJS) $(HTTP_OBJS) $(FS_OBJS) $(CORE_OBJS)
+	$(CC) $(LDFLAGS) -o $(TARGET_BIN) $(OWN_OBJS) $(SYNC_OBJS) $(HTTP_OBJS) $(FS_OBJS) $(CORE_OBJS)
+
+$(OBJDIR)/%.o: src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/sync_%.o: $(SYNC_DIR)/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/core_%.o: $(CORE_DIR)/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/http_%.o: $(HTTP_DIR)/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/fs_%.o: $(FS_DIR)/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(OBJDIR)
+	rm -f $(TARGET_BIN)
+
+.PHONY: all clean

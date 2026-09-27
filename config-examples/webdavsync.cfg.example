@@ -1,0 +1,31 @@
+# webdavsync-Konfiguration (AmiOwnCloud) -- eigenes Profil, getrennt von
+# owncloud.cfg und AmiCloudSync.cfg (siehe config-examples/README.md).
+#
+# Ablage (wenn nicht per -c <datei> angegeben):
+#   Amiga:          ENV:webdavsync.cfg, ersatzweise webdavsync.cfg im
+#                   aktuellen Verzeichnis
+#   macOS/Linux:    ~/.webdavsyncrc
+#   Windows (MinGW): webdavsync.cfg im aktuellen Verzeichnis
+# Gelesen von:  webdavsync, webdavsynctest
+# Bearbeitet:   von Hand (kein Prefs-Editor)
+#
+# Fuer die Commodity AmiCloudSync siehe stattdessen AmiCloudSync.cfg.example
+# (eigenes Format mit Intervall und mehreren Ordnerpaaren).
+#
+# Werte auf der Kommandozeile (-s/-u/-p) haben Vorrang vor dieser Datei.
+
+# Server -- entweder nur der Hauptserver (die WebDAV-Sammel-URL
+# "<server>/remote.php/dav/files/<user>" wird automatisch gebildet):
+#   server=https://cloud.example.com
+# oder die volle WebDAV-Basis-URL der eigenen Dateisammlung:
+server=https://cloud.example.com/remote.php/dav/files/bob
+
+# Benutzername ("username" wird ebenfalls akzeptiert):
+user=bob
+# Passwort ("password" wird ebenfalls akzeptiert). Bei Nextcloud/ownCloud
+# empfiehlt sich ein App-Passwort statt des Login-Passworts:
+pass=geheim
+
+# TLS-Zertifikat pruefen (1 = ja, Standard; 0 = nur fuer Tests, entspricht -k):
+#verify_ssl=1
+

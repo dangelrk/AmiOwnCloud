@@ -1,0 +1,170 @@
+# OWNCLOUD: – ownCloud/Nextcloud-(WebDAV-)DOS-Handler
+
+Ein DOS-Handler für AmigaOS 3.x, der einen normalen ownCloud- oder
+Nextcloud-Server als Laufwerk `OWNCLOUD:` einbindet (zusätzlich erscheint
+ein Workbench-Volume `OwnCloud:`). Jede Operation (`Dir`, `Copy`, `Delete`,
+`Rename`, …) geht live per WebDAV an den Server – es gibt keine lokale
+Kopie und keinen Hintergrundabgleich (dafür ist die Commodity
+AmiCloudSync da, siehe `docs/user/AmiOwnCloud.guide`).
+
+Nur für AmigaOS. Endnutzer-Doku: Kapitel „OWNCLOUD:-Handler“ in
+`docs/user/AmiOwnCloud.guide` bzw. `docs/user/AmiOwnCloud-Handbuch.html`.
+Diese Datei beschreibt Aufbau, Bau und Test.
+
+## Herkunft und Aufbau
+
+Der Handler ist ein eigenständiger Fork des `CLOUD:`-Handlers aus dem
+Schwesterprojekt [AmiCloud](https://github.com/dangelrk/AmiCloud)
+(`handler/cloudhandler/`, siehe dessen README.md). Architektur,
+Packet-Schleife und Drahtprotokoll zwischen den beiden Prozessen sind
+identisch; dort ist ausführlich beschrieben, warum der Handler
+`-nostdlib` gelinkt wird, warum er aus zwei Prozessen besteht (Vermeidung
+eines Guru `0x87000004`), wie der Verzeichnis-Cache funktioniert und wem
+welche Puffer gehören. Das wird hier nicht wiederholt.
+
+Zwei Prozesse:
+
+- **`owncloud-handler`** (`L:`) – der eigentliche DOS-Handler. Nutzt nur
+  exec.library in der Packet-Schleife, kein Netzwerk, keine libc.
+- **`owncloud-worker`** (`L:`) – ein normales AmigaOS-Programm
+  (vbcc-Startup, libc, bsdsocket.library, AmiSSL 5), das sämtliche
+  HTTP/TLS-Arbeit erledigt. Der Handler sucht beim Mounten den
+  öffentlichen Port `OwnCloud-Worker` und startet `L:owncloud-worker`,
+  falls er noch nicht läuft. Die Netzwerk-Initialisierung passiert erst
+  bei der ersten echten Anfrage, damit ein Mount beim Booten (`Activate =
+  1`) nicht auf den TCP/IP-Stack warten muss.
+
+Unterschiede zum `CLOUD:`-Handler:
+
+- **Backend**: `src/worker.c` verwendet `webdavcmd.c` aus
+  `core/libcloudhttp` (WebDAV/RFC 4918: PROPFIND/GET/PUT/DELETE/MKCOL/
+  MOVE/PROPPATCH) statt der AmiCloud-REST-API. Warum nicht der
+  WebDAV-Transport aus `core/libcloudsync/src/webdav.c` (den AmiCloudSync
+  und webdavsync benutzen): der ist dateibasiert, der Handler hält
+  Dateiinhalte pro offener Datei im RAM – siehe
+  `core/libcloudhttp/include/cloudhttp/webdavcmd.h`.
+- **Konfiguration**: `ENV:owncloud.cfg` (Beispiel:
+  `config-examples/owncloud.cfg.example`, Editor: OwnCloudPrefs). Gleiches
+  Format wie alle `.cfg`-Dateien (`server`/`user`/`pass`/`basepath`/
+  `verify_ssl`/`debug`/`gmt_offset`/`dst`); `server` ist der Hauptserver
+  oder die volle WebDAV-Sammel-URL.
+- **Namen**: Gerät `OWNCLOUD:`, Volume `OwnCloud:`, Worker-Port
+  `OwnCloud-Worker`, Worker-Programm `L:owncloud-worker`
+  (`src/proto.h`, `src/handler.c`). Ein laufender `CLOUD:`-Handler von
+  AmiCloud und dieser Handler kommen sich nicht in die Quere.
+- **`Protect`/`FileNote` werden angenommen, aber nicht gespeichert.**
+  WebDAV hat keine Entsprechung für Amiga-Schutzbits oder Dateikommentare.
+  Damit Workbench-Kopieren und ähnliche Werkzeuge nicht scheitern,
+  beantwortet der Worker diese Anfragen sofort mit Erfolg, ohne den Server
+  zu fragen. Ein folgendes `List` zeigt den Wert nicht.
+- **Keine MD5-Prüfung** bei Up- und Download (WebDAV liefert keinen
+  Inhalts-Hash).
+- Felder ohne WebDAV-Quelle (Schutzbits, Kommentar, MD5, Server-IDs) sind
+  immer 0 bzw. leer.
+
+## Bekannte Einschränkungen
+
+- **Dateien liegen beim Öffnen komplett im RAM.** Der Inhalt einer
+  geöffneten Datei wird vollständig geladen bzw. beim Schreiben erst im
+  Speicher gesammelt und beim Schließen hochgeladen. Sehr große Dateien
+  brauchen entsprechend viel freien Speicher.
+- **Eine Anfrage zur Zeit.** Während eine HTTP-Anfrage läuft, warten
+  alle anderen Zugriffe auf `OWNCLOUD:`. Es gibt derzeit **kein
+  Zeitlimit** (der vorgesehene 60-s-Timer ist in `src/backend.c`
+  abgeschaltet, `AC_BACKEND_TIMER_ENABLED 0`); hängt der Server, hängt
+  der Zugriff mit.
+- **Kein Unmount.** `ACTION_DIE` wird immer abgelehnt; der Worker wird nie
+  beendet. Aushängen = neu booten.
+- **Konfigurationsänderungen erst nach einem Neustart.** `owncloud-worker`
+  liest `ENV:owncloud.cfg` nur einmal beim eigenen Start. Da er weiterläuft
+  und der Handler nicht ausgehängt werden kann, gilt eine geänderte
+  Konfiguration zuverlässig erst nach einem Reboot.
+- `Info OWNCLOUD:` zeigt eine feste Platzhalter-Kapazität (ca. 2 GB, halb
+  voll), nicht die echte Belegung auf dem Server.
+- Kein rekursives Löschen im Handler: ein nicht leeres Verzeichnis liefert
+  „Verzeichnis nicht leer“; `Delete … ALL` erledigt die Rekursion selbst.
+- `SetDate` wird per PROPPATCH weitergereicht; ein WebDAV-Server ohne die
+  ownCloud/Nextcloud-Erweiterung dafür ignoriert es stillschweigend.
+- Ein Volume, keine Disk-Wechsel-/Format-/Inhibit-Pakete;
+  `ACTION_EXAMINE_ALL` ist nicht implementiert (DOS weicht automatisch auf
+  `EXAMINE_OBJECT`/`EXAMINE_NEXT` aus).
+- Verzeichnislisten werden 10 Sekunden zwischengespeichert
+  (`CACHE_TTL` in `src/vol.h`); Änderungen, die ein anderes Gerät am
+  Server macht, erscheinen also mit bis zu 10 s Verzögerung.
+
+## Bauen
+
+Cross-Compile von macOS/Linux/Windows mit vbcc (Details und
+Voraussetzungen: `docs/BUILD.md`):
+
+```sh
+export VBCC=/pfad/zu/vbcc
+make -C handler/owncloudhandler -f Makefile.amiga-cross
+# oder alles zusammen aus der Projektwurzel:  make amiga
+```
+
+Ergebnis: `bin/amiga/owncloud-handler` und `bin/amiga/owncloud-worker`.
+
+Nativ auf dem Amiga: in der Projektwurzel `Execute Build-Amiga` (baut alle
+Programme, siehe `docs/BUILD.md`).
+
+## Installieren
+
+Am einfachsten über die Installationsschublade (`make dist-amiga`,
+darin `Execute Install-AmiOwnCloud`, siehe `docs/INSTALL.md`). Von Hand:
+
+```
+Copy owncloud-handler L:
+Copy owncloud-worker  L:
+Copy OWNCLOUD DEVS:DOSDrivers/      ; Datei aus mount/
+OwnCloudPrefs                       ; ENV:/ENVARC:owncloud.cfg anlegen
+Mount OWNCLOUD:
+```
+
+Ohne `ENV:owncloud.cfg` startet der Worker trotzdem, aber jede echte
+Anfrage scheitert mit einem Netzwerk- bzw. Anmeldefehler.
+
+## Testen
+
+Auf einem Amiga oder im Emulator mit einem echten ownCloud/Nextcloud-Konto:
+
+```
+Mount OWNCLOUD:
+Dir OWNCLOUD:
+MakeDir OWNCLOUD:AmiTest
+Copy S:Startup-Sequence OWNCLOUD:AmiTest/
+Type OWNCLOUD:AmiTest/Startup-Sequence
+Rename OWNCLOUD:AmiTest/Startup-Sequence OWNCLOUD:AmiTest/test.txt
+Delete OWNCLOUD:AmiTest ALL
+```
+
+`Protect`/`FileNote` sollen ohne Fehler durchlaufen, der Wert bleibt aber
+nicht erhalten (siehe oben). Die ausführliche Testreihe (Stufe 1–3) steht
+im README des `CLOUD:`-Handlers von AmiCloud; dort `CLOUD:`/`AmiCloud:`
+durch `OWNCLOUD:`/`OwnCloud:` ersetzen.
+
+Fehlersuche:
+
+- `debug=T:owncloud.log` in `ENV:owncloud.cfg` schreibt jede HTTP-Anfrage
+  des Workers mit (wirkt nach dem nächsten Reboot).
+- `Type OWNCLOUD:debuglog` zeigt ein internes Diagnoseprotokoll des
+  Handlers (Nachrichten zwischen Handler und Worker).
+
+## Dateien
+
+| Datei | Inhalt |
+|---|---|
+| `src/handler.c` | Einsprungpunkt, `ACTION_STARTUP`, Packet-Schleife |
+| `src/actions.c`, `.h` | eine Funktion je `ACTION_*`-Paket, offene Dateien |
+| `src/vol.c`, `.h` | Verzeichnisbaum im RAM als Cache des Servers |
+| `src/backend.c`, `.h` | Kommunikation mit dem Worker, Start des Workers |
+| `src/proto.h` | Nachrichtenformat Handler ↔ Worker |
+| `src/util.c`, `.h` | kleine Hilfsfunktionen ohne libc |
+| `src/worker.c` | `owncloud-worker` (WebDAV über `webdavcmd.c`) |
+| `mount/OWNCLOUD` | DOSDriver (Kopie: `config-examples/OWNCLOUD.mountlist`) |
+| `Makefile.amiga-cross` | Cross-Build beider Programme |
+
+`handler.c`, `actions.*`, `vol.*`, `util.*`, `proto.h` und `backend.*` sind
+nahezu unveränderte Kopien der Gegenstücke im `CLOUD:`-Handler (nur
+Geräte-, Volume- und Portnamen unterscheiden sich); der Dateikopf jeder
+Datei nennt die Unterschiede.

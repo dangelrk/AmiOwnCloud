@@ -1,0 +1,50 @@
+# AmiCloudSync-Einstellungen (AmiOwnCloud) -- Commodity AmiCloudSync
+# (apps/amicloud-sync-cx), eigenes Profil (siehe config-examples/README.md).
+#
+# Ablage:         ENV:AmiCloudSync.cfg (Benutzen) / ENVARC:AmiCloudSync.cfg
+#                 (Speichern). Die Commodity liest ENV: zuerst, dann
+#                 ENVARC: -- kein weiterer Ort. Gibt es keine der beiden,
+#                 ist das einfach der erste Start: alle Felder leer.
+# Gelesen von:    AmiCloudSync (beim Start, beim Oeffnen des Fensters, bei
+#                 jedem Autosync und bei "Neu laden")
+# Bearbeitet mit: AmiCloudSyncPrefs -- Benutzen schreibt nur nach ENV:,
+#                 Speichern nach ENVARC: UND ENV:, Abbrechen schreibt nichts.
+#
+# ACHTUNG: AmiCloudSyncPrefs schreibt die Datei beim Benutzen/Speichern
+# komplett neu -- Kommentare und von Hand ergaenzte Zeilen (z.B. debug=)
+# gehen dabei verloren. Diese Datei ist nur ein Beispiel zum Nachvollziehen
+# bzw. zum Anlegen von Hand.
+
+# Server -- nur der Hauptserver genuegt, die WebDAV-Sammel-URL
+# "<server>/remote.php/dav/files/<user>" wird zur Laufzeit gebildet. Eine
+# volle Sammel-URL (mit "/remote.php/" darin) wird ebenfalls akzeptiert.
+server=https://cloud.example.com
+# Benutzername ("username" wird ebenfalls akzeptiert):
+user=bob
+# Passwort ("password" wird ebenfalls akzeptiert), am besten ein
+# App-Passwort des Servers:
+pass=geheim
+
+# TLS-Zertifikat pruefen (1 = ja, Standard; 0 = nur fuer Tests):
+#verify_ssl=1
+
+# Debug-Log (leer = aus, Standard). Die Commodity hat kein eigenes
+# Konsolenfenster -- ohne diese Zeile sieht man bei einem Fehler nur
+# "... Fehler!" in der Statuszeile. Mit debug= landen hier jede
+# HTTP-Anfrage/-Antwort und je fehlgeschlagener Aktion die betroffene
+# Datei. T: liegt in der RAM-Disk (weg nach Reboot). Nur von Hand setzbar.
+#debug=T:AmiCloudSync.log
+
+# Autosync-Intervall in Minuten (Standard 15; 0 oder negativ = kein
+# Autosync, nur manueller Abgleich im Fenster). OB Autosync laeuft, wird
+# beim Start der Commodity entschieden; eine geaenderte Minutenzahl gilt
+# ab dem naechsten Autosync-Zyklus.
+interval=15
+
+# Ein Ordnerpaar pro Zeile:  pair=<lokal>|<remote>|<on/off>
+#   lokal:  Amiga-Pfad (Volume:Verzeichnis/Unterverzeichnis), dient
+#           zugleich als Anzeigename
+#   remote: Pfad relativ zur WebDAV-Sammlung, "/" = die gesamte Cloud
+#   on/off: Paar aktiv oder pausiert (1/0 geht auch)
+pair=Work:Dokumente|/Dokumente|on
+pair=Work:Projekte|/Projekte|off

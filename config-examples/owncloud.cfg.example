@@ -1,0 +1,43 @@
+# OWNCLOUD:-Handler-Konfiguration (AmiOwnCloud) -- eigenes Profil,
+# getrennt von allen anderen Konfigurationsdateien (siehe
+# config-examples/README.md).
+#
+# Ablage:        ENV:owncloud.cfg  (gelesen) / ENVARC:owncloud.cfg (dauerhaft)
+# Gelesen von:   owncloud-worker (handler/owncloudhandler) -- das Backend
+#                hinter dem OWNCLOUD:-DOS-Handler, liest NUR ENV:owncloud.cfg
+#                und nur einmal beim eigenen Start (also beim Mounten).
+# Bearbeitet mit: OwnCloudPrefs (Benutzen -> ENV:, Speichern -> ENVARC:+ENV:)
+#
+# Spricht WebDAV (RFC 4918) gegen einen normalen ownCloud/Nextcloud-Server.
+
+# Server -- entweder nur der Hauptserver; die WebDAV-Sammel-URL wird dann
+# automatisch aus server+user gebildet ("<server>/remote.php/dav/files/<user>"):
+server=https://cloud.example.com
+# oder die volle WebDAV-Basis-URL der eigenen Dateisammlung (alles, was
+# "/remote.php/" enthaelt, wird unveraendert benutzt):
+#server=https://cloud.example.com/remote.php/dav/files/bob
+
+# Benutzername ("username" wird ebenfalls akzeptiert):
+user=bob
+# Passwort ("password" wird ebenfalls akzeptiert). Bei Nextcloud/ownCloud
+# empfiehlt sich ein App-Passwort statt des Login-Passworts
+# (Einstellungen -> Sicherheit):
+pass=geheim
+
+# Basis-Pfad innerhalb der WebDAV-Dateisammlung (Standard: /), z.B. um nur
+# einen Unterordner als OWNCLOUD: einzuhaengen:
+#basepath=/
+
+# TLS-Zertifikat pruefen (1 = ja, Standard; 0 = nur fuer Tests):
+#verify_ssl=1
+
+# Debug-Log (leer = aus, Standard): schreibt jede HTTP-Anfrage/-Antwort
+# des Workers in diese Datei. T: liegt in der RAM-Disk (weg nach Reboot).
+#debug=T:owncloud.log
+
+# Zeitzone -- die Amiga-Systemuhr kennt keine Zeitzone. Abstand der
+# lokalen Zeit zu UTC in Minuten (z.B. 60 fuer MEZ) und ob gerade
+# Sommerzeit gilt (1) oder nicht (0). Wirkt auf die angezeigten und
+# gesetzten Dateidaten:
+#gmt_offset=60
+#dst=0

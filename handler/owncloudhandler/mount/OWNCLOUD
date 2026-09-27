@@ -1,0 +1,18 @@
+/* OWNCLOUD: -- ownCloud/Nextcloud-(WebDAV-)DOS-Handler von AmiOwnCloud.
+ * Inhaltsgleiche Kopie: config-examples/OWNCLOUD.mountlist.
+ * Installation (Install-AmiOwnCloud erledigt das; von Hand):
+ *   Copy owncloud-handler L:
+ *   Copy owncloud-worker  L:      <- wird beim Mounten von L: gestartet
+ *   Copy OWNCLOUD DEVS:DOSDrivers/   (beim Booten gemountet) oder
+ *   Copy OWNCLOUD SYS:Storage/DOSDrivers/   (nur bei Bedarf mounten)
+ * owncloud-worker braucht ENV:owncloud.cfg (server/user/pass, am
+ * einfachsten per OwnCloudPrefs anlegen; Beispiel:
+ * config-examples/owncloud.cfg.example).
+ * Dann neu booten oder in der Shell: Mount OWNCLOUD:
+ * Handbuch: docs/user/AmiOwnCloud.guide, Technik:
+ * handler/owncloudhandler/README.md. */
+Handler   = L:owncloud-handler
+StackSize = 16384
+Priority  = 5
+GlobVec   = -1      /* Pflicht fuer C-Handler -- kein BCPL-GlobVec */
+Activate  = 1

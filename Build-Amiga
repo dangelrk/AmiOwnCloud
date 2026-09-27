@@ -1,0 +1,183 @@
+; Build-Amiga -- natives Bauen von AmiOwnCloud auf AmigaOS 3.x mit vbcc
+; SPDX-License-Identifier: GPL-3.0-or-later
+;
+; Aufruf im Projekt-Wurzelverzeichnis (dort, wo core/ liegt):
+;     Execute Build-Amiga
+;
+; Ergebnis: bin/amiga/<Programm>, Objektdateien in obj/amiga/<Programm>/.
+;
+; Voraussetzungen: vbcc mit Target m68k-amigaos (vc im Pfad, NDK-Includes
+; ueber die vbcc-Konfiguration), AmiSSL-5-SDK, Roadshow-SDK (netinclude).
+; Die Pfade unten an das eigene System anpassen -- Details in docs/BUILD.md.
+;
+; ERZEUGTE DATEI -- nicht von Hand bearbeiten. Quelle sind die
+; Makefile.amiga-cross-Dateien; neu erzeugen mit
+;     python3 core/tools/gen-build-amiga.py --verify
+
+Set AMISSL_INC "AmiSSL:Developer/include"
+Set NET_INC    "NetInclude:"
+
+FailAt 10
+If NOT EXISTS bin
+  MakeDir bin
+EndIf
+If NOT EXISTS bin/amiga
+  MakeDir bin/amiga
+EndIf
+If NOT EXISTS obj
+  MakeDir obj
+EndIf
+If NOT EXISTS obj/amiga
+  MakeDir obj/amiga
+EndIf
+
+; ---- AmiCloudSync  (apps/amicloud-sync-cx)
+Echo "*N==> AmiCloudSync"
+If NOT EXISTS obj/amiga/AmiCloudSync
+  MakeDir obj/amiga/AmiCloudSync
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/amicloud-sync-cx/src/main.c -o obj/amiga/AmiCloudSync/main.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/amicloud-sync-cx/src/commodity.c -o obj/amiga/AmiCloudSync/commodity.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/amicloud-sync-cx/src/timer.c -o obj/amiga/AmiCloudSync/timer.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/amicloud-sync-cx/src/gui.c -o obj/amiga/AmiCloudSync/gui.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/amicloud-sync-cx/src/pairs.c -o obj/amiga/AmiCloudSync/pairs.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/sync.c -o obj/amiga/AmiCloudSync/s_sync.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/syncstate.c -o obj/amiga/AmiCloudSync/s_syncstate.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/webdav.c -o obj/amiga/AmiCloudSync/s_webdav.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/cmd.c -o obj/amiga/AmiCloudSync/h_cmd.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/http_amiga.c -o obj/amiga/AmiCloudSync/h_http_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_amiga.c -o obj/amiga/AmiCloudSync/f_localfs_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_util.c -o obj/amiga/AmiCloudSync/f_localfs_util.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/pattern_amiga.c -o obj/amiga/AmiCloudSync/f_pattern_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/config.c -o obj/amiga/AmiCloudSync/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/base64.c -o obj/amiga/AmiCloudSync/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/parson.c -o obj/amiga/AmiCloudSync/c_parson.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/md5.c -o obj/amiga/AmiCloudSync/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/AmiCloudSync/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/cloudtime.c -o obj/amiga/AmiCloudSync/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/progress.c -o obj/amiga/AmiCloudSync/c_progress.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloud-sync-cx/src -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/wbstartup.c -o obj/amiga/AmiCloudSync/c_wbstartup.o
+CD obj/amiga/AmiCloudSync
+vc +aos68k -o ///bin/amiga/AmiCloudSync main.o commodity.o timer.o gui.o pairs.o s_sync.o s_syncstate.o s_webdav.o h_cmd.o h_http_amiga.o f_localfs_amiga.o f_localfs_util.o f_pattern_amiga.o c_config.o c_base64.o c_parson.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o c_wbstartup.o -lmieee
+CD ///
+
+; ---- AmiCloudSyncPrefs  (apps/amicloudsync-prefs)
+Echo "*N==> AmiCloudSyncPrefs"
+If NOT EXISTS obj/amiga/AmiCloudSyncPrefs
+  MakeDir obj/amiga/AmiCloudSyncPrefs
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c apps/amicloudsync-prefs/src/main.c -o obj/amiga/AmiCloudSyncPrefs/main.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/common/src/prefsgui.c -o obj/amiga/AmiCloudSyncPrefs/prefsgui.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c apps/amicloud-sync-cx/src/pairs.c -o obj/amiga/AmiCloudSyncPrefs/pairs.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/config.c -o obj/amiga/AmiCloudSyncPrefs/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/base64.c -o obj/amiga/AmiCloudSyncPrefs/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/parson.c -o obj/amiga/AmiCloudSyncPrefs/c_parson.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/md5.c -o obj/amiga/AmiCloudSyncPrefs/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/AmiCloudSyncPrefs/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/cloudtime.c -o obj/amiga/AmiCloudSyncPrefs/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Iapps/amicloudsync-prefs/src -Iapps/amicloud-sync-cx/src -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/progress.c -o obj/amiga/AmiCloudSyncPrefs/c_progress.o
+CD obj/amiga/AmiCloudSyncPrefs
+vc +aos68k -o ///bin/amiga/AmiCloudSyncPrefs main.o prefsgui.o pairs.o c_config.o c_base64.o c_parson.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o -lmieee
+CD ///
+
+; ---- OwnCloudPrefs  (apps/owncloud-prefs)
+Echo "*N==> OwnCloudPrefs"
+If NOT EXISTS obj/amiga/OwnCloudPrefs
+  MakeDir obj/amiga/OwnCloudPrefs
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c apps/owncloud-prefs/src/main.c -o obj/amiga/OwnCloudPrefs/main.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/common/src/prefsgui.c -o obj/amiga/OwnCloudPrefs/prefsgui.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/config.c -o obj/amiga/OwnCloudPrefs/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/base64.c -o obj/amiga/OwnCloudPrefs/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/parson.c -o obj/amiga/OwnCloudPrefs/c_parson.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/md5.c -o obj/amiga/OwnCloudPrefs/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/OwnCloudPrefs/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/cloudtime.c -o obj/amiga/OwnCloudPrefs/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/common/include/common -Icore/libcloudcore/include/cloudcore -c core/libcloudcore/src/progress.c -o obj/amiga/OwnCloudPrefs/c_progress.o
+CD obj/amiga/OwnCloudPrefs
+vc +aos68k -o ///bin/amiga/OwnCloudPrefs main.o prefsgui.o c_config.o c_base64.o c_parson.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o -lmieee
+CD ///
+
+; ---- webdavsync  (apps/webdavsync)
+Echo "*N==> webdavsync"
+If NOT EXISTS obj/amiga/webdavsync
+  MakeDir obj/amiga/webdavsync
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/webdavsync/src/main.c -o obj/amiga/webdavsync/main.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/sync.c -o obj/amiga/webdavsync/s_sync.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/syncstate.c -o obj/amiga/webdavsync/s_syncstate.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/webdav.c -o obj/amiga/webdavsync/s_webdav.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/cmd.c -o obj/amiga/webdavsync/h_cmd.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/http_amiga.c -o obj/amiga/webdavsync/h_http_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_amiga.c -o obj/amiga/webdavsync/f_localfs_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_util.c -o obj/amiga/webdavsync/f_localfs_util.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/pattern_amiga.c -o obj/amiga/webdavsync/f_pattern_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/config.c -o obj/amiga/webdavsync/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/base64.c -o obj/amiga/webdavsync/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/parson.c -o obj/amiga/webdavsync/c_parson.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/md5.c -o obj/amiga/webdavsync/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/webdavsync/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/cloudtime.c -o obj/amiga/webdavsync/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/progress.c -o obj/amiga/webdavsync/c_progress.o
+CD obj/amiga/webdavsync
+vc +aos68k -o ///bin/amiga/webdavsync main.o s_sync.o s_syncstate.o s_webdav.o h_cmd.o h_http_amiga.o f_localfs_amiga.o f_localfs_util.o f_pattern_amiga.o c_config.o c_base64.o c_parson.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o -lmieee
+CD ///
+
+; ---- webdavsynctest  (apps/webdavsynctest)
+Echo "*N==> webdavsynctest"
+If NOT EXISTS obj/amiga/webdavsynctest
+  MakeDir obj/amiga/webdavsynctest
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c apps/webdavsynctest/src/main.c -o obj/amiga/webdavsynctest/main.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/sync.c -o obj/amiga/webdavsynctest/s_sync.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/syncstate.c -o obj/amiga/webdavsynctest/s_syncstate.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudsync/src/webdav.c -o obj/amiga/webdavsynctest/s_webdav.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/cmd.c -o obj/amiga/webdavsynctest/h_cmd.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/http_amiga.c -o obj/amiga/webdavsynctest/h_http_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_amiga.c -o obj/amiga/webdavsynctest/f_localfs_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/localfs_util.c -o obj/amiga/webdavsynctest/f_localfs_util.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudfs/src/pattern_amiga.c -o obj/amiga/webdavsynctest/f_pattern_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/config.c -o obj/amiga/webdavsynctest/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/base64.c -o obj/amiga/webdavsynctest/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/parson.c -o obj/amiga/webdavsynctest/c_parson.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/md5.c -o obj/amiga/webdavsynctest/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/webdavsynctest/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/cloudtime.c -o obj/amiga/webdavsynctest/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Icore/libcloudsync/include/cloudsync -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -Icore/libcloudfs/include/cloudfs -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/progress.c -o obj/amiga/webdavsynctest/c_progress.o
+CD obj/amiga/webdavsynctest
+vc +aos68k -o ///bin/amiga/webdavsynctest main.o s_sync.o s_syncstate.o s_webdav.o h_cmd.o h_http_amiga.o f_localfs_amiga.o f_localfs_util.o f_pattern_amiga.o c_config.o c_base64.o c_parson.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o -lmieee
+CD ///
+
+; ---- owncloud-handler  (handler/owncloudhandler)
+Echo "*N==> owncloud-handler"
+If NOT EXISTS obj/amiga/owncloud-handler
+  MakeDir obj/amiga/owncloud-handler
+EndIf
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/handler.c -o obj/amiga/owncloud-handler/handler.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/actions.c -o obj/amiga/owncloud-handler/actions.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/vol.c -o obj/amiga/owncloud-handler/vol.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/util.c -o obj/amiga/owncloud-handler/util.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/backend.c -o obj/amiga/owncloud-handler/backend.o
+CD obj/amiga/owncloud-handler
+vc +aos68k -o ///bin/amiga/owncloud-handler handler.o actions.o vol.o util.o backend.o -nostdlib -lvc
+CD ///
+
+; ---- owncloud-worker  (handler/owncloudhandler)
+Echo "*N==> owncloud-worker"
+If NOT EXISTS obj/amiga/owncloud-worker
+  MakeDir obj/amiga/owncloud-worker
+EndIf
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c handler/owncloudhandler/src/worker.c -o obj/amiga/owncloud-worker/worker.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/webdavcmd.c -o obj/amiga/owncloud-worker/h_webdavcmd.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudhttp/src/http_amiga.c -o obj/amiga/owncloud-worker/h_http_amiga.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/config.c -o obj/amiga/owncloud-worker/c_config.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/base64.c -o obj/amiga/owncloud-worker/c_base64.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/md5.c -o obj/amiga/owncloud-worker/c_md5.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/ui_hooks.c -o obj/amiga/owncloud-worker/c_ui_hooks.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/cloudtime.c -o obj/amiga/owncloud-worker/c_cloudtime.o
+vc +aos68k -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=68000 -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -Icore/libcloudhttp/include/cloudhttp -I$AMISSL_INC -I$NET_INC -c core/libcloudcore/src/progress.c -o obj/amiga/owncloud-worker/c_progress.o
+CD obj/amiga/owncloud-worker
+vc +aos68k -o ///bin/amiga/owncloud-worker worker.o h_webdavcmd.o h_http_amiga.o c_config.o c_base64.o c_md5.o c_ui_hooks.o c_cloudtime.o c_progress.o -lmieee
+CD ///
+
+Echo "*NFertig. Die Programme liegen in bin/amiga/."

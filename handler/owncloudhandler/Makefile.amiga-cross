@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Ronny Krueger
+# OWNCLOUD: DOS handler + owncloud-worker -- AmigaOS 3.x (VBCC), CROSS-
+# compiled from a host (macOS/Linux/Windows) using the toolchain
+# described in docs/BUILD.md. For a *native* build on a
+# real/emulated Amiga, use Build-Amiga (project root) instead -- it is
+# generated from this file, so the flags are identical, the actual compile/link flags (and
+# the two-process architecture, see src/worker.c's/src/handler.c's file
+# headers) are unchanged.
+#
+# No oml on the host, so there is no
+# libcloudhttp.lib/libcloudcore.lib step -- the needed lib .c sources are
+# compiled straight into this directory's obj/amiga/ and linked in
+# directly. Unlike handler/cloudhandler's own Makefile.amiga-cross, this
+# one deliberately leaves cmd.c and parson.c out of HTTP_SRCS/CORE_SRCS --
+# owncloud-worker never speaks AmiCloud's api.php/JSON protocol (see
+# src/worker.c's file header), so it needs webdavcmd.c instead of cmd.c,
+# and has no use for parson.c at all.
+#
+# owncloud-handler is linked -nostdlib but still needs -lvc (actions.c's
+# division needs vc.lib's __divs helper). -nostdlib only suppresses the
+# crt0 startup module, not vc.lib itself: leaving -lvc off fails with
+# "undefined symbol __divs". Because of -nostdlib, handler.o must also stay
+# first in HANDLER_OBJS: whatever object comes first on the link line
+# becomes the literal first byte of the loaded executable, i.e. the process
+# entry point DOS jumps to (RKRM DOS 11.5.4). The worker is the opposite: a
+# normal vbcc-startup CLI program (full libc, bsdsocket/AmiSSL).
+#
+# Build:  export VBCC=/path/to/vbcc     (see docs/BUILD.md)
+#         make -f Makefile.amiga-cross            (both binaries)
+
+VBCC    ?= /opt/vbcc
+CC       = $(VBCC)/bin/vc
+TARGET   = +aos68k
+CPU      = 68000
+
+RUNTIME_INC = $(VBCC)/targets/m68k-amigaos/include
+RUNTIME_LIB = $(VBCC)/targets/m68k-amigaos/lib
+NDK_INC     = $(VBCC)/sdk/NDK_3.2/Include_H
+NET_INC     = $(VBCC)/sdk/Roadshow/netinclude
+AMISSL_INC  = $(VBCC)/sdk/AmiSSL-v5/Developer/include
+
+LIBS_DIR = ../../core
+CORE_DIR = $(LIBS_DIR)/libcloudcore
+HTTP_DIR = $(LIBS_DIR)/libcloudhttp
+
+CORE_INC = $(CORE_DIR)/include/cloudcore
+HTTP_INC = $(HTTP_DIR)/include/cloudhttp
+
+OBJDIR = obj/amiga
+BINDIR = ../../bin/amiga
+
+HANDLER_CFLAGS  = $(TARGET) -O1 -cpu=$(CPU) -nostdlib -Isrc -I$(NDK_INC) -I$(RUNTIME_INC)
+HANDLER_LDFLAGS = $(TARGET) -nostdlib -L$(RUNTIME_LIB)
+
+# AMISSL_INC before NDK_INC/RUNTIME_INC -- see libcloudhttp/Makefile.amiga-cross
+WORKER_CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) \
+                 -Isrc -I$(CORE_INC) -I$(HTTP_INC) \
+                 -I$(AMISSL_INC) -I$(NET_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
+WORKER_LDFLAGS = $(TARGET) -L$(RUNTIME_LIB) -lmieee
+
+HANDLER      = $(BINDIR)/owncloud-handler
+HANDLER_SRCS = handler actions vol util backend
+HANDLER_OBJS = $(HANDLER_SRCS:%=$(OBJDIR)/%.o)
+
+WORKER      = $(BINDIR)/owncloud-worker
+WORKER_OBJS = $(OBJDIR)/worker.o
+
+CORE_SRCS = config base64 md5 ui_hooks cloudtime progress
+CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
+HTTP_SRCS = webdavcmd http_amiga
+HTTP_OBJS = $(HTTP_SRCS:%=$(OBJDIR)/http_%.o)
+
+all: $(OBJDIR) $(BINDIR) $(HANDLER) $(WORKER)
+
+$(OBJDIR) $(BINDIR):
+	mkdir -p $@
+
+# handler.o first -- see src/handler.c's file header
+$(HANDLER): $(HANDLER_OBJS)
+	$(CC) $(HANDLER_LDFLAGS) -o $(HANDLER) $(HANDLER_OBJS) -lvc
+
+$(OBJDIR)/%.o: src/%.c
+	$(CC) $(HANDLER_CFLAGS) -c $< -o $@
+
+$(WORKER): $(WORKER_OBJS) $(HTTP_OBJS) $(CORE_OBJS)
+	$(CC) $(WORKER_LDFLAGS) -o $(WORKER) $(WORKER_OBJS) $(HTTP_OBJS) $(CORE_OBJS)
+
+$(OBJDIR)/worker.o: src/worker.c src/proto.h
+	$(CC) $(WORKER_CFLAGS) -c src/worker.c -o $(OBJDIR)/worker.o
+
+$(OBJDIR)/core_%.o: $(CORE_DIR)/src/%.c
+	$(CC) $(WORKER_CFLAGS) -c $< -o $@
+
+$(OBJDIR)/http_%.o: $(HTTP_DIR)/src/%.c
+	$(CC) $(WORKER_CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(OBJDIR)
+	rm -f $(HANDLER) $(WORKER)
+
+.PHONY: all clean

@@ -1,0 +1,1136 @@
+@database "AmiOwnCloud.guide"
+@$VER: AmiOwnCloud.guide 1.0 (27.09.2026)
+@author "Ronny Krueger"
+@(c) "2026 Ronny Krueger, GPL-3.0-or-later"
+@wordwrap
+@width 76
+
+@node Main "AmiOwnCloud - Handbuch"
+
+                          AmiOwnCloud
+                   ownCloud/Nextcloud für AmigaOS
+                   ------------------------------
+
+  Handbuch-Version 1.0 (27.09.2026)
+
+  @{" Einführung            " link Einfuehrung}  Was ist AmiOwnCloud?
+  @{" Voraussetzungen       " link Voraussetzungen}  Was wird gebraucht?
+  @{" Installation          " link Installation}  mit dem Install-Skript
+  @{" Manuelle Installation " link InstallManuell}  wohin welche Datei?
+  @{" Installation am PC    " link InstallPC}  webdavsync für Mac/Linux
+  @{" Konfiguration         " link Konfiguration}  Dateien und Schlüssel
+
+  Programme:
+
+  @{" OWNCLOUD:-Handler     " link Handler}  Server als Laufwerk
+  @{" OwnCloudPrefs         " link OwnCloudPrefs}  Prefs für OWNCLOUD:
+  @{" AmiCloudSync          " link AmiCloudSync}  Ordnerabgleich
+  @{" AmiCloudSyncPrefs     " link AmiCloudSyncPrefs}  Profil + Ordnerpaare
+  @{" Abgleich              " link Abgleich}  so funktioniert er
+  @{" webdavsync            " link Webdavsync}  Abgleich per Shell
+  @{" webdavsynctest        " link Webdavsynctest}  Testsuite
+
+  Anhang:
+
+  @{" Fehlersuche           " link Fehlersuche}
+  @{" Bekannte Grenzen      " link Grenzen}
+  @{" Deinstallation        " link Deinstallation}
+  @{" Bauen                 " link Bauen}  aus den Quellen
+  @{" Lizenz                " link Lizenz}  GPL Version 3
+  @{" Autor und Kontakt     " link Autor}
+  @{" Versionsgeschichte    " link Historie}
+
+@endnode
+
+@node Einfuehrung "Einführung"
+@next Voraussetzungen
+@prev Main
+
+Einführung
+----------
+
+AmiOwnCloud verbindet AmigaOS 3.x mit einem ganz normalen ownCloud- oder
+Nextcloud-Server. Die Verbindung läuft über WebDAV (HTTPS) - dieselbe
+Schnittstelle, die auch die offiziellen Clients unter Windows, macOS und
+Linux benutzen. Der Server selbst gehört nicht zu AmiOwnCloud; man
+braucht nur ein Konto darauf.
+
+Es gibt zwei unabhängige Wege, den Server zu nutzen. Beide können
+gleichzeitig installiert sein:
+
+  1. Der @{" OWNCLOUD:-Handler " link Handler}
+     macht den Server zum Laufwerk OWNCLOUD:. Jeder Zugriff (Dir, Copy,
+     Delete, Workbench-Fenster ...) geht direkt an den Server. Es gibt
+     keine lokale Kopie - ohne Netz geht nichts. Gut für den schnellen
+     Zugriff auf den ganzen Server.
+     Einstellungen: @{" OwnCloudPrefs " link OwnCloudPrefs}
+
+  2. Die Commodity @{" AmiCloudSync " link AmiCloudSync}
+     gleicht Paare aus einem lokalen Amiga-Ordner und einem Ordner auf
+     dem Server ab - automatisch alle paar Minuten oder auf Knopfdruck.
+     Die Dateien liegen lokal und sind auch offline verfügbar. Gut für
+     Ordner, mit denen man regelmäßig arbeitet.
+     Einstellungen: @{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}
+
+Dazu kommen zwei Shell-Befehle, die es auch für macOS, Linux und
+(ungetestet) Windows gibt:
+
+  @{" webdavsync " link Webdavsync}      einmaliger Abgleich eines
+                  Ordnerpaares, z.B. zum Ausprobieren
+  @{" webdavsynctest " link Webdavsynctest}  automatische Testreihe gegen
+                  einen echten Server
+
+Jedes Programm hat seine eigene Konfigurationsdatei mit eigenen
+Zugangsdaten (siehe @{" Konfiguration " link Konfiguration}).
+
+AmiOwnCloud ist Teil einer Projektfamilie: AmiCloud (eigener Server),
+AmiVCS (Versionsverwaltung) und die gemeinsame Bibliothek AmiCloudCore.
+Mit dem eigenen AmiCloud-Server hat AmiOwnCloud nichts zu tun.
+
+@endnode
+
+@node Voraussetzungen "Voraussetzungen"
+@next Installation
+@prev Einfuehrung
+
+Voraussetzungen
+---------------
+
+Amiga:
+
+  - AmigaOS 3.x, Prozessor 68000 oder besser. Die Programme sind für
+    kleine Systeme ausgelegt (GadTools statt MUI).
+
+  - Ein TCP/IP-Stack mit bsdsocket.library (Version 4 oder neuer),
+    z.B. Roadshow, AmiTCP/Genesis oder Miami. Er muss laufen, bevor
+    ein Programm auf den Server zugreift.
+
+  - AmiSSL 5 (amisslmaster.library). Wird von allen Programmen
+    gebraucht, die mit dem Server sprechen - auch bei http://-Adressen.
+
+  - MUI wird nicht gebraucht. Die Oberflächen verwenden intuition,
+    gadtools und commodities.library aus dem Betriebssystem.
+
+  - Stack: nichts einzustellen. Die Programme fordern selbst 64 KB an,
+    der Handler bekommt seinen Stack aus dem DOSDriver (16 KB).
+
+  - Speicher: Der OWNCLOUD:-Handler hält eine geöffnete Datei komplett
+    im RAM. Für große Dateien entsprechend viel freien Speicher
+    einplanen.
+
+Server:
+
+  - Ein Konto auf einem ownCloud- oder Nextcloud-Server.
+  - Empfohlen: ein eigenes App-Passwort für den Amiga (in Nextcloud
+    unter Einstellungen -> Sicherheit), nicht das Login-Passwort.
+  - HTTPS mit gültigem Zertifikat. Die Zertifikatsprüfung lässt sich zum
+    Testen abschalten (verify_ssl=0), sollte aber an bleiben.
+
+PC (nur webdavsync/webdavsynctest): macOS oder Linux mit libcurl,
+Windows ungetestet - siehe @{" Installation am PC " link InstallPC}.
+
+@endnode
+
+@node Installation "Installation"
+@next InstallManuell
+@prev Voraussetzungen
+
+Installation mit dem Install-Skript
+-----------------------------------
+
+Die Installationsschublade AmiOwnCloud (aus AmiOwnCloud.lha bzw. aus
+"make dist-amiga") enthält:
+
+  C/                     alle Programme
+  Docs/AmiOwnCloud.guide dieses Handbuch
+  Examples/              Beispielkonfigurationen, Mountlist
+  Storage/DOSDrivers/    DOSDriver OWNCLOUD für den Handler
+  Install-AmiOwnCloud    Installationsskript
+  Uninstall-AmiOwnCloud  Deinstallationsskript
+  ReadMe, LICENSE
+
+Installation:
+
+  1. Archiv entpacken, z.B.:   LhA x AmiOwnCloud.lha RAM:
+  2. Shell öffnen und in die Schublade wechseln:
+                               CD RAM:AmiOwnCloud
+  3. Skript starten:           Execute Install-AmiOwnCloud
+
+Das Skript fragt jeden Teil einzeln ab (Antwort y oder n):
+
+  - OWNCLOUD:-Handler und OwnCloudPrefs. Wahlweise wird der DOSDriver
+    nach DEVS:DOSDrivers (Mount bei jedem Systemstart) oder nach
+    SYS:Storage/DOSDrivers (Mount nur von Hand) kopiert. Gibt es noch
+    keine owncloud.cfg, bietet es an, OwnCloudPrefs sofort zu starten,
+    und danach, OWNCLOUD: gleich zu mounten.
+
+  - AmiCloudSync (nach SYS:Tools/Commodities) und AmiCloudSyncPrefs
+    (nach SYS:Prefs). Bietet an, AmiCloudSyncPrefs sofort zu starten,
+    und auf Wunsch eine Startzeile in S:User-Startup einzutragen.
+
+  - webdavsync und webdavsynctest nach C:, auf Wunsch mit einer
+    Beispiel-Konfiguration ENVARC:webdavsync.cfg.
+
+  - Das Handbuch wird nach HELP: kopiert, wenn HELP: zugewiesen ist.
+
+Vorhandene Konfigurationsdateien in ENV:/ENVARC: und ein vorhandener
+DOSDriver werden nie überschrieben. Eine Neuinstallation über eine
+alte Version ist also gefahrlos.
+
+Wie es danach weitergeht:
+
+  - Laufwerk: @{" OwnCloudPrefs " link OwnCloudPrefs} ausfüllen,
+    Speichern, dann in der Shell  Mount OWNCLOUD:
+  - Ordnerabgleich: @{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}
+    ausfüllen, Speichern, dann @{" AmiCloudSync " link AmiCloudSync}
+    starten.
+
+Die Programme haben keine eigenen Piktogramme (.info-Dateien). Aus der
+Workbench startet man sie mit "Fenster -> Alle Dateien zeigen" (dann
+erscheint ein Standard-Piktogramm) oder legt sich selbst eines an.
+
+@endnode
+
+@node InstallManuell "Manuelle Installation"
+@next InstallPC
+@prev Installation
+
+Manuelle Installation
+---------------------
+
+Wer lieber selbst kopiert: diese Dateien gehören an diese Orte (alle
+Programme liegen in der Schublade unter C/).
+
+  Datei               Ziel                    gebraucht für
+  ------------------  ----------------------  ----------------------
+  owncloud-handler    L:                      OWNCLOUD:
+  owncloud-worker     L: (fest, wird von dort  OWNCLOUD:
+                      beim Mounten gestartet)
+  OWNCLOUD            DEVS:DOSDrivers/ oder   OWNCLOUD:
+  (Storage/DOSDrivers) SYS:Storage/DOSDrivers/
+  OwnCloudPrefs       SYS:Prefs/              OWNCLOUD:
+  AmiCloudSync        SYS:Tools/Commodities/  Ordnerabgleich
+  AmiCloudSyncPrefs   SYS:Prefs/              Ordnerabgleich
+  webdavsync          C:                      Shell-Befehl
+  webdavsynctest      C:                      Shell-Befehl
+  AmiOwnCloud.guide   HELP: (optional)        Handbuch
+
+Beispiel für die Shell (in der Schublade):
+
+  Copy C/owncloud-handler L:
+  Copy C/owncloud-worker L:
+  Copy Storage/DOSDrivers/OWNCLOUD DEVS:DOSDrivers/
+  Copy C/OwnCloudPrefs SYS:Prefs/
+  Copy C/AmiCloudSync SYS:Tools/Commodities/
+  Copy C/AmiCloudSyncPrefs SYS:Prefs/
+  Copy C/webdavsync C:
+  Copy C/webdavsynctest C:
+
+Konfigurationsdateien (Einzelheiten unter
+@{" Konfiguration " link Konfiguration}):
+
+  ENV:owncloud.cfg      / ENVARC:owncloud.cfg      OwnCloudPrefs
+  ENV:AmiCloudSync.cfg  / ENVARC:AmiCloudSync.cfg  AmiCloudSyncPrefs
+  ENV:webdavsync.cfg    / ENVARC:webdavsync.cfg    von Hand
+
+AmiCloudSync automatisch starten:
+
+  Die Commodity liest nur den Tooltype CX_POPKEY (siehe
+  @{" AmiCloudSync " link AmiCloudSync}). Zum automatischen Start
+  entweder ein Piktogramm anlegen und nach SYS:WBStartup legen, oder
+  in S:User-Startup - nach dem Start des TCP/IP-Stacks - eintragen:
+
+    Run >NIL: SYS:Tools/Commodities/AmiCloudSync
+
+@endnode
+
+@node InstallPC "Installation am PC"
+@next Konfiguration
+@prev InstallManuell
+
+Installation am PC (macOS, Linux, Windows)
+------------------------------------------
+
+Auf dem PC gibt es nur die beiden Shell-Befehle
+@{" webdavsync " link Webdavsync} und
+@{" webdavsynctest " link Webdavsynctest}. Handler, Commodity und
+Prefs-Programme gibt es nur für AmigaOS.
+
+Bauen und installieren (Einzelheiten in docs/BUILD.md):
+
+  git clone --recurse-submodules https://github.com/dangelrk/AmiOwnCloud.git
+  cd AmiOwnCloud
+  make pc
+  sudo make install          (nach /usr/local/bin)
+
+Oder die Programme aus bin/pc/ einfach an einen Ort im Suchpfad
+kopieren.
+
+Konfiguration am PC:
+
+  macOS/Linux:   ~/.webdavsyncrc
+  Windows:       webdavsync.cfg im aktuellen Verzeichnis (bzw.
+                 ~/.webdavsyncrc in der MSYS2-Umgebung "MSYS")
+  immer möglich: -c <datei>
+
+Unter Linux und Windows wurde bisher nicht gebaut; getestet ist nur
+macOS. Siehe docs/INSTALL.md.
+
+@endnode
+
+@node Konfiguration "Konfiguration"
+@next EnvEnvarc
+@prev InstallPC
+
+Konfiguration
+-------------
+
+Jedes Werkzeug hat seine eigene Datei - auch wenn alle auf denselben
+Server zeigen, teilen sie sich keine Zugangsdaten:
+
+  Datei             gelesen von              geschrieben von
+  ----------------  -----------------------  -----------------
+  owncloud.cfg      owncloud-worker          OwnCloudPrefs
+                    (OWNCLOUD:-Handler)
+  AmiCloudSync.cfg  AmiCloudSync             AmiCloudSyncPrefs
+  webdavsync.cfg    webdavsync,              von Hand
+                    webdavsynctest
+
+Beispiele liegen in der Schublade unter Examples/.
+
+Format
+------
+
+Eine Einstellung pro Zeile:  schluessel=wert
+Leerzeichen um das = sind erlaubt. Zeilen, die mit # beginnen, sind
+Kommentare. Unbekannte Schlüssel werden ignoriert.
+
+Gemeinsame Schlüssel:
+
+  server      Nur der Hauptserver, z.B.
+                server=https://cloud.example.com
+              Daraus wird automatisch die WebDAV-Adresse
+                https://cloud.example.com/remote.php/dav/files/<user>
+              gebildet. Enthält der Wert schon "/remote.php/", wird er
+              unverändert benutzt, z.B.
+                server=https://cloud.example.com/remote.php/dav/files/bob
+  user        Benutzername (auch "username" wird akzeptiert)
+  pass        Passwort (auch "password"), am besten ein App-Passwort
+  verify_ssl  1 = TLS-Zertifikat prüfen (Standard), 0 = nicht prüfen
+              (nur für Tests)
+
+Die Dateien enthalten das Passwort im Klartext. ENV: und ENVARC: sind
+auf dem Amiga für jeden Prozess lesbar.
+
+Weiter:
+
+  @{" owncloud.cfg     " link CfgOwnCloud}
+  @{" AmiCloudSync.cfg " link CfgAmiCloudSync}
+  @{" webdavsync.cfg   " link CfgWebdavsync}
+  @{" ENV: und ENVARC: " link EnvEnvarc}
+
+@endnode
+
+@node EnvEnvarc "ENV: und ENVARC:"
+@next CfgOwnCloud
+@prev Konfiguration
+
+ENV: und ENVARC: - Benutzen, Speichern, Abbrechen
+-------------------------------------------------
+
+Wie bei den Voreinsteller-Programmen der Workbench:
+
+  Benutzen    schreibt nur nach ENV: (RAM). Wirkt sofort, ist nach
+              einem Neustart wieder weg.
+  Speichern   schreibt nach ENVARC: UND nach ENV:. Wirkt sofort und
+              dauerhaft.
+  Abbrechen   schreibt nichts.
+
+Beim Systemstart kopiert AmigaOS ENVARC: nach ENV:.
+
+Beide Prefs-Programme zeigen beim Start den Inhalt von ENV: (ersatzweise
+ENVARC:). Weichen ENV: und ENVARC: voneinander ab, steht in der
+Statuszeile "ENV:/ENVARC: unterscheiden sich (angezeigt: ENV:)".
+
+Achtung: Die Prefs-Programme schreiben die Datei jedesmal komplett
+neu. Kommentare und von Hand ergänzte Zeilen gehen dabei verloren -
+insbesondere schreibt AmiCloudSyncPrefs keine debug=-Zeile.
+
+@endnode
+
+@node CfgOwnCloud "owncloud.cfg"
+@next CfgAmiCloudSync
+@prev EnvEnvarc
+
+owncloud.cfg - Einstellungen für OWNCLOUD:
+------------------------------------------
+
+Ort:        ENV:owncloud.cfg, dauerhaft ENVARC:owncloud.cfg
+Gelesen:    von owncloud-worker, nur ENV:, nur einmal beim Mounten
+Editor:     @{" OwnCloudPrefs " link OwnCloudPrefs}
+
+Beispiel:
+
+  server=https://cloud.example.com
+  user=bob
+  pass=geheim
+  verify_ssl=1
+  basepath=/
+  debug=
+  gmt_offset=60
+  dst=0
+
+Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
+
+  basepath    Ordner auf dem Server, der als Wurzel von OWNCLOUD:
+              erscheint. Standard "/", also die ganze Dateisammlung.
+              Beispiel: basepath=/Amiga
+  debug       Leer = aus (Standard). Sonst eine Datei, in die
+              owncloud-worker jede HTTP-Anfrage und -Antwort schreibt,
+              z.B. debug=T:owncloud.log
+  gmt_offset  Abstand der Ortszeit zu UTC in Minuten, z.B. 60 für
+              MEZ. Die Amiga-Uhr kennt keine Zeitzone; ohne diesen
+              Wert stimmen die Dateizeiten um die Zeitzone nicht.
+              Standard 0.
+  dst         1 = Sommerzeit aktiv (eine Stunde mehr), 0 = nicht.
+              Standard 0. Muss bei der Zeitumstellung von Hand
+              angepasst werden.
+
+Wichtig: Der Worker liest die Datei nur einmal beim Start. Weil der
+Handler nicht ausgehängt werden kann, wirken Änderungen zuverlässig
+erst nach einem Neustart des Amiga.
+
+@endnode
+
+@node CfgAmiCloudSync "AmiCloudSync.cfg"
+@next CfgWebdavsync
+@prev CfgOwnCloud
+
+AmiCloudSync.cfg - Profil und Ordnerpaare
+-----------------------------------------
+
+Ort:        ENV:AmiCloudSync.cfg, dauerhaft ENVARC:AmiCloudSync.cfg
+Gelesen:    von AmiCloudSync - ENV: zuerst, sonst ENVARC:. Gibt es
+            keine von beiden, ist das der erste Start: alles leer.
+Editor:     @{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}
+
+Beispiel:
+
+  server=https://cloud.example.com
+  user=bob
+  pass=geheim
+  verify_ssl=1
+  interval=15
+  pair=Work:Dokumente|/Dokumente|on
+  pair=Work:Projekte|/Projekte|off
+
+Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
+
+  interval    Minuten zwischen zwei automatischen Abgleichen.
+              Standard 15. 0 oder negativ = kein Autosync, nur
+              Abgleich von Hand im Fenster. Ob der Autosync überhaupt
+              läuft, entscheidet sich beim Start der Commodity; eine
+              geänderte Minutenzahl gilt ab dem nächsten Zyklus.
+  pair        Ein Ordnerpaar:  pair=<lokal>|<remote>|<on/off>
+              lokal:  Amiga-Pfad, z.B. Work:Dokumente. Er ist zugleich
+                      der Name des Paares in der Liste.
+              remote: Ordner auf dem Server, relativ zur Dateisammlung.
+                      "/" = die ganze Cloud.
+              on/off: Paar aktiv oder pausiert (1/0 geht auch).
+              Beliebig oft wiederholbar.
+  debug       Nur von Hand einzutragen: Datei für das HTTP-Protokoll
+              und für Fehlerdetails, z.B. debug=T:AmiCloudSync.log.
+              Siehe @{" Fehlersuche " link Fehlersuche}.
+
+Die Commodity liest die Datei beim Start, beim Öffnen des Fensters, vor
+jedem Autosync und bei "Neu laden" neu. Ein Neustart der Commodity ist
+nach "Benutzen" oder "Speichern" also nicht nötig (Ausnahme: Autosync
+ein- oder ausschalten, siehe interval).
+
+@endnode
+
+@node CfgWebdavsync "webdavsync.cfg"
+@next Handler
+@prev CfgAmiCloudSync
+
+webdavsync.cfg - Einstellungen für die Shell-Befehle
+----------------------------------------------------
+
+Gelesen von webdavsync und webdavsynctest, wenn keine Datei mit -c
+angegeben ist:
+
+  Amiga:        ENV:webdavsync.cfg, ersatzweise webdavsync.cfg im
+                aktuellen Verzeichnis
+  macOS/Linux:  ~/.webdavsyncrc
+  Windows:      webdavsync.cfg im aktuellen Verzeichnis
+
+Es gibt kein Prefs-Programm; die Datei wird mit einem Texteditor
+angelegt (Vorlage: Examples/webdavsync.cfg.example). Auf dem Amiga am
+besten in ENVARC: bearbeiten und dann nach ENV: kopieren:
+
+  Ed ENVARC:webdavsync.cfg
+  Copy ENVARC:webdavsync.cfg ENV:
+
+Beispiel:
+
+  server=https://cloud.example.com
+  user=bob
+  pass=geheim
+
+Schlüssel: server, user, pass, verify_ssl (siehe
+@{" Konfiguration " link Konfiguration}). Angaben auf der Kommandozeile
+(-s, -u, -p, -k) haben Vorrang vor der Datei.
+
+@endnode
+
+@node Handler "OWNCLOUD:-Handler"
+@next OwnCloudPrefs
+@prev CfgWebdavsync
+
+Der OWNCLOUD:-Handler
+---------------------
+
+Der Handler macht den Server zum Laufwerk OWNCLOUD:. Auf der Workbench
+erscheint es als Volume "OwnCloud". Er besteht aus zwei Programmen in
+L:
+
+  owncloud-handler  der eigentliche DOS-Handler
+  owncloud-worker   erledigt alle Netzwerkzugriffe; wird vom Handler
+                    beim Mounten als L:owncloud-worker gestartet
+
+Einrichten:
+
+  1. @{" OwnCloudPrefs " link OwnCloudPrefs} starten, Server,
+     Benutzer und Passwort eintragen, "Speichern".
+  2. In der Shell:  Mount OWNCLOUD:
+     (Liegt der DOSDriver in DEVS:DOSDrivers, geschieht das bei jedem
+     Systemstart automatisch.)
+  3. Testen:        Dir OWNCLOUD:
+
+Der DOSDriver (DEVS:DOSDrivers/OWNCLOUD):
+
+  Handler   = L:owncloud-handler
+  StackSize = 16384
+  Priority  = 5
+  GlobVec   = -1
+  Activate  = 1
+
+Beim Mounten während des Bootens muss das Netz noch nicht laufen: der
+Worker baut die Verbindung erst beim ersten echten Zugriff auf.
+
+Was geht:
+
+  - Verzeichnisse anzeigen (Dir, List, Workbench-Fenster)
+  - Dateien lesen und schreiben (Copy, Type, Editoren, ...)
+  - Anlegen von Verzeichnissen (MakeDir)
+  - Löschen (Delete, auch Delete ... ALL)
+  - Umbenennen und Verschieben innerhalb von OWNCLOUD: (Rename)
+  - Datum setzen (SetDate) - nur wenn der Server das unterstützt
+    (ownCloud/Nextcloud tun das)
+  - Info OWNCLOUD:
+
+Was nicht geht bzw. anders ist:
+
+  - Protect und FileNote melden Erfolg, werden aber NICHT gespeichert.
+    WebDAV kennt keine Amiga-Schutzbits und keine Dateikommentare. So
+    scheitern Workbench-Kopien nicht; der Wert ist aber beim nächsten
+    Auflisten wieder weg.
+  - Info OWNCLOUD: zeigt eine feste Platzhalter-Größe (etwa 2 GB,
+    halb voll), nicht den echten Platz auf dem Server.
+  - Eine geöffnete Datei liegt komplett im RAM. Beim Schreiben wird
+    sie erst beim Schließen hochgeladen.
+  - Immer nur ein Zugriff zur Zeit. Während eine große Datei übertragen
+    wird, warten alle anderen Zugriffe auf OWNCLOUD:.
+  - Es gibt kein Zeitlimit. Antwortet der Server nicht, hängt der
+    Zugriff so lange mit.
+  - Der Handler lässt sich nicht aushängen. Zum Entfernen und nach
+    Änderungen an owncloud.cfg: neu starten.
+  - Verzeichnislisten werden 10 Sekunden zwischengespeichert. Was ein
+    anderes Gerät auf dem Server ändert, erscheint mit bis zu 10 s
+    Verzögerung.
+  - Keine Prüfsummen bei Up- und Download (WebDAV liefert keine).
+
+Fehlersuche:
+
+  - Kommt bei jedem Zugriff ein Fehler, zuerst ENV:owncloud.cfg
+    prüfen: ohne Datei startet der Worker zwar, aber jede Anfrage
+    scheitert.
+  - debug=T:owncloud.log in owncloud.cfg schreibt jede HTTP-Anfrage
+    mit (wirkt nach dem nächsten Neustart).
+  - Type OWNCLOUD:debuglog zeigt ein internes Protokoll der
+    Nachrichten zwischen Handler und Worker.
+
+Siehe auch @{" Fehlersuche " link Fehlersuche}. Technische Einzelheiten:
+handler/owncloudhandler/README.md in den Quellen.
+
+@endnode
+
+@node OwnCloudPrefs "OwnCloudPrefs"
+@next AmiCloudSync
+@prev Handler
+
+OwnCloudPrefs
+-------------
+
+Einstellungs-Editor für owncloud.cfg, die Konfiguration des
+@{" OWNCLOUD:-Handlers " link Handler}.
+Liegt normalerweise in SYS:Prefs. Start aus der Shell mit
+SYS:Prefs/OwnCloudPrefs oder per Doppelklick. Keine Optionen, keine
+Tooltypes; das Fenster öffnet sich auf dem Standard-Bildschirm
+(meist die Workbench).
+
+Felder:
+
+  Server              server - Hauptserver oder volle WebDAV-Adresse
+  Benutzer            user
+  Passwort            pass
+  Basis-Pfad          basepath - Ordner, der als Wurzel erscheint
+  Zertifikat pruefen  verify_ssl
+  Debug-Ziel          debug - Protokolldatei, leer = aus
+  GMT-Offset (Min)    gmt_offset
+  Sommerzeit          dst
+
+Knöpfe: Benutzen, Speichern, Abbrechen (siehe
+@{" ENV: und ENVARC: " link EnvEnvarc}). Das Schließsymbol wirkt wie
+Abbrechen.
+
+Bedeutung der Werte: @{" owncloud.cfg " link CfgOwnCloud}.
+
+Änderungen wirken erst, wenn owncloud-worker neu startet - in der
+Praxis nach einem Neustart des Amiga.
+
+@endnode
+
+@node AmiCloudSync "AmiCloudSync"
+@next AmiCloudSyncFenster
+@prev OwnCloudPrefs
+
+AmiCloudSync - die Commodity
+----------------------------
+
+AmiCloudSync gleicht Ordnerpaare (lokaler Amiga-Ordner <-> Ordner auf
+dem Server) im Hintergrund ab. Sie meldet sich als Commodity an und
+erscheint in Exchange (SYS:Tools/Commodities/Exchange) unter dem Namen
+"AmiCloudSync" mit der Beschreibung "OwnCloud-Ordnerabgleich".
+
+Vorher einrichten: @{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}.
+
+Starten:
+
+  Workbench:  Doppelklick auf das Piktogramm (sofern angelegt).
+              Tooltype:  CX_POPKEY=ctrl alt a
+  Shell:      Run >NIL: SYS:Tools/Commodities/AmiCloudSync
+              mit anderem Hotkey:
+              Run >NIL: SYS:Tools/Commodities/AmiCloudSync -k "ctrl alt s"
+
+Ohne Angabe gilt der Hotkey "ctrl alt a". Andere Tooltypes oder
+Optionen gibt es nicht. Ohne "Run" blockiert das Programm die Shell,
+bis es beendet wird.
+
+Nach dem Start:
+
+  - Die Commodity läuft ohne Fenster im Hintergrund.
+  - Ist interval größer 0, gleicht sie alle interval Minuten alle
+    aktiven Paare ab (erster Abgleich nach Ablauf des ersten
+    Intervalls, nicht sofort beim Start).
+  - Der Hotkey blendet das
+    @{" Ordnerpaar-Fenster " link AmiCloudSyncFenster} ein und aus.
+  - Wird AmiCloudSync ein zweites Mal gestartet, beendet sich die
+    zweite Kopie und die laufende zeigt ihr Fenster.
+
+Exchange:
+
+  Anzeigen / Verbergen    Fenster ein- bzw. ausblenden
+  Aktivieren/Deaktivieren Hotkey an/aus
+  Entfernen               AmiCloudSync beenden
+
+Beenden geht außerdem mit Ctrl-C an den Prozess (z.B. Break).
+
+Voraussetzungen beim Start: bsdsocket.library und AmiSSL 5 müssen sich
+öffnen lassen, sonst beendet sich die Commodity sofort und ohne
+Meldung. Beim automatischen Start also erst den TCP/IP-Stack starten.
+
+Wie der Abgleich arbeitet:
+@{" So funktioniert der Abgleich " link Abgleich}
+
+@endnode
+
+@node AmiCloudSyncFenster "Das Ordnerpaar-Fenster"
+@next AmiCloudSyncPrefs
+@prev AmiCloudSync
+
+Das Ordnerpaar-Fenster
+----------------------
+
+Das Fenster zeigt die Ordnerpaare nur an; bearbeitet werden sie in
+@{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}.
+
+  Liste          alle Paare als  "* lokal -> remote".
+                 "*" = aktiv, Leerzeichen = pausiert.
+  Jetzt syncen   gleicht das ausgewählte Paar ab
+  Alle syncen    gleicht alle Paare nacheinander ab (pausierte werden
+                 übersprungen)
+  Neu laden      liest AmiCloudSync.cfg sofort neu - z.B. nachdem in
+                 AmiCloudSyncPrefs gespeichert wurde, während das
+                 Fenster offen war
+  Statuszeile    während des Abgleichs Fortschritt je Datei (Prozent
+                 und KB/s), danach das Ergebnis, z.B.
+                   Work:Dokumente: 3 hoch, 2 runter, 0 Konflikt(e)
+                 Bei Problemen endet die Zeile mit ", Fehler!".
+
+  Menü Projekt -> Info...   kurze Programminfo in der Statuszeile
+  Menü Projekt -> Beenden   (oder Schließsymbol) blendet nur das
+                            Fenster aus - die Commodity läuft weiter.
+                            Ganz beenden: über Exchange.
+
+Fehlen Server, Benutzer oder Passwort, meldet die Statuszeile
+"Profil unvollstaendig (Server/Benutzer/Passwort)".
+
+Wichtig: Der Abgleich läuft im selben Prozess. Solange er dauert,
+reagiert das Fenster nicht auf Knöpfe, und auch Hotkey und Exchange
+werden erst danach bearbeitet. Bei großen Ordnern kann das dauern.
+
+@endnode
+
+@node AmiCloudSyncPrefs "AmiCloudSyncPrefs"
+@next Abgleich
+@prev AmiCloudSyncFenster
+
+AmiCloudSyncPrefs
+-----------------
+
+Einstellungs-Editor für AmiCloudSync.cfg: Zugangsdaten, Intervall und
+die Ordnerpaare. Liegt normalerweise in SYS:Prefs. Keine Optionen,
+keine Tooltypes.
+
+Felder:
+
+  Server (Hauptserver)  server, z.B. https://cloud.example.com
+  Benutzer              user
+  Passwort              pass
+  Zertifikat pruefen    verify_ssl
+  Intervall (Min)       interval, 0 = kein Autosync
+  Liste                 die Ordnerpaare ("*" = aktiv)
+  Hinzufügen            neues Paar anlegen
+  Bearbeiten            ausgewähltes Paar ändern
+  Entfernen             ausgewähltes Paar löschen
+
+Hinzufügen/Bearbeiten öffnet ein kleines Fenster:
+
+  Lokaler Pfad   z.B. Work:Dokumente (von Hand eintippen, es gibt
+                 keinen Dateiauswahl-Requester)
+  Remote-Pfad    z.B. /Dokumente, "/" = die ganze Cloud
+  Aktiv          Paar abgleichen oder pausieren
+  OK / Abbrechen
+
+Unten: Benutzen, Speichern, Abbrechen (siehe
+@{" ENV: und ENVARC: " link EnvEnvarc}).
+
+Eine laufende AmiCloudSync-Commodity übernimmt die neuen Werte beim
+nächsten Öffnen ihres Fensters, beim nächsten Autosync oder mit
+"Neu laden" - ohne Neustart.
+
+Hinweis: Eine von Hand eingetragene debug=-Zeile geht beim Speichern
+verloren und muss danach neu eingetragen werden.
+
+@endnode
+
+@node Abgleich "So funktioniert der Abgleich"
+@next Webdavsync
+@prev AmiCloudSyncPrefs
+
+So funktioniert der Abgleich
+----------------------------
+
+AmiCloudSync und webdavsync benutzen denselben Zwei-Wege-Abgleich. Für
+jedes Ordnerpaar merkt er sich den Stand nach dem letzten erfolgreichen
+Abgleich in der Datei  .amicloudsync  im lokalen Ordner (nicht
+löschen, solange das Paar benutzt wird). Durch den Vergleich
+"lokal - Server - letzter Stand" erkennt er:
+
+  - neue Datei auf einer Seite         -> wird auf die andere kopiert
+  - Datei lokal geändert               -> Upload
+  - Datei auf dem Server geändert      -> Download
+  - Datei auf einer Seite gelöscht     -> wird auch auf der anderen
+                                          Seite gelöscht
+  - neue Verzeichnisse                 -> werden angelegt
+
+Konflikte:
+
+  - Datei seit dem letzten Abgleich auf BEIDEN Seiten geändert
+  - Datei auf einer Seite gelöscht, auf der anderen geändert
+  - Datei auf der einen, Verzeichnis gleichen Namens auf der anderen
+    Seite
+
+Ein Konflikt wird nur gemeldet ("1 Konflikt(e)"), keine Seite wird
+überschrieben. Auflösen: die unerwünschte Fassung löschen oder
+umbenennen und erneut abgleichen.
+
+Wichtig beim ersten Abgleich eines Paares: Es gibt noch keinen
+gemerkten Stand, und WebDAV liefert keine Prüfsummen. Liegt eine Datei
+mit gleichem Namen schon auf BEIDEN Seiten, kann der Abgleich nicht
+feststellen, ob sie gleich ist, und meldet einen Konflikt. Deshalb am
+besten mit einem leeren lokalen Ordner (alles wird heruntergeladen)
+oder einem leeren Server-Ordner (alles wird hochgeladen) beginnen.
+
+Den Abgleich vorher gefahrlos ausprobieren:
+  webdavsync -n <lokal> <remote>   (zeigt nur an, ändert nichts)
+
+@endnode
+
+@node Webdavsync "webdavsync"
+@next Webdavsynctest
+@prev Abgleich
+
+webdavsync - Abgleich per Shell-Befehl
+--------------------------------------
+
+Aufruf:
+
+  webdavsync [optionen] <lokales-verzeichnis> <remote-verzeichnis>
+
+Gleicht ein Ordnerpaar einmal ab (derselbe Abgleich wie in
+AmiCloudSync, siehe @{" So funktioniert der Abgleich " link Abgleich})
+und beendet sich. Läuft auf Amiga, macOS, Linux (und ungetestet
+Windows). Praktisch zum Ausprobieren einer Verbindung oder für eigene
+Skripte.
+
+Optionen:
+
+  -s <url>    Server: Hauptserver (z.B. https://cloud.example.com)
+              oder volle WebDAV-Adresse
+              (https://cloud.example.com/remote.php/dav/files/bob)
+  -u <user>   Benutzername
+  -p <pass>   Passwort (am besten ein App-Passwort)
+  -c <datei>  Konfigurationsdatei statt der Standarddatei
+              (siehe @{" webdavsync.cfg " link CfgWebdavsync})
+  -k          TLS-Zertifikat nicht prüfen (nur für Tests)
+  -n          Probelauf: zeigt, was passieren würde, ändert nichts
+  --help      Kurzhilfe
+
+Die Optionen müssen vor den beiden Verzeichnissen stehen. Server,
+Benutzer und Passwort müssen angegeben sein (Option oder Datei).
+
+Beispiele (Amiga):
+
+  webdavsync -n Work:Dokumente /Dokumente
+  webdavsync Work:Dokumente /Dokumente
+  webdavsync -s https://cloud.example.com -u bob -p geheim RAM:Test /Test
+
+Beispiel (macOS/Linux):
+
+  webdavsync ~/Amiga/Dokumente /Dokumente
+
+Rückgabewert: 0 = alles in Ordnung, 1 = Fehler (Aufruf, Netz oder
+einzelne Dateien). Konflikte allein gelten nicht als Fehler.
+
+Hinweis: Gibt man -p auf der Kommandozeile an, steht das Passwort in
+der Shell-Historie. Besser die Konfigurationsdatei benutzen.
+
+@endnode
+
+@node Webdavsynctest "webdavsynctest"
+@next Fehlersuche
+@prev Webdavsync
+
+webdavsynctest - Testsuite
+--------------------------
+
+Aufruf:
+
+  webdavsynctest [optionen] <lokaler-testordner> <remote-testordner>
+
+Prüft den Abgleich automatisch gegen einen echten Server. Läuft auf
+Amiga und PC gleich. Optionen wie bei webdavsync (-s, -u, -p, -c, -k,
+--help; kein -n). Es wird dieselbe Konfigurationsdatei gelesen
+(@{" webdavsync.cfg " link CfgWebdavsync}).
+
+ACHTUNG: Der Remote-Testordner wird zu Beginn gelöscht, benutzt und
+am Ende wieder gelöscht - einen Namen wählen, den es auf dem Server
+NICHT gibt, z.B. /WebdavSyncTest. Im lokalen Testordner legt das
+Programm note1.txt, sub/note2.txt und .amicloudsync an und löscht sie
+am Ende wieder; einen leeren Ordner verwenden.
+
+Beispiel:
+
+  webdavsynctest RAM:synctest /WebdavSyncTest
+
+Die 14 Prüfungen:
+
+  T1   erster Abgleich lädt beide neuen Dateien hoch
+  T2   zweiter Abgleich überträgt nichts
+  T3a  lokale Änderung -> genau ein Upload
+  T3b  danach stabil
+  T4   Vorbereitung: Datei direkt auf dem Server ändern
+  T4a  Änderung auf dem Server -> genau ein Download
+  T4b  heruntergeladener Inhalt stimmt
+  T4c  danach stabil
+  T5a  lokales Löschen wird zum Server übertragen
+  T5b  Datei ist auf dem Server wirklich weg
+  T5c  danach stabil
+  T6a  Änderung auf beiden Seiten -> Konflikt, nichts überschrieben
+  T6b  lokale Datei unverändert
+  T6c  Datei auf dem Server unverändert
+
+Jede Prüfung meldet [PASS] oder [FAIL], am Ende "n passed, m failed".
+Rückgabewert: 0 = alle bestanden, 1 = mindestens eine fehlgeschlagen.
+
+@endnode
+
+@node Fehlersuche "Fehlersuche"
+@next Grenzen
+@prev Webdavsynctest
+
+Fehlersuche
+-----------
+
+Programm startet nicht oder beendet sich sofort
+  TCP/IP-Stack gestartet? AmiSSL 5 installiert
+  (LIBS:amisslmaster.library)? Die Shell-Befehle melden dann
+  "network initialisation failed" bzw. "cannot open
+  amisslmaster.library (AmiSSL 5 required)".
+
+Anmeldung scheitert
+  Benutzername und Passwort prüfen. Bei Nextcloud mit
+  Zwei-Faktor-Anmeldung ist ein App-Passwort Pflicht. Adresse prüfen:
+  mit einem Webbrowser am PC muss
+    https://cloud.example.com/remote.php/dav/files/<user>/
+  nach Anmeldung erreichbar sein.
+
+Zertifikatsfehler
+  Die Systemuhr des Amiga muss stimmen, und AmiSSL braucht aktuelle
+  Stammzertifikate. Nur zum Testen: verify_ssl=0 bzw. -k.
+
+Verbindung testen
+  Zuerst mit webdavsync -n einen Probelauf machen oder
+  webdavsynctest laufen lassen - beide geben Fehler direkt in der
+  Shell aus.
+
+OWNCLOUD: meldet bei jedem Zugriff einen Fehler
+  ENV:owncloud.cfg vorhanden und vollständig? Nach Änderungen neu
+  starten (der Worker liest die Datei nur beim Start). Protokoll:
+  debug=T:owncloud.log in owncloud.cfg, Neustart, Zugriff
+  wiederholen, dann  Type T:owncloud.log. Zusätzlich
+  Type OWNCLOUD:debuglog.
+
+OWNCLOUD: reagiert nicht mehr
+  Es gibt kein Zeitlimit: solange der Server nicht antwortet, hängt
+  jeder Zugriff. Netzwerk prüfen; im Zweifel neu starten.
+
+AmiCloudSync meldet "... Fehler!", aber nicht welcher
+  Die Commodity hat keine eigene Konsole. In ENV:AmiCloudSync.cfg
+  (und ENVARC:) von Hand eine Zeile
+    debug=T:AmiCloudSync.log
+  ergänzen, im Fenster "Neu laden" klicken, erneut abgleichen, dann
+  Type T:AmiCloudSync.log. Das Protokoll enthält jede HTTP-Anfrage
+  mit Status und je Fehler die betroffene Datei. T: liegt in der
+  RAM-Disk; für ein dauerhaftes Protokoll einen Pfad auf einer
+  Festplatte angeben. Achtung: Speichern in AmiCloudSyncPrefs
+  entfernt die Zeile wieder.
+
+"Profil unvollstaendig"
+  Server, Benutzer oder Passwort fehlen in AmiCloudSync.cfg -
+  in AmiCloudSyncPrefs eintragen und Speichern.
+
+AmiCloudSync erscheint nicht in Exchange
+  Läuft das Programm (Status in der Shell)? Wurde es gestartet, bevor
+  das Netz lief, hat es sich sofort beendet.
+
+Hotkey reagiert nicht
+  Kollidiert die Tastenkombination mit einer anderen Commodity?
+  Anderen Hotkey mit CX_POPKEY bzw. -k wählen. Während eines
+  Abgleichs werden Hotkeys erst danach bearbeitet.
+
+Viele Konflikte beim ersten Abgleich
+  Siehe @{" So funktioniert der Abgleich " link Abgleich}: gleichnamige
+  Dateien auf beiden Seiten ohne gemerkten Stand gelten als Konflikt.
+
+Falsche Dateizeiten auf OWNCLOUD:
+  gmt_offset und dst in owncloud.cfg setzen.
+
+@endnode
+
+@node Grenzen "Bekannte Grenzen"
+@next Deinstallation
+@prev Fehlersuche
+
+Bekannte Grenzen
+----------------
+
+OWNCLOUD:-Handler
+
+  - Schutzbits und Dateikommentare werden nicht gespeichert.
+  - Info zeigt keine echte Belegung.
+  - Geöffnete Dateien liegen komplett im RAM.
+  - Ein Zugriff zur Zeit, kein Zeitlimit.
+  - Kein Aushängen; Konfigurationsänderungen erst nach Neustart.
+
+AmiCloudSync
+
+  - Der Abgleich läuft im selben Prozess; das Fenster ist solange
+    blockiert.
+  - Ein Server-Profil für alle Ordnerpaare (kein Betrieb mit mehreren
+    Konten).
+  - Pfade werden in AmiCloudSyncPrefs von Hand eingetippt (kein
+    Dateiauswahl-Requester).
+  - WebDAV hat keinen Änderungszähler: jeder Abgleich liest den ganzen
+    Remote-Ordner ein (bei sehr großen Ordnern entsprechend langsam).
+  - Beim ersten Abgleich gelten gleichnamige Dateien auf beiden Seiten
+    als Konflikt.
+
+Allgemein
+
+  - Keine Piktogramme (.info) für die Programme.
+  - Auf echter Amiga-Hardware sind nicht alle Wege gleich gut
+    erprobt; entwickelt und getestet wurde überwiegend im Emulator.
+
+@endnode
+
+@node Deinstallation "Deinstallation"
+@next Bauen
+@prev Grenzen
+
+Deinstallation
+--------------
+
+In der Installationsschublade:
+
+  Execute Uninstall-AmiOwnCloud
+
+Das Skript löscht die Programme, den DOSDriver und das Handbuch in
+HELP: und fragt, ob auch die Einstellungen (ENV:/ENVARC: owncloud.cfg,
+AmiCloudSync.cfg, webdavsync.cfg) gelöscht werden sollen.
+
+Vorher AmiCloudSync über Exchange beenden. Von Hand bleibt zu tun:
+
+  - einen AmiCloudSync-Block in S:User-Startup entfernen
+    (;BEGIN AmiCloudSync ... ;END AmiCloudSync)
+  - nicht mehr benötigte .amicloudsync-Dateien in den lokalen Ordnern
+    der Ordnerpaare löschen
+  - neu starten, damit ein gemounteter OWNCLOUD:-Handler verschwindet
+
+Auf dem Server wird nichts gelöscht.
+
+@endnode
+
+@node Bauen "Bauen aus den Quellen"
+@next Lizenz
+@prev Deinstallation
+
+Bauen aus den Quellen
+---------------------
+
+Die Quellen liegen auf GitHub:
+
+  https://github.com/dangelrk/AmiOwnCloud
+
+Die gemeinsamen Bibliotheken kommen aus dem Projekt AmiCloudCore, das
+als Git-Submodul core/ eingebunden ist. Deshalb mit Submodul klonen:
+
+  git clone --recurse-submodules https://github.com/dangelrk/AmiOwnCloud.git
+
+Kurzfassung:
+
+  make pc           webdavsync, webdavsynctest für den PC (libcurl)
+  make amiga        alle Amiga-Programme per vbcc-Cross-Compiler
+                    (Umgebungsvariable VBCC = vbcc-Verzeichnis)
+  make dist-amiga   Installationsschublade build/dist/AmiOwnCloud
+                    und build/AmiOwnCloud.lha
+
+Auf dem Amiga selbst (vbcc installiert, AmiSSL- und Roadshow-SDK):
+
+  Execute Build-Amiga
+
+im Projektverzeichnis. Die SDK-Pfade stehen oben im Skript
+(AMISSL_INC, NET_INC) bzw. werden über die Assigns AmiSSL: und
+NetInclude: gefunden. Build-Amiga ist auf echter Hardware noch
+ungetestet.
+
+Alle Einzelheiten: docs/BUILD.md in den Quellen.
+
+@endnode
+
+@node Lizenz "Lizenz"
+@next Autor
+@prev Bauen
+
+Lizenz
+------
+
+AmiOwnCloud ist freie Software:
+
+  Copyright (C) 2026 Ronny Krueger
+
+  Sie dürfen es unter den Bedingungen der GNU General Public License,
+  wie von der Free Software Foundation veröffentlicht, weitergeben
+  und/oder verändern, entweder gemäß Version 3 der Lizenz oder
+  (nach Ihrer Wahl) jeder späteren Version.
+
+Kurz gesagt:
+
+  - Sie dürfen die Programme frei benutzen, kopieren und weitergeben.
+  - Sie dürfen sie verändern und veränderte Fassungen weitergeben -
+    dann aber ebenfalls unter der GPL und mit Quelltext.
+  - Es gibt KEINE GEWÄHRLEISTUNG, soweit gesetzlich zulässig.
+
+Maßgeblich ist allein der englische Lizenztext in der Datei LICENSE
+(GPL Version 3).
+
+Die mitverwendete JSON-Bibliothek Parson (in AmiCloudCore) steht unter
+der MIT-Lizenz.
+
+ownCloud und Nextcloud sind Marken ihrer jeweiligen Inhaber.
+AmiOwnCloud ist ein unabhängiges Projekt.
+
+@endnode
+
+@node Autor "Autor und Kontakt"
+@next Historie
+@prev Lizenz
+
+Autor und Kontakt
+-----------------
+
+  Ronny Krueger
+
+Projektseite, Quellen, Fehlermeldungen und Wünsche:
+
+  https://github.com/dangelrk/AmiOwnCloud
+
+Schwesterprojekte:
+
+  https://github.com/dangelrk/AmiCloud       eigener Cloud-Server
+  https://github.com/dangelrk/AmiVCS         Versionsverwaltung
+  https://github.com/dangelrk/AmiCloudCore   gemeinsame Bibliotheken
+
+@endnode
+
+@node Historie "Versionsgeschichte"
+@prev Autor
+
+Versionsgeschichte
+------------------
+
+Programme (Stand der $VER-Angaben):
+
+  webdavsync          0.1 (13.07.2026)
+  webdavsynctest      0.1 (14.07.2026)
+  AmiCloudSync        0.1 (14.07.2026)
+  AmiCloudSyncPrefs   0.1 (14.07.2026)
+  owncloud-handler    0.1 (16.07.2026)
+  owncloud-worker     0.1 (16.07.2026)
+  OwnCloudPrefs       0.1 (16.07.2026)
+
+Handbuch:
+
+  1.0 (27.09.2026)  AmiOwnCloud als eigenes Projekt; neues Handbuch
+                    AmiOwnCloud.guide (ersetzt AmiCloudSync.guide),
+                    deckt Handler, OwnCloudPrefs, AmiCloudSync,
+                    AmiCloudSyncPrefs, webdavsync und webdavsynctest
+                    ab. Neu: Installationsschublade mit
+                    Install-AmiOwnCloud / Uninstall-AmiOwnCloud,
+                    webdavsync auch für den Amiga.
+  0.3 (17.07.2026)  AmiCloudSync.guide mit Kapitel zum
+                    OWNCLOUD:-Handler.
+
+@endnode

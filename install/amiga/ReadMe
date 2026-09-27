@@ -1,0 +1,53 @@
+AmiOwnCloud
+===========
+
+AmiOwnCloud verbindet AmigaOS 3.x mit einem normalen ownCloud- oder
+Nextcloud-Server über WebDAV (der Server gehört nicht dazu):
+
+  OWNCLOUD:          DOS-Handler - der Server als Laufwerk OWNCLOUD:
+  OwnCloudPrefs      Einstellungen für OWNCLOUD: (owncloud.cfg)
+  AmiCloudSync       Commodity: gleicht Ordnerpaare im Hintergrund ab
+  AmiCloudSyncPrefs  Einstellungen und Ordnerpaare für AmiCloudSync
+  webdavsync         Shell-Befehl: einmaliger Abgleich eines Ordners
+  webdavsynctest     Shell-Befehl: Testsuite gegen einen echten Server
+
+Inhalt der Schublade
+--------------------
+
+  C/                     alle Programme
+  Docs/AmiOwnCloud.guide Handbuch (AmigaGuide, mit MultiView lesen)
+  Examples/              Beispielkonfigurationen und Mountlist
+  Storage/DOSDrivers/    DOSDriver OWNCLOUD für den Handler
+  Install-AmiOwnCloud    Installationsskript
+  Uninstall-AmiOwnCloud  Deinstallationsskript
+  LICENSE                GNU General Public License Version 3
+
+Installation
+------------
+
+  1. Archiv entpacken, z.B. nach RAM: oder Work:
+  2. Shell öffnen:    CD RAM:AmiOwnCloud
+  3. Starten:         Execute Install-AmiOwnCloud
+  4. Fragen mit y/n beantworten, in den Prefs-Programmen
+     Server, Benutzer und Passwort eintragen und speichern.
+  5. Mount OWNCLOUD:  bzw. AmiCloudSync starten.
+
+Voraussetzungen
+---------------
+
+  - AmigaOS 3.x, 68000 oder besser
+  - TCP/IP-Stack mit bsdsocket.library (z.B. Roadshow, AmiTCP, Miami)
+  - AmiSSL 5 (amisslmaster.library)
+  - ein Konto auf einem ownCloud/Nextcloud-Server, am besten mit
+    App-Passwort
+  - MUI wird NICHT benötigt (GadTools/Commodities)
+
+Die Konfiguration liegt in ENV:/ENVARC: (owncloud.cfg,
+AmiCloudSync.cfg, webdavsync.cfg). Alles Weitere im Handbuch.
+
+Lizenz
+------
+
+Copyright (C) 2026 Ronny Krueger. Freie Software unter der GNU General
+Public License Version 3 oder neuer (siehe LICENSE), OHNE JEDE GEWÄHR.
+Quellen: https://github.com/dangelrk/AmiOwnCloud
