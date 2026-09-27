@@ -32,7 +32,7 @@ Die Installationsschublade entsteht mit `make dist-amiga`
 | `Examples/` | Beispielkonfigurationen, `OWNCLOUD.mountlist` |
 | `Storage/DOSDrivers/OWNCLOUD` | DOSDriver für den Handler |
 | `Install-AmiOwnCloud`, `Uninstall-AmiOwnCloud` | Installations-/Deinstallationsskript |
-| `ReadMe`, `LICENSE` | Kurzbeschreibung, GPLv3 |
+| `ReadMe`, `LICENSE`, `THIRD-PARTY-NOTICES` | Kurzbeschreibung, GPLv3, Lizenz der Fremdkomponente Parson (MIT) |
 
 Auf dem Amiga in einer Shell:
 

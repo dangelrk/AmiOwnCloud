@@ -147,7 +147,7 @@ Die Installationsschublade AmiOwnCloud (aus AmiOwnCloud.lha bzw. aus
   Storage/DOSDrivers/    DOSDriver OWNCLOUD für den Handler
   Install-AmiOwnCloud    Installationsskript
   Uninstall-AmiOwnCloud  Deinstallationsskript
-  ReadMe, LICENSE
+  ReadMe, LICENSE, THIRD-PARTY-NOTICES
 
 Installation:
 
@@ -1080,7 +1080,8 @@ Maßgeblich ist allein der englische Lizenztext in der Datei LICENSE
 (GPL Version 3).
 
 Die mitverwendete JSON-Bibliothek Parson (in AmiCloudCore) steht unter
-der MIT-Lizenz.
+der MIT-Lizenz; ihr Wortlaut liegt als THIRD-PARTY-NOTICES in der
+Installationsschublade.
 
 ownCloud und Nextcloud sind Marken ihrer jeweiligen Inhaber.
 AmiOwnCloud ist ein unabhängiges Projekt.

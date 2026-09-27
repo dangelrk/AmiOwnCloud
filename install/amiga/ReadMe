@@ -21,6 +21,7 @@ Inhalt der Schublade
   Install-AmiOwnCloud    Installationsskript
   Uninstall-AmiOwnCloud  Deinstallationsskript
   LICENSE                GNU General Public License Version 3
+  THIRD-PARTY-NOTICES    Lizenz der Fremdkomponente Parson (MIT)
 
 Installation
 ------------
@@ -50,4 +51,5 @@ Lizenz
 
 Copyright (C) 2026 Ronny Krueger. Freie Software unter der GNU General
 Public License Version 3 oder neuer (siehe LICENSE), OHNE JEDE GEWÄHR.
+Enthält den JSON-Parser Parson (MIT-Lizenz, siehe THIRD-PARTY-NOTICES).
 Quellen: https://github.com/dangelrk/AmiOwnCloud
