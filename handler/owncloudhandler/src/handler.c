@@ -67,7 +67,7 @@
 struct ExecBase   *SysBase;
 struct DosLibrary *DOSBase;
 
-const char amiga_ver[] = "$VER: owncloud-handler 0.1 (16.07.2026)";
+const char amiga_ver[] = "$VER: owncloud-handler 0.1 (27.09.2026)";
 
 /* Forward declarations only -- see the file header comment on why _start()
  * itself must be the first function DEFINED below, ahead of all of these. */

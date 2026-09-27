@@ -58,7 +58,7 @@
 
 extern int ac_errors_to_stderr; /* http_amiga.c */
 
-const char amiga_ver[] = "$VER: owncloud-worker 0.1 (16.07.2026)";
+const char amiga_ver[] = "$VER: owncloud-worker " AC_VERSION " (27.09.2026)";
 
 static AcConfig g_cfg;
 static int      g_net_ready = 0;

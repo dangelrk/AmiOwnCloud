@@ -45,7 +45,7 @@
 
 #ifdef PLATFORM_AMIGA
 long __stack = 65536;
-const char amiga_ver[] = "$VER: webdavsynctest 0.1 (14.07.2026)";
+const char amiga_ver[] = "$VER: webdavsynctest " AC_VERSION " (27.09.2026)";
 #endif
 
 #ifdef PLATFORM_AMIGA
