@@ -12,6 +12,8 @@
 ; Nur AmigaDOS-Bordmittel (Ask, Copy, If, Assign, MakeDir, Echo, Set).
 
 FailAt 21
+Set oc_error 0
+Set ocdest DEVS:DOSDrivers/OWNCLOUD
 
 If NOT EXISTS C/owncloud-handler
   Echo "Fehler: Programme nicht gefunden."
@@ -39,11 +41,20 @@ EndIf
 ; ------------------------------------------------------------------
 Ask "OWNCLOUD:-Handler (Laufwerk OWNCLOUD:) und OwnCloudPrefs installieren? (y/n)"
 If WARN
-  Copy C/owncloud-handler L: QUIET
-  Copy C/owncloud-worker L: QUIET
-  Copy C/OwnCloudPrefs SYS:Prefs/ QUIET
-  Echo "  owncloud-handler, owncloud-worker -> L:"
-  Echo "  OwnCloudPrefs -> SYS:Prefs/"
+  Copy C/owncloud-handler C/owncloud-worker TO L: QUIET
+  If ERROR
+    Echo "FEHLER: Kopieren nach L: fehlgeschlagen."
+    Set oc_error 1
+  Else
+    Echo "  owncloud-handler, owncloud-worker -> L:"
+  EndIf
+  Copy C/OwnCloudPrefs TO SYS:Prefs/ QUIET
+  If ERROR
+    Echo "FEHLER: Kopieren nach SYS:Prefs fehlgeschlagen."
+    Set oc_error 1
+  Else
+    Echo "  OwnCloudPrefs -> SYS:Prefs/"
+  EndIf
 
   Ask "OWNCLOUD: bei jedem Systemstart automatisch mounten? (y/n)"
   If WARN
@@ -59,8 +70,13 @@ If WARN
   If EXISTS $ocdest
     Echo "  $ocdest ist schon vorhanden - nicht überschrieben."
   Else
-    Copy Storage/DOSDrivers/OWNCLOUD $ocdest QUIET
-    Echo "  DOSDriver OWNCLOUD -> $ocdest"
+    Copy Storage/DOSDrivers/OWNCLOUD TO $ocdest QUIET
+    If ERROR
+      Echo "FEHLER: DOSDriver konnte nicht nach $ocdir kopiert werden."
+      Set oc_error 1
+    Else
+      Echo "  DOSDriver OWNCLOUD -> $ocdest"
+    EndIf
   EndIf
 
   If NOT EXISTS ENVARC:owncloud.cfg
@@ -79,7 +95,7 @@ If WARN
   If EXISTS ENV:owncloud.cfg
     Ask "OWNCLOUD: jetzt mounten? (y/n)"
     If WARN
-      Mount OWNCLOUD: FROM $ocdest
+      Mount $ocdest
       If ERROR
         Echo "  Mount fehlgeschlagen - ist OWNCLOUD: schon gemountet?"
       Else
@@ -88,7 +104,7 @@ If WARN
     EndIf
   Else
     Echo "  OWNCLOUD: erst mounten, wenn ENV:owncloud.cfg existiert:"
-    Echo "  SYS:Prefs/OwnCloudPrefs starten, dann  Mount OWNCLOUD:"
+    Echo "  SYS:Prefs/OwnCloudPrefs starten, dann  Mount $ocdest"
   EndIf
   Echo ""
 EndIf
@@ -101,10 +117,20 @@ If WARN
   If NOT EXISTS SYS:Tools/Commodities
     MakeDir SYS:Tools/Commodities
   EndIf
-  Copy C/AmiCloudSync SYS:Tools/Commodities/ QUIET
-  Copy C/AmiCloudSyncPrefs SYS:Prefs/ QUIET
-  Echo "  AmiCloudSync -> SYS:Tools/Commodities/"
-  Echo "  AmiCloudSyncPrefs -> SYS:Prefs/"
+  Copy C/AmiCloudSync TO SYS:Tools/Commodities/ QUIET
+  If ERROR
+    Echo "FEHLER: Kopieren nach SYS:Tools/Commodities fehlgeschlagen."
+    Set oc_error 1
+  Else
+    Echo "  AmiCloudSync -> SYS:Tools/Commodities/"
+  EndIf
+  Copy C/AmiCloudSyncPrefs TO SYS:Prefs/ QUIET
+  If ERROR
+    Echo "FEHLER: Kopieren nach SYS:Prefs fehlgeschlagen."
+    Set oc_error 1
+  Else
+    Echo "  AmiCloudSyncPrefs -> SYS:Prefs/"
+  EndIf
 
   If NOT EXISTS ENVARC:AmiCloudSync.cfg
     If NOT EXISTS ENV:AmiCloudSync.cfg
@@ -145,13 +171,17 @@ EndIf
 ; ------------------------------------------------------------------
 Ask "Kommandozeilenprogramme webdavsync und webdavsynctest nach C: kopieren? (y/n)"
 If WARN
-  Copy C/webdavsync C: QUIET
-  Copy C/webdavsynctest C: QUIET
-  Echo "  webdavsync, webdavsynctest -> C:"
+  Copy C/webdavsync C/webdavsynctest TO C: QUIET
+  If ERROR
+    Echo "FEHLER: Kopieren nach C: fehlgeschlagen."
+    Set oc_error 1
+  Else
+    Echo "  webdavsync, webdavsynctest -> C:"
+  EndIf
   If NOT EXISTS ENVARC:webdavsync.cfg
     Ask "Beispielkonfiguration als ENVARC:webdavsync.cfg anlegen? (y/n)"
     If WARN
-      Copy Examples/webdavsync.cfg.example ENVARC:webdavsync.cfg QUIET
+      Copy Examples/webdavsync.cfg.example TO ENVARC:webdavsync.cfg QUIET
       Echo "  ENVARC:webdavsync.cfg angelegt. Mit einem Editor server, user"
       Echo "  und pass eintragen, danach:  Copy ENVARC:webdavsync.cfg ENV:"
     EndIf
@@ -167,18 +197,23 @@ If WARN
   Echo "HELP: ist nicht zugewiesen - das Handbuch bleibt in Docs/:"
   Echo "  Docs/AmiOwnCloud.guide"
 Else
-  Copy Docs/AmiOwnCloud.guide HELP: QUIET
+  Copy Docs/AmiOwnCloud.guide TO HELP: QUIET
   Echo "Handbuch -> HELP:AmiOwnCloud.guide"
 EndIf
 
-UnSet ocdir
-UnSet ocdest
-
 Echo ""
-Echo "Fertig."
+If $oc_error EQ 1
+  Echo "Fertig, aber mit Fehlern (siehe oben) - bitte prüfen."
+Else
+  Echo "Fertig."
+EndIf
 Echo "- Handbuch:   MultiView Docs/AmiOwnCloud.guide  (ggf. auch in HELP:)"
-Echo "- Laufwerk:   SYS:Prefs/OwnCloudPrefs, dann  Mount OWNCLOUD:"
+Echo "- Laufwerk:   SYS:Prefs/OwnCloudPrefs, dann  Mount $ocdest"
 Echo "              Geänderte Einstellungen wirken erst nach einem Neustart."
 Echo "- Abgleich:   SYS:Prefs/AmiCloudSyncPrefs, dann AmiCloudSync starten"
 Echo "              (Fenster per Hotkey ctrl alt a oder über Exchange)."
 Echo "- Entfernen:  Execute Uninstall-AmiOwnCloud"
+
+UnSet ocdir
+UnSet ocdest
+UnSet oc_error

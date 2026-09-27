@@ -48,7 +48,7 @@ Das Skript fragt jeden Teil einzeln ab (`y`/`n`):
    `owncloud-worker` nach `L:`, `OwnCloudPrefs` nach `SYS:Prefs/`, den
    DOSDriver wahlweise nach `DEVS:DOSDrivers/` (Mount bei jedem Start) oder
    `SYS:Storage/DOSDrivers/` (Mount von Hand). Fehlt `owncloud.cfg`, bietet
-   es an, OwnCloudPrefs zu starten, und danach `Mount OWNCLOUD:`.
+   es an, OwnCloudPrefs zu starten, und danach, `OWNCLOUD:` zu mounten.
 2. **AmiCloudSync + AmiCloudSyncPrefs** – `AmiCloudSync` nach
    `SYS:Tools/Commodities/`, `AmiCloudSyncPrefs` nach `SYS:Prefs/`. Bietet an,
    AmiCloudSyncPrefs zu starten und eine Startzeile an `S:User-Startup`
@@ -67,7 +67,7 @@ DOSDriver werden **nie überschrieben**.
 |---|---|---|
 | `owncloud-handler` | `L:` | Pfad steht im DOSDriver (`Handler = L:owncloud-handler`) |
 | `owncloud-worker` | `L:` | fest: der Handler startet `L:owncloud-worker` beim Mounten |
-| `Storage/DOSDrivers/OWNCLOUD` | `DEVS:DOSDrivers/` oder `SYS:Storage/DOSDrivers/` | `Mount OWNCLOUD:` sucht in beiden |
+| `Storage/DOSDrivers/OWNCLOUD` | `DEVS:DOSDrivers/` oder `SYS:Storage/DOSDrivers/` | in `DEVS:DOSDrivers/` beim Systemstart automatisch bzw. `Mount OWNCLOUD:`; in `SYS:Storage/DOSDrivers/` von Hand: `Mount SYS:Storage/DOSDrivers/OWNCLOUD` |
 | `OwnCloudPrefs` | `SYS:Prefs/` | Ort frei wählbar |
 | `AmiCloudSync` | `SYS:Tools/Commodities/` | Ort frei wählbar |
 | `AmiCloudSyncPrefs` | `SYS:Prefs/` | Ort frei wählbar |
@@ -104,8 +104,9 @@ Beispiele und alle Schlüssel: [config-examples/README.md](../config-examples/RE
 
 1. `SYS:Prefs/OwnCloudPrefs` starten, Server (z. B.
    `https://cloud.example.com`), Benutzer, Passwort eintragen, **Speichern**.
-2. `Mount OWNCLOUD:` (liegt der DOSDriver in `DEVS:DOSDrivers`, passiert das
-   beim nächsten Start automatisch).
+2. `Mount OWNCLOUD:`, wenn der DOSDriver in `DEVS:DOSDrivers` liegt (dann
+   passiert das ab dem nächsten Start auch automatisch), bzw.
+   `Mount SYS:Storage/DOSDrivers/OWNCLOUD`, wenn er dort liegt.
 3. `Dir OWNCLOUD:`
 
 Der Handler kann nicht ausgehängt werden, und der Worker liest seine

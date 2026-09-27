@@ -180,7 +180,8 @@ alte Version ist also gefahrlos.
 Wie es danach weitergeht:
 
   - Laufwerk: @{" OwnCloudPrefs " link OwnCloudPrefs} ausfüllen,
-    Speichern, dann in der Shell  Mount OWNCLOUD:
+    Speichern, dann in der Shell  Mount OWNCLOUD:  (bzw. bei Ablage
+    in SYS:Storage:  Mount SYS:Storage/DOSDrivers/OWNCLOUD)
   - Ordnerabgleich: @{" AmiCloudSyncPrefs " link AmiCloudSyncPrefs}
     ausfüllen, Speichern, dann @{" AmiCloudSync " link AmiCloudSync}
     starten.
@@ -504,7 +505,8 @@ Einrichten:
      Benutzer und Passwort eintragen, "Speichern".
   2. In der Shell:  Mount OWNCLOUD:
      (Liegt der DOSDriver in DEVS:DOSDrivers, geschieht das bei jedem
-     Systemstart automatisch.)
+     Systemstart automatisch. Liegt er in SYS:Storage/DOSDrivers:
+     Mount SYS:Storage/DOSDrivers/OWNCLOUD)
   3. Testen:        Dir OWNCLOUD:
 
 Der DOSDriver (DEVS:DOSDrivers/OWNCLOUD):
