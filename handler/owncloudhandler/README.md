@@ -161,7 +161,7 @@ Fehlersuche:
 | `src/proto.h` | Nachrichtenformat Handler ↔ Worker |
 | `src/util.c`, `.h` | kleine Hilfsfunktionen ohne libc |
 | `src/worker.c` | `owncloud-worker` (WebDAV über `webdavcmd.c`) |
-| `mount/OWNCLOUD` | DOSDriver (Kopie: `config-examples/OWNCLOUD.mountlist`) |
+| `mount/OWNCLOUD` | DOSDriver (dieselben Werte als Mountlist-Eintrag: `config-examples/OWNCLOUD.mountlist`) |
 | `Makefile.amiga-cross` | Cross-Build beider Programme |
 
 `handler.c`, `actions.*`, `vol.*`, `util.*`, `proto.h` und `backend.*` sind

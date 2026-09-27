@@ -7,13 +7,18 @@ dist-amiga` legt alle Dateien dieses Ordners in die Unterschublade
 | Datei | Ablage im Betrieb | Gelesen von | Geschrieben von |
 |---|---|---|---|
 | [owncloud.cfg.example](owncloud.cfg.example) | `ENV:owncloud.cfg` (aktiv) / `ENVARC:owncloud.cfg` (dauerhaft) | `owncloud-worker` (Backend des `OWNCLOUD:`-Handlers, liest nur `ENV:` und nur beim Mounten) | OwnCloudPrefs (`apps/owncloud-prefs`) |
-| [OWNCLOUD.mountlist](OWNCLOUD.mountlist) | `DEVS:DOSDrivers/OWNCLOUD` (Mount beim Booten) oder `SYS:Storage/DOSDrivers/OWNCLOUD` (Mount von Hand) | `Mount` / DOS (`handler/owncloudhandler`) | -- (von Hand) |
+| [OWNCLOUD.mountlist](OWNCLOUD.mountlist) | beliebig, z. B. an `DEVS:MountList` anhängen | AmigaDOS `Mount OWNCLOUD: FROM …` (`handler/owncloudhandler`) | -- (von Hand) |
 | [AmiCloudSync.cfg.example](AmiCloudSync.cfg.example) | `ENV:AmiCloudSync.cfg` / `ENVARC:AmiCloudSync.cfg` (ENV: hat Vorrang, kein weiterer Ort) | Commodity `AmiCloudSync` (`apps/amicloud-sync-cx`, nur lesend) | AmiCloudSyncPrefs (`apps/amicloudsync-prefs`) |
 | [webdavsync.cfg.example](webdavsync.cfg.example) | Amiga: `ENV:webdavsync.cfg`, ersatzweise `webdavsync.cfg` im aktuellen Verzeichnis; macOS/Linux: `~/.webdavsyncrc`; Windows (MinGW): `webdavsync.cfg` im aktuellen Verzeichnis; oder `-c <datei>` | `webdavsync`, `webdavsynctest` | -- (von Hand) |
 
-`OWNCLOUD.mountlist` ist eine inhaltsgleiche Kopie von
-`handler/owncloudhandler/mount/OWNCLOUD` (nur die Kopfzeile des Kommentars
-unterscheidet sich). Änderungen bitte an beiden Stellen nachziehen.
+`OWNCLOUD.mountlist` ist ein klassischer Mountlist-Eintrag (`OWNCLOUD:` …
+`#`) mit denselben Werten wie der DOSDriver
+`handler/owncloudhandler/mount/OWNCLOUD`. Den DOSDriver legt
+`make dist-amiga` als `Storage/DOSDrivers/OWNCLOUD` in die
+Installationsschublade; das Install-Skript kopiert ihn nach
+`DEVS:DOSDrivers/` oder `SYS:Storage/DOSDrivers/`. Die Mountlist ist die
+Alternative ohne DOSDriver: `Mount OWNCLOUD: FROM Examples/OWNCLOUD.mountlist`.
+Änderungen an den Werten bitte an beiden Stellen nachziehen.
 
 ## Gemeinsames Format
 

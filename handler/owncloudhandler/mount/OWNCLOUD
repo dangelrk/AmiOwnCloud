@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright (C) 2026 Ronny Krueger */
 /* OWNCLOUD: -- ownCloud/Nextcloud-(WebDAV-)DOS-Handler von AmiOwnCloud.
- * Inhaltsgleiche Kopie: config-examples/OWNCLOUD.mountlist.
+ * Dieselben Werte als Mountlist-Eintrag: config-examples/OWNCLOUD.mountlist.
  * Installation (Install-AmiOwnCloud erledigt das; von Hand):
  *   Copy owncloud-handler L:
  *   Copy owncloud-worker  L:      <- wird beim Mounten von L: gestartet
