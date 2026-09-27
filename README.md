@@ -58,6 +58,7 @@ Auf dem Amiga dann in der Schublade `Execute Install-AmiOwnCloud`.
 | [config-examples/README.md](config-examples/README.md) | alle Konfigurationsdateien und Schlüssel |
 | [handler/owncloudhandler/README.md](handler/owncloudhandler/README.md) | Technik des `OWNCLOUD:`-Handlers |
 | [docs/design/](docs/design/README.md) | historische Planungsdokumente |
+| [TODO.md](TODO.md) | bekannte offene Punkte |
 
 ## Verzeichnisse
 
