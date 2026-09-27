@@ -59,6 +59,8 @@ Alle Ziele werden in der Projektwurzel aufgerufen (`make help` zeigt sie):
 | `make dist-amiga` | Amiga-Installationsschublade `build/dist/AmiOwnCloud/` erzeugen, zusätzlich `build/AmiOwnCloud.lha`, falls `lha` installiert ist |
 | `make build-amiga-script` | das native Amiga-Buildskript `Build-Amiga` neu erzeugen |
 | `make verify-amiga-script` | … und auf dem Host mit vbcc gegenprüfen |
+| `make check-guide` | AmigaGuide-Handbuch in `docs/user/` prüfen (Knoten, Verweise, Latin-1, Zeilenlänge) |
+| `make fsuae [PROGS="…"]` | Amiga-Programme im Emulator FS-UAE testen (siehe unten) |
 | `make install` | Host-Programme nach `$(PREFIX)/bin` kopieren (`PREFIX=/usr/local`, `DESTDIR` wird unterstützt) |
 | `make clean` | alle Build-Ergebnisse entfernen |
 
@@ -253,7 +255,7 @@ echten ownCloud/Nextcloud-Server – siehe Handbuch
 
 ### Im Emulator (FS-UAE)
 
-`scripts/run-fsuae.sh` kopiert die gebauten Amiga-Programme in einen
+`make fsuae` (Skript `core/tools/run-fsuae.sh`) kopiert die gebauten Amiga-Programme in einen
 Host-Ordner, der in FS-UAE als Laufwerk eingehängt ist, und startet
 FS-UAE:
 
@@ -261,8 +263,8 @@ FS-UAE:
 export FSUAE_CONFIG=/pfad/zu/entwicklung.fs-uae   # Pflicht
 export FSUAE_SHARED=/pfad/zu/shared               # Standard: build/fsuae-shared
 export FSUAE_BIN=/pfad/zu/fs-uae                  # Standard: fs-uae aus PATH bzw. FS-UAE.app
-scripts/run-fsuae.sh                              # alle Programme
-scripts/run-fsuae.sh owncloud-handler owncloud-worker   # nur diese
+make fsuae                                        # alle Programme
+make fsuae PROGS="owncloud-handler owncloud-worker"   # nur diese
 ```
 
 In der FS-UAE-Konfiguration muss der geteilte Ordner als Laufwerk

@@ -68,7 +68,7 @@ handler/          OWNCLOUD:-DOS-Handler (nur Amiga)
 config-examples/  Beispielkonfigurationen und Mountlist
 install/amiga/    Install-/Uninstall-Skript und ReadMe der Amiga-Schublade
 docs/             Dokumentation
-scripts/          Hilfsskripte (Host-Test, FS-UAE-Start)
+scripts/          Hilfsskript für den Host-Test (test_pairs.sh)
 core/             AmiCloudCore (Git-Submodul)
 Build-Amiga       erzeugtes AmigaDOS-Skript zum nativen Bauen
 ```
