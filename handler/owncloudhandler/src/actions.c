@@ -398,6 +398,14 @@ void act_examine_next(struct DosPacket *pkt)
     err = vol_ensure_fresh(dir);
     if (err) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return; }
 
+    /* The first ExNext after Examine(dir) carries the directory's own
+     * key. That is "start from the top", not "after seq N": a child that
+     * was renamed into this directory is older than it (smaller seq) and
+     * used to be skipped -- a dir showed empty yet "Delete ALL" refused
+     * it as not empty. Keys are unique and a dir is never its own child,
+     * so this can't be mistaken for a real position. */
+    if (cursor == dir->seq) cursor = 0;
+
     for (c = dir->children; c; c = c->next)
         if (c->seq > cursor && (!best || c->seq < best->seq)) best = c;
 
