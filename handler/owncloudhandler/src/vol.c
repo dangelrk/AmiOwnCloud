@@ -6,6 +6,8 @@
 #include "backend.h"
 
 #include <exec/memory.h>
+#include <devices/timer.h>
+#include <proto/timer.h>
 #include <dos/dosextens.h>
 #include <proto/exec.h>
 
@@ -15,6 +17,33 @@ static ULONG g_seq = 0;
 static LONG  g_now = 0; /* see vol_note_now() */
 static LONG  g_lookup_err = 0; /* see vol_lookup_error() */
 static int   g_offline = 0;    /* see vol_set_offline() */
+
+/* The handler's own clock for the directory cache lifetime. It used to
+ * be the worker's clock from the last reply only -- with no requests
+ * going out, time stood still, a listed directory stayed "fresh"
+ * forever and a file another client added never showed up. timer.device
+ * is opened once in vol_init() (startup, see handler.c) and never closed;
+ * GetSysTime() is a plain library call, no messages, safe from the
+ * packet loop. */
+struct Device *TimerBase;
+static struct timerequest *g_treq;
+
+static void clock_init(void)
+{
+    struct MsgPort *port = CreateMsgPort();
+    if (!port) return;
+    g_treq = (struct timerequest *)CreateIORequest(port, sizeof(struct timerequest));
+    if (g_treq && OpenDevice((CONST_STRPTR)TIMERNAME, UNIT_VBLANK, (struct IORequest *)g_treq, 0) == 0)
+        TimerBase = g_treq->tr_node.io_Device;
+}
+
+static LONG clock_now(void)
+{
+    TimeVal_Type tv;
+    if (!TimerBase) return g_now > backend_now() ? g_now : backend_now();
+    GetSysTime(&tv);
+    return (LONG)tv.tv_secs;
+}
 static int   g_would_block = 0;
 
 ULONG vol_next_seq(void)
@@ -24,6 +53,7 @@ ULONG vol_next_seq(void)
 
 int vol_init(const struct DateStamp *boot_date)
 {
+    clock_init();
     g_root = (CNode *)AllocVec(sizeof(CNode), MEMF_PUBLIC | MEMF_CLEAR);
     if (!g_root) return 0;
 
@@ -252,7 +282,7 @@ LONG vol_refresh(CNode *dir)
 
     dir->listed = 1;
     dir->ever_listed = 1;
-    dir->cache_time = g_now;
+    dir->cache_time = clock_now();
 
     if (reply->entries) FreeVec(reply->entries);
     return 0;
@@ -260,7 +290,7 @@ LONG vol_refresh(CNode *dir)
 
 int vol_is_fresh(CNode *dir)
 {
-    LONG now = g_now > backend_now() ? g_now : backend_now();
+    LONG now = clock_now();
     LONG ttl = backend_cache_ttl() > 0 ? backend_cache_ttl() : CACHE_TTL;
 
     if (dir->type != CN_DIR) return 1;

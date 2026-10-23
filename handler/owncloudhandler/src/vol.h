@@ -28,8 +28,8 @@
 #define CNODE_MAXNAME    106
 #define CNODE_MAXCOMMENT 79
 
-/* Default directory listing cache lifetime, in the same units as
- * WorkerMsg's server_now (seconds, worker's clock -- see vol_note_now()).
+/* Default directory listing cache lifetime in seconds, measured with the
+ * handler's own timer.device clock (vol.c clock_now()).
  * The config's cache_ttl= overrides it (arrives with every worker reply,
  * see backend_cache_ttl()); over a modem a longer one saves a lot of
  * slow re-listings. */
@@ -129,9 +129,8 @@ void   vol_build_path(CNode *node, char *out, ULONG outsz);
 void   vol_child_path(CNode *dir, const char *leaf, char *out, ULONG outsz);
 
 /* ---- directory listing cache (Stage 2) -------------------------------- */
-/* Records the worker's clock (WorkerMsg.server_now) as our notion of
- * "now" -- the packet loop has no clock access of its own (exec.library
- * only), so this is the only source of "now" there is; see file header. */
+/* Records the worker's clock (WorkerMsg.server_now) -- only the fallback
+ * for "now" if timer.device could not be opened (vol.c clock_now()). */
 void   vol_note_now(LONG server_now);
 
 /* Refreshes dir (must be CN_DIR) via a synchronous WREQ_LIST + merge:
