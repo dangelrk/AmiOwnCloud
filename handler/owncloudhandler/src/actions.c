@@ -122,7 +122,10 @@ static int resolve_walk(CNode *base, const char *cpath, CNode **out_dir, char *o
     while (path_next_component(&p, comp, sizeof(comp), &is_parent)) {
         if (have_pending) {
             CNode *next = vol_find_child(cur, pending);
-            if (!next || next->type != CN_DIR) { *err = ERROR_OBJECT_NOT_FOUND; return 0; }
+            if (!next || next->type != CN_DIR) {
+                *err = (!next && vol_lookup_error()) ? vol_lookup_error() : ERROR_OBJECT_NOT_FOUND;
+                return 0;
+            }
             cur = next;
             have_pending = 0;
         }
@@ -143,7 +146,11 @@ static LONG resolve(CNode *base, const char *cpath, ResolvedPath *rp)
 {
     LONG err = 0;
     if (!resolve_walk(base, cpath, &rp->dir, rp->leaf, sizeof(rp->leaf), &err)) return err;
-    rp->node = (rp->leaf[0] == '\0') ? rp->dir : vol_find_child(rp->dir, rp->leaf);
+    if (rp->leaf[0] == '\0') { rp->node = rp->dir; return 0; }
+    rp->node = vol_find_child(rp->dir, rp->leaf);
+    /* Directory not listable (server unreachable): say so instead of
+     * "not found" -- a Copy to CLOUD: must not think it may create it. */
+    if (!rp->node && vol_lookup_error()) return vol_lookup_error();
     return 0;
 }
 
@@ -364,8 +371,10 @@ void act_examine_object(struct DosPacket *pkt)
 {
     CNode *node = vol_node_from_lock(pkt->dp_Arg1);
     struct FileInfoBlock *fib = (struct FileInfoBlock *)BADDR(pkt->dp_Arg2);
+    LONG err;
 
-    vol_ensure_fresh(node); /* no-op for files; may (re)populate a directory's children */
+    err = vol_ensure_fresh(node); /* no-op for files; may (re)populate a directory's children */
+    if (err) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return; }
     fill_fib(fib, node);
     pkt->dp_Res1 = DOSTRUE;
     pkt->dp_Res2 = 0;
@@ -382,9 +391,12 @@ void act_examine_next(struct DosPacket *pkt)
     ULONG cursor = (ULONG)fib->fib_DiskKey;
     CNode *best = (CNode *)0;
     CNode *c;
+    LONG err;
 
     if (dir->type != CN_DIR) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_INVALID_LOCK; return; }
-    vol_ensure_fresh(dir); /* vol_find_child() elsewhere does this implicitly; here we walk dir->children directly */
+    /* vol_find_child() elsewhere does this implicitly; here we walk dir->children directly */
+    err = vol_ensure_fresh(dir);
+    if (err) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return; }
 
     for (c = dir->children; c; c = c->next)
         if (c->seq > cursor && (!best || c->seq < best->seq)) best = c;
@@ -600,12 +612,20 @@ void act_end(struct DosPacket *pkt)
         err = backend_send(WREQ_PUT, fullpath, (const char *)0, of->data, (ULONG)of->size,
                            (const struct DateStamp *)0, 0, (const char *)0, (WorkerMsg **)0);
         if (err) {
-            /* RKRM DOS 14.1.5: on failure the FileHandle (and thus this
-             * OpenFile) must stay fully usable for a retry -- don't free
-             * or decrement anything below. The tree can't be trusted
-             * against the server anymore either way, so force the next
-             * access to re-verify. */
+            /* dos.library's Close() frees the FileHandle even when we
+             * report an error (dos.doc/Close), and hardly any program
+             * retries -- keeping this OpenFile "for a retry" only leaked
+             * the whole buffer and left the file exclusively locked
+             * until the next mount. So clean up exactly as on success and
+             * report the error; the worker has already saved the data
+             * to T:AmiOwnCloud-unsaved/ (worker.c save_unsaved()). The tree
+             * can't be trusted against the server anymore either way,
+             * so force the next access to re-verify. */
             vol_invalidate(node->parent);
+            if (node->open_count > 0) node->open_count--;
+            if (of->exclusive) node->excl_lock = 0;
+            if (of->data) FreeVec(of->data);
+            FreeVec(of);
             pkt->dp_Res1 = DOSFALSE;
             pkt->dp_Res2 = err;
             return;

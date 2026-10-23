@@ -1,5 +1,5 @@
 @database "AmiOwnCloud.guide"
-@$VER: AmiOwnCloud.guide 1.0 (27.09.2026)
+@$VER: AmiOwnCloud.guide 1.1 (23.10.2026)
 @author "Ronny Krueger"
 @(c) "2026 Ronny Krueger, GPL-3.0-or-later"
 @wordwrap
@@ -380,6 +380,8 @@ Beispiel:
   debug=
   gmt_offset=60
   dst=0
+  #timeout=120
+  #cache_ttl=30
 
 Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
 
@@ -396,6 +398,14 @@ Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
   dst         1 = Sommerzeit aktiv (eine Stunde mehr), 0 = nicht.
               Standard 0. Muss bei der Zeitumstellung von Hand
               angepasst werden.
+  timeout     Netz-Timeout in Sekunden, Standard 120: so lange
+              darf eine Verbindung ganz ohne Datenfluss bleiben.
+              Die Dauer einer Übertragung ist nie begrenzt - eine
+              große Datei über ein Modem läuft, solange Daten
+              fließen. Gilt auch für AmiCloudSync und webdavsync.
+  cache_ttl   Wie viele Sekunden eine Verzeichnisliste
+              zwischengespeichert wird, Standard 30. Über ein Modem
+              lohnen 120 bis 300.
 
 Wichtig: Der Worker liest die Datei nur einmal beim Start. Weil der
 Handler nicht ausgehängt werden kann, wirken Änderungen zuverlässig
@@ -541,15 +551,23 @@ Was nicht geht bzw. anders ist:
     halb voll), nicht den echten Platz auf dem Server.
   - Eine geöffnete Datei liegt komplett im RAM. Beim Schreiben wird
     sie erst beim Schließen hochgeladen.
-  - Immer nur ein Zugriff zur Zeit. Während eine große Datei übertragen
-    wird, warten alle anderen Zugriffe auf OWNCLOUD:.
-  - Es gibt kein Zeitlimit. Antwortet der Server nicht, hängt der
-    Zugriff so lange mit.
+  - Immer nur eine Server-Anfrage zur Zeit. Während eine große Datei
+    übertragen wird, beantwortet OWNCLOUD: trotzdem alles, was ohne
+    Server geht (Info, Lesen und Schreiben geöffneter Dateien, frisch
+    gelesene Verzeichnisse); alles andere wartet.
+  - Fließen timeout Sekunden lang (Standard 120) keine Daten oder
+    bricht die Verbindung ab, scheitert der Zugriff mit "No disk
+    present"; DOS bietet Wiederholen an. Abgebrochene Downloads setzt
+    der Worker an der Abbruchstelle fort. Break auf owncloud-worker
+    bricht eine laufende Übertragung ab.
+  - Scheitert beim Schließen einer geänderten Datei das Hochladen,
+    meldet Close() einen Fehler, und der Inhalt liegt in
+    T:AmiOwnCloud-unsaved/.
   - Der Handler lässt sich nicht aushängen. Zum Entfernen und nach
     Änderungen an owncloud.cfg: neu starten.
-  - Verzeichnislisten werden 10 Sekunden zwischengespeichert. Was ein
-    anderes Gerät auf dem Server ändert, erscheint mit bis zu 10 s
-    Verzögerung.
+  - Verzeichnislisten werden 30 Sekunden zwischengespeichert
+    (cache_ttl). Was ein anderes Gerät auf dem Server ändert, erscheint
+    entsprechend verzögert.
   - Keine Prüfsummen bei Up- und Download (WebDAV liefert keine).
 
 Fehlersuche:
@@ -919,8 +937,16 @@ OWNCLOUD: meldet bei jedem Zugriff einen Fehler
   Type OWNCLOUD:debuglog.
 
 OWNCLOUD: reagiert nicht mehr
-  Es gibt kein Zeitlimit: solange der Server nicht antwortet, hängt
-  jeder Zugriff. Netzwerk prüfen; im Zweifel neu starten.
+  Eine Anfrage scheitert erst, wenn timeout Sekunden (Standard 120)
+  gar keine Daten fließen; bis dahin wartet ein Zugriff, der den
+  Server braucht. Break auf owncloud-worker bricht die laufende
+  Übertragung sofort ab. Netzwerk prüfen.
+
+Langsame Verbindung (Modem), Übertragungen brechen ab
+  Alle Timeouts greifen nur bei Stillstand. Bricht es trotzdem ab,
+  timeout=300 setzen. Abgebrochene Downloads werden fortgesetzt,
+  nicht neu begonnen. Ctrl-C bricht webdavsync ab, Break auch
+  AmiCloudSync. Für OWNCLOUD: lohnt cache_ttl=300.
 
 AmiCloudSync meldet "... Fehler!", aber nicht welcher
   Die Commodity hat keine eigene Konsole. In ENV:AmiCloudSync.cfg
@@ -967,7 +993,7 @@ OWNCLOUD:-Handler
   - Schutzbits und Dateikommentare werden nicht gespeichert.
   - Info zeigt keine echte Belegung.
   - Geöffnete Dateien liegen komplett im RAM.
-  - Ein Zugriff zur Zeit, kein Zeitlimit.
+  - Eine Server-Anfrage zur Zeit; Timeout nur bei Stillstand.
   - Kein Aushängen; Konfigurationsänderungen erst nach Neustart.
 
 AmiCloudSync
@@ -1129,6 +1155,9 @@ Programme (Stand der $VER-Angaben):
 
 Handbuch:
 
+  1.1 (23.10.2026)  Langsame Verbindungen: timeout, cache_ttl,
+                    Fortsetzen von Downloads, Break/Ctrl-C,
+                    T:AmiOwnCloud-unsaved.
   1.0 (27.09.2026)  AmiOwnCloud als eigenes Projekt; neues Handbuch
                     AmiOwnCloud.guide (ersetzt AmiCloudSync.guide),
                     deckt Handler, OwnCloudPrefs, AmiCloudSync,

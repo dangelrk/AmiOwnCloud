@@ -28,9 +28,12 @@
 #define CNODE_MAXNAME    106
 #define CNODE_MAXCOMMENT 79
 
-/* Directory listing cache lifetime, in the same units as WorkerMsg's
- * server_now (seconds, worker's clock -- see vol_note_now()). */
-#define CACHE_TTL 10
+/* Default directory listing cache lifetime, in the same units as
+ * WorkerMsg's server_now (seconds, worker's clock -- see vol_note_now()).
+ * The config's cache_ttl= overrides it (arrives with every worker reply,
+ * see backend_cache_ttl()); over a modem a longer one saves a lot of
+ * slow re-listings. */
+#define CACHE_TTL 30
 
 typedef enum { CN_FILE, CN_DIR } CNodeType;
 
@@ -54,7 +57,9 @@ typedef struct CNode {
                                 * monotonic, assigned once, never reused. */
 
     /* Stage 2: directory listing cache (CN_DIR only, see vol_refresh()). */
-    int           listed;     /* 0 = never WREQ_LIST'd -- always stale */
+    int           listed;     /* 0 = never WREQ_LIST'd or invalidated -- stale */
+    int           ever_listed; /* 1 once a listing arrived; children are real
+                                * data from then on, even when stale */
     LONG          cache_time; /* g_now (vol_note_now()) at last refresh */
     int           seen;       /* scratch flag, valid only during a single
                                 * vol_refresh() merge pass */
@@ -92,8 +97,11 @@ void   vol_free_node(CNode *node);
 
 /* Latin-1 case-insensitive child lookup by name. Transparently refreshes
  * dir first if its listing cache is stale (vol_ensure_fresh()) -- every
- * caller in actions.c that walks a path becomes cache-aware for free. */
+ * caller in actions.c that walks a path becomes cache-aware for free.
+ * NULL with vol_lookup_error() != 0 means the directory could not be
+ * listed at all (server unreachable), not that the name doesn't exist. */
 CNode *vol_find_child(CNode *dir, const char *name);
+LONG   vol_lookup_error(void);
 
 /* 1 if `node` is `maybe_ancestor` itself or a descendant of it -- used to
  * reject "move a directory into itself or one of its own subdirectories"
@@ -130,15 +138,21 @@ void   vol_note_now(LONG server_now);
  * updates/creates/removes children to match the server, except any child
  * that's locked, exclusively locked, or open, which always survives
  * untouched (docs/handler-plan.md Stufe 2: "gelockte/geoeffnete Knoten
- * bleiben"). No-op (leaves the existing cache as-is) on a transport
- * error -- stale data beats no data, and the next access retries. */
-void   vol_refresh(CNode *dir);
+ * bleiben"). Leaves the existing cache as-is on an error and returns the
+ * DOS error code (0 = ok). */
+LONG   vol_refresh(CNode *dir);
 
 /* Refreshes dir if its listing cache is stale (never listed, or older
- * than CACHE_TTL) -- called automatically by vol_find_child(); exposed
- * directly for ACTION_EXAMINE_NEXT, which walks dir->children without
- * going through vol_find_child(). */
-void   vol_ensure_fresh(CNode *dir);
+ * than the cache lifetime) -- called automatically by vol_find_child();
+ * exposed directly for ACTION_EXAMINE_*, which walk dir->children
+ * without going through vol_find_child(). Returns an error only if dir
+ * has never been listed and the listing failed -- an older listing is
+ * still served (stale data beats no data, the next access retries),
+ * but an empty never-listed directory must not pass for the real one. */
+LONG   vol_ensure_fresh(CNode *dir);
+
+/* 1 if using dir (or a file) right now needs no network round trip. */
+int    vol_is_fresh(CNode *dir);
 
 /* Forces dir's *next* access to refresh regardless of TTL (docs/handler-
  * plan.md Stufe 2: mutations "invalidieren Parent" after applying their

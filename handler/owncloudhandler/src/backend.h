@@ -23,28 +23,18 @@
  * should fail, see docs/handler-plan.md Stufe 2 "Worker-Start"). */
 int backend_init(void);
 
-/* Synchronous send/wait/reply -- blocks the whole handler until the
- * worker replies, up to a ~60s bounded timeout (BACKEND_TIMEOUT_SECS,
- * backend.c), or the worker's original unbounded WaitPort() if
- * timer.device somehow isn't available (accepted for Stage 2 v1, see
- * proto.h). Fills a reused, static WorkerMsg from the given fields (pass
+/* Synchronous send/wait/reply: one request at a time, waits until the
+ * worker replies (no handler-side timeout -- the worker's HTTP layer
+ * has idle timeouts, see backend.c). While waiting, the busy hook (see
+ * backend_set_busy_hook()) keeps answering packets that need no
+ * network. Fills a reused, static WorkerMsg from the given fields (pass
  * 0/NULL for anything a given cmd doesn't use) and returns the finished
- * DOS error code from the reply (0 = success), or ERROR_LOCK_TIMEOUT if
- * the worker never replied in time. If reply is non-NULL, *reply is set
- * to that same reused WorkerMsg so the caller can read cmd-specific
- * output fields (entries/buf/mtime/...) -- valid only until the next
- * backend_send() call, and NULL on a timeout. The caller owns
- * FreeVec()-ing any worker-owned output buffer (entries/buf) per the
- * ownership rules in proto.h.
- *
- * Once one call times out, EVERY subsequent backend_send() call fails
- * immediately with ERROR_LOCK_TIMEOUT for the rest of this mount (see
- * backend.c's g_backend_dead) -- a still-outstanding worker reply could
- * write into the reused WorkerMsg at any later time, so it can never be
- * safely reused. This matches the already-documented "worker died/wedged
- * mid-session -> remount to recover" limitation (README, Stage 2 test 8);
- * a timeout just makes that failure immediate and clean instead of an
- * indefinite freeze of the whole CLOUD: volume. */
+ * DOS error code from the reply (0 = success). If reply is non-NULL,
+ * *reply is set to that same reused WorkerMsg so the caller can read
+ * cmd-specific output fields (entries/buf/mtime/...) -- valid only
+ * until the next backend_send() call. The caller owns FreeVec()-ing any
+ * worker-owned output buffer (entries/buf) per the ownership rules in
+ * proto.h. Never call it from the busy hook. */
 LONG backend_send(WReqCmd cmd, const char *path, const char *path2,
                   UBYTE *buf, ULONG buflen,
                   const struct DateStamp *mtime, LONG protection, const char *comment,
@@ -57,6 +47,17 @@ LONG backend_send(WReqCmd cmd, const char *path, const char *path2,
  * so actions.c's do_find() can serve it as the synthetic "debuglog" file's
  * content instead of a real WREQ_GET. */
 extern char  g_diag_buf[4096];
+
+/* While backend_send() waits for the worker it also wakes up on port's
+ * signal and calls hook(), which must answer or queue whatever packets
+ * arrived there -- without ever calling backend_send() itself (see
+ * handler.c's serve_while_busy()). */
+void backend_set_busy_hook(struct MsgPort *port, void (*hook)(void));
+
+/* Highest worker clock seen in any reply, and the configured directory
+ * cache lifetime (0 until the first reply) -- see WorkerMsg. */
+LONG backend_now(void);
+LONG backend_cache_ttl(void);
 extern ULONG g_diag_pos;
 
 #endif /* OWNCLOUDHANDLER_BACKEND_H */

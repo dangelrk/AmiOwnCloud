@@ -43,3 +43,13 @@ pass=geheim
 # gesetzten Dateidaten:
 #gmt_offset=60
 #dst=0
+
+# Netz-Timeout in Sekunden (Standard 120): so lange darf eine Verbindung
+# ganz ohne Datenfluss bleiben. Die Dauer einer Uebertragung ist nie
+# begrenzt -- eine grosse Datei ueber ein Modem laeuft, solange Daten
+# fliessen. Gilt fuer alle Programme (auch AmiCloudSync.cfg):
+#timeout=120
+
+# Wie viele Sekunden OWNCLOUD: eine Verzeichnisliste zwischenspeichert
+# (Standard 30). Ueber ein Modem lohnen 120-300:
+#cache_ttl=30

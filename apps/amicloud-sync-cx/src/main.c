@@ -101,10 +101,12 @@ static char        g_sync_last_name[64];
 
 static int sync_progress(long done, long total, const char *name)
 {
-    char line[256];
+    char line[256], rate[24];
     int  redraw;
-    long kbps;
 
+    /* Ctrl-C ("Break" on this process) stops the sync; the signal stays
+     * set, so the main loop then ends the commodity as usual. */
+    if (ui_break_pending()) return 0;
     if (!name) name = "";
     if (strcmp(name, g_sync_last_name) != 0 || done < g_sync_rate.last_bytes) {
         ui_rate_reset(&g_sync_rate);
@@ -115,12 +117,12 @@ static int sync_progress(long done, long total, const char *name)
     redraw = ui_rate_sample(&g_sync_rate, done) || (total > 0 && done >= total);
     if (!redraw) return 1;
 
-    kbps = g_sync_rate.bps / 1024;
+    ui_format_rate(rate, sizeof(rate), g_sync_rate.bps);
     if (total > 0) {
-        long pct = (done * 100) / total;
-        snprintf(line, sizeof(line), "%s: %ld%% (%ld KB/s)", name, pct, kbps);
+        long pct = total > 2000000L ? done / (total / 100) : (done * 100) / total;
+        snprintf(line, sizeof(line), "%s: %ld%% (%s)", name, pct, rate);
     } else {
-        snprintf(line, sizeof(line), "%s: %ldK gelesen (%ld KB/s)", name, done / 1024, kbps);
+        snprintf(line, sizeof(line), "%s: %ldK gelesen (%s)", name, done / 1024, rate);
     }
     gui_set_status(line);
     return 1;

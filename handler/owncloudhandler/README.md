@@ -68,11 +68,23 @@ Unterschiede zum `CLOUD:`-Handler:
   geöffneten Datei wird vollständig geladen bzw. beim Schreiben erst im
   Speicher gesammelt und beim Schließen hochgeladen. Sehr große Dateien
   brauchen entsprechend viel freien Speicher.
-- **Eine Anfrage zur Zeit.** Während eine HTTP-Anfrage läuft, warten
-  alle anderen Zugriffe auf `OWNCLOUD:`. Es gibt derzeit **kein
-  Zeitlimit** (der vorgesehene 60-s-Timer ist in `src/backend.c`
-  abgeschaltet, `AC_BACKEND_TIMER_ENABLED 0`); hängt der Server, hängt
-  der Zugriff mit.
+- **Eine Server-Anfrage zur Zeit.** Während eine HTTP-Anfrage läuft,
+  beantwortet der Handler weiter alles, was ohne Netz geht (`Info`,
+  Lesen/Schreiben/Seek auf offenen Dateien, `Examine` frisch gelesener
+  Verzeichnisse, `FreeLock`; `src/handler.c` `serve_while_busy()`); alles
+  andere wartet und läuft danach in Ankunftsreihenfolge.
+- **Kein Zeitlimit im Handler, aber im Worker:** die HTTP-Schicht bricht
+  nur bei Stillstand ab (`timeout=` in `owncloud.cfg`, Standard 120 s),
+  nie wegen der Dauer einer Übertragung. Transportfehler meldet der
+  Handler als `ERROR_NO_DISK` (DOS bietet „Wiederholen“ an);
+  abgebrochene Downloads setzt die HTTP-Schicht per `Range` fort.
+  `Break` auf `owncloud-worker` bricht die laufende Übertragung ab. Der
+  frühere 60-s-Timer (`timer.device`) wurde entfernt: bei Modemtempo
+  ist er schon für 200 KB zu kurz und legte den Mount dauerhaft lahm.
+- **Fehlgeschlagenes Hochladen beim Schließen:** `Close()` meldet den
+  Fehler, der Handler gibt Datei und Puffer trotzdem frei (DOS gibt den
+  FileHandle ohnehin frei); der Worker legt den Inhalt vorher unter
+  `T:AmiOwnCloud-unsaved/<name>` ab.
 - **Kein Unmount.** `ACTION_DIE` wird immer abgelehnt; der Worker wird nie
   beendet. Aushängen = neu booten.
 - **Konfigurationsänderungen erst nach einem Neustart.** `owncloud-worker`
@@ -88,9 +100,12 @@ Unterschiede zum `CLOUD:`-Handler:
 - Ein Volume, keine Disk-Wechsel-/Format-/Inhibit-Pakete;
   `ACTION_EXAMINE_ALL` ist nicht implementiert (DOS weicht automatisch auf
   `EXAMINE_OBJECT`/`EXAMINE_NEXT` aus).
-- Verzeichnislisten werden 10 Sekunden zwischengespeichert
-  (`CACHE_TTL` in `src/vol.h`); Änderungen, die ein anderes Gerät am
-  Server macht, erscheinen also mit bis zu 10 s Verzögerung.
+- Verzeichnislisten werden 30 Sekunden zwischengespeichert
+  (`CACHE_TTL` in `src/vol.h`, per `cache_ttl=` in `owncloud.cfg`
+  einstellbar); Änderungen, die ein anderes Gerät am Server macht,
+  erscheinen entsprechend verzögert. Lässt sich ein noch nie gelistetes
+  Verzeichnis nicht lesen, meldet der Handler den Fehler, statt es leer
+  erscheinen zu lassen.
 
 ## Bauen
 

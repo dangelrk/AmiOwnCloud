@@ -130,7 +130,7 @@
 <div class="wrap">
 
 <h1 id="top">AmiOwnCloud</h1>
-<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Version 1.0 (27.09.2026)</p>
+<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Version 1.1 (23.10.2026)</p>
 
 <p>Diese Seite entspricht inhaltlich dem AmigaGuide-Handbuch
 <code>AmiOwnCloud.guide</code>.</p>
@@ -460,13 +460,17 @@ verify_ssl=1
 basepath=/
 debug=
 gmt_offset=60
-dst=0</pre>
+dst=0
+#timeout=120
+#cache_ttl=30</pre>
 <table>
 <tr><th>Schlüssel</th><th>Bedeutung</th><th>Standard</th></tr>
 <tr><td><code>basepath</code></td><td>Ordner auf dem Server, der als Wurzel von <code>OWNCLOUD:</code> erscheint, z.&nbsp;B. <code>/Amiga</code></td><td><code>/</code></td></tr>
 <tr><td><code>debug</code></td><td>Datei, in die <code>owncloud-worker</code> jede HTTP-Anfrage und -Antwort schreibt, z.&nbsp;B. <code>T:owncloud.log</code></td><td>leer = aus</td></tr>
 <tr><td><code>gmt_offset</code></td><td>Abstand der Ortszeit zu UTC in Minuten (MEZ = 60). Die Amiga-Uhr kennt keine Zeitzone; ohne diesen Wert stimmen die Dateizeiten um die Zeitzone nicht.</td><td><code>0</code></td></tr>
 <tr><td><code>dst</code></td><td><code>1</code> = Sommerzeit aktiv (eine Stunde mehr). Muss bei der Zeitumstellung von Hand angepasst werden.</td><td><code>0</code></td></tr>
+<tr><td><code>timeout</code></td><td>Netz-Timeout in Sekunden: so lange darf eine Verbindung ganz ohne Datenfluss bleiben. Die Dauer einer Übertragung ist nie begrenzt – eine große Datei über ein Modem läuft, solange Daten fließen. Gilt auch für AmiCloudSync und <code>webdavsync</code>.</td><td><code>120</code></td></tr>
+<tr><td><code>cache_ttl</code></td><td>Wie viele Sekunden eine Verzeichnisliste zwischengespeichert wird; über ein Modem lohnen 120 bis 300.</td><td><code>30</code></td></tr>
 </table>
 <p><strong>Wichtig:</strong> Der Worker liest die Datei nur einmal beim
 Start. Weil der Handler nicht ausgehängt werden kann, wirken Änderungen
@@ -578,15 +582,23 @@ Worker baut die Verbindung erst beim ersten echten Zugriff auf.</p>
   2&nbsp;GB, halb voll), nicht den echten Platz auf dem Server.</li>
   <li>Eine geöffnete Datei liegt komplett im RAM. Beim Schreiben wird sie
   erst beim Schließen hochgeladen.</li>
-  <li>Immer nur ein Zugriff zur Zeit. Während eine große Datei übertragen
-  wird, warten alle anderen Zugriffe auf <code>OWNCLOUD:</code>.</li>
-  <li>Es gibt kein Zeitlimit. Antwortet der Server nicht, hängt der
-  Zugriff so lange mit.</li>
+  <li>Immer nur eine Server-Anfrage zur Zeit. Während eine große Datei
+  übertragen wird, beantwortet <code>OWNCLOUD:</code> trotzdem alles, was
+  ohne Server geht (<code>Info</code>, Lesen und Schreiben geöffneter
+  Dateien, frisch gelesene Verzeichnisse); alles andere wartet.</li>
+  <li>Fließen <code>timeout</code> Sekunden lang (Standard 120) keine Daten
+  oder bricht die Verbindung ab, scheitert der Zugriff mit „No disk
+  present“; DOS bietet <em>Wiederholen</em> an. Abgebrochene Downloads setzt
+  der Worker an der Abbruchstelle fort. <code>Break</code> auf
+  <code>owncloud-worker</code> bricht eine laufende Übertragung ab.</li>
+  <li>Scheitert beim Schließen einer geänderten Datei das Hochladen, meldet
+  <code>Close()</code> einen Fehler, und der Inhalt liegt in
+  <code>T:AmiOwnCloud-unsaved/</code>.</li>
   <li>Der Handler lässt sich nicht aushängen. Zum Entfernen und nach
   Änderungen an <code>owncloud.cfg</code>: neu starten.</li>
-  <li>Verzeichnislisten werden 10&nbsp;Sekunden zwischengespeichert. Was
-  ein anderes Gerät auf dem Server ändert, erscheint mit bis zu 10&nbsp;s
-  Verzögerung.</li>
+  <li>Verzeichnislisten werden 30&nbsp;Sekunden zwischengespeichert
+  (<code>cache_ttl</code>). Was ein anderes Gerät auf dem Server ändert,
+  erscheint entsprechend verzögert.</li>
   <li>Keine Prüfsummen bei Up- und Download (WebDAV liefert keine).</li>
 </ul>
 
@@ -885,8 +897,17 @@ Neustart, Zugriff wiederholen, dann <code>Type T:owncloud.log</code>.
 Zusätzlich <code>Type OWNCLOUD:debuglog</code>.</p>
 
 <h4>OWNCLOUD: reagiert nicht mehr</h4>
-<p>Es gibt kein Zeitlimit: solange der Server nicht antwortet, hängt jeder
-Zugriff. Netzwerk prüfen; im Zweifel neu starten.</p>
+<p>Eine Anfrage scheitert erst, wenn <code>timeout</code> Sekunden
+(Standard 120) gar keine Daten fließen; bis dahin wartet ein Zugriff, der
+den Server braucht. <code>Break</code> auf <code>owncloud-worker</code>
+bricht die laufende Übertragung sofort ab. Netzwerk prüfen.</p>
+
+<h4>Langsame Verbindung (Modem), Übertragungen brechen ab</h4>
+<p>Alle Timeouts greifen nur bei Stillstand. Bricht es trotzdem ab,
+<code>timeout=300</code> setzen. Abgebrochene Downloads werden fortgesetzt,
+nicht neu begonnen. <kbd>Ctrl-C</kbd> bricht <code>webdavsync</code> ab,
+<code>Break</code> auch AmiCloudSync. Für <code>OWNCLOUD:</code> lohnt
+<code>cache_ttl=300</code>.</p>
 
 <h4>AmiCloudSync meldet „… Fehler!“, aber nicht welcher</h4>
 <p>Die Commodity hat keine eigene Konsole. In
@@ -931,7 +952,7 @@ Konflikt.</p>
   <li>Schutzbits und Dateikommentare werden nicht gespeichert.</li>
   <li><code>Info</code> zeigt keine echte Belegung.</li>
   <li>Geöffnete Dateien liegen komplett im RAM.</li>
-  <li>Ein Zugriff zur Zeit, kein Zeitlimit.</li>
+  <li>Eine Server-Anfrage zur Zeit; Timeout nur bei Stillstand.</li>
   <li>Kein Aushängen; Konfigurationsänderungen erst nach Neustart.</li>
 </ul>
 <h3>AmiCloudSync</h3>
@@ -1058,12 +1079,13 @@ href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOw
 </table>
 <table>
 <tr><th>Handbuch</th><th>Änderungen</th></tr>
+<tr><td>1.1 (23.10.2026)</td><td>Langsame Verbindungen: <code>timeout</code>, <code>cache_ttl</code>, Fortsetzen von Downloads, <code>Break</code>/<kbd>Ctrl-C</kbd>, <code>T:AmiOwnCloud-unsaved</code>.</td></tr>
 <tr><td>1.0 (27.09.2026)</td><td>AmiOwnCloud als eigenes Projekt; neues Handbuch <code>AmiOwnCloud.guide</code> / <code>AmiOwnCloud-Handbuch.html</code> (ersetzt AmiCloudSync.guide / AmiCloudSync-Handbuch.html), deckt Handler, OwnCloudPrefs, AmiCloudSync, AmiCloudSyncPrefs, webdavsync und webdavsynctest ab. Neu: Installationsschublade mit Install-AmiOwnCloud / Uninstall-AmiOwnCloud, webdavsync auch für den Amiga.</td></tr>
 <tr><td>0.3 (17.07.2026)</td><td>AmiCloudSync-Handbuch mit Kapitel zum <code>OWNCLOUD:</code>-Handler.</td></tr>
 </table>
 
 <footer>
-AmiOwnCloud – Handbuch 1.0 (27.09.2026). Inhaltsgleich mit dem
+AmiOwnCloud – Handbuch 1.1 (23.10.2026). Inhaltsgleich mit dem
 AmigaGuide-Handbuch <code>docs/user/AmiOwnCloud.guide</code>. Lizenz:
 GPL-3.0-or-later.
 </footer>

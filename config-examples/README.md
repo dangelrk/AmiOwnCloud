@@ -36,6 +36,8 @@ am Anfang sind Kommentare. Bekannte Schlüssel:
 | `debug` | Nur Amiga, nur `owncloud.cfg` und `AmiCloudSync.cfg`: Datei für das HTTP-Protokoll (z. B. `T:owncloud.log`) | leer = aus |
 | `gmt_offset` | Nur `owncloud.cfg`: Abstand Ortszeit zu UTC in Minuten (MEZ = `60`) | `0` |
 | `dst` | Nur `owncloud.cfg`: Sommerzeit aktiv (`1`) oder nicht (`0`) | `0` |
+| `timeout` | Netz-Timeout in Sekunden: so lange darf eine Verbindung ganz ohne Datenfluss bleiben; nie eine Grenze für eine ganze Übertragung (Modem!) | `120` |
+| `cache_ttl` | Nur `owncloud.cfg`: Lebensdauer der Verzeichnislisten von `OWNCLOUD:` in Sekunden; über ein Modem lohnen 120–300 | `30` |
 
 `AmiCloudSync.cfg` kennt zusätzlich:
 

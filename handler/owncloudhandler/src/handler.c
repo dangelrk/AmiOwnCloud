@@ -74,6 +74,14 @@ const char amiga_ver[] = "$VER: owncloud-handler 0.1 (27.09.2026)";
 static void reply_pkt(struct DosPacket *pkt, LONG res1, LONG res2);
 static void register_volume(struct Process *proc);
 static void dispatch(struct DosPacket *pkt);
+static void serve_while_busy(void);
+
+/* Packets that arrived while a request to the worker was running and
+ * need the network themselves -- answered in arrival order as soon as
+ * the packet loop is free again (see serve_while_busy()). Linked through
+ * each packet's own exec Message node, which we own between GetMsg()
+ * and the reply. */
+static struct List g_deferred;
 
 void __saveds _start(void)
 {
@@ -132,12 +140,69 @@ void __saveds _start(void)
     CloseLibrary((struct Library *)DOSBase);
     DOSBase = (struct DosLibrary *)0;
 
+    g_deferred.lh_Head     = (struct Node *)&g_deferred.lh_Tail;
+    g_deferred.lh_Tail     = (struct Node *)0;
+    g_deferred.lh_TailPred = (struct Node *)&g_deferred.lh_Head;
+    backend_set_busy_hook(&proc->pr_MsgPort, serve_while_busy);
+
     for (;;) {
-        WaitPort(&proc->pr_MsgPort);
-        while ((msg = GetMsg(&proc->pr_MsgPort)) != (struct Message *)0) {
-            pkt = (struct DosPacket *)msg->mn_Node.ln_Name;
+        /* Deferred packets are older than anything still in the port. */
+        msg = (struct Message *)RemHead(&g_deferred);
+        if (!msg) {
+            WaitPort(&proc->pr_MsgPort);
+            msg = GetMsg(&proc->pr_MsgPort);
+            if (!msg) continue;
+        }
+        pkt = (struct DosPacket *)msg->mn_Node.ln_Name;
+        dispatch(pkt);
+        PutMsg(pkt->dp_Port, pkt->dp_Link);
+    }
+}
+
+/* Packets that can be answered from memory alone, without a worker round
+ * trip and without creating or freeing tree nodes -- safe to run while
+ * another packet's request is still out at the worker (that one holds
+ * CNode pointers; only network actions ever free nodes, and those wait).
+ * Examine counts only while its directory listing is fresh. */
+static int answerable_while_busy(struct DosPacket *pkt)
+{
+    switch (pkt->dp_Type) {
+    case ACTION_IS_FILESYSTEM:
+    case ACTION_DISK_INFO:
+    case ACTION_INFO:
+    case ACTION_CURRENT_VOLUME:
+    case ACTION_FLUSH:
+    case ACTION_READ:
+    case ACTION_WRITE:
+    case ACTION_SEEK:
+    case ACTION_SET_FILE_SIZE:
+    case ACTION_EXAMINE_FH:
+    case ACTION_SAME_LOCK:
+    case ACTION_FREE_LOCK:
+        return 1;
+    case ACTION_EXAMINE_OBJECT:
+    case ACTION_EXAMINE_NEXT:
+        return vol_is_fresh(vol_node_from_lock(pkt->dp_Arg1));
+    default:
+        return 0;
+    }
+}
+
+/* backend_send()'s busy hook (see backend.h): drains our packet port
+ * while the worker is busy, answering what needs no network right away
+ * and queueing the rest for the packet loop. One slow download no longer
+ * freezes Info, Workbench's disk gauge or reading other open files. */
+static void serve_while_busy(void)
+{
+    struct Message *msg;
+
+    while ((msg = GetMsg(g_my_port)) != (struct Message *)0) {
+        struct DosPacket *pkt = (struct DosPacket *)msg->mn_Node.ln_Name;
+        if (answerable_while_busy(pkt)) {
             dispatch(pkt);
             PutMsg(pkt->dp_Port, pkt->dp_Link);
+        } else {
+            AddTail(&g_deferred, &msg->mn_Node);
         }
     }
 }

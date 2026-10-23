@@ -13,6 +13,7 @@ CNode *g_root;
 
 static ULONG g_seq = 0;
 static LONG  g_now = 0; /* see vol_note_now() */
+static LONG  g_lookup_err = 0; /* see vol_lookup_error() */
 
 ULONG vol_next_seq(void)
 {
@@ -91,9 +92,16 @@ static CNode *vol_find_child_raw(CNode *dir, const char *name)
 
 CNode *vol_find_child(CNode *dir, const char *name)
 {
+    g_lookup_err = 0;
     if (!dir) return (CNode *)0;
-    vol_ensure_fresh(dir);
+    g_lookup_err = vol_ensure_fresh(dir);
+    if (g_lookup_err) return (CNode *)0;
     return vol_find_child_raw(dir, name);
+}
+
+LONG vol_lookup_error(void)
+{
+    return g_lookup_err;
 }
 
 int vol_is_ancestor(CNode *maybe_ancestor, CNode *node)
@@ -181,7 +189,7 @@ void vol_invalidate(CNode *dir)
     if (dir) dir->listed = 0;
 }
 
-void vol_refresh(CNode *dir)
+LONG vol_refresh(CNode *dir)
 {
     char path[512];
     LONG err;
@@ -189,11 +197,11 @@ void vol_refresh(CNode *dir)
     int i;
     CNode *c, *next;
 
-    if (dir->type != CN_DIR) return;
+    if (dir->type != CN_DIR) return 0;
 
     vol_build_path(dir, path, sizeof(path));
     err = backend_send(WREQ_LIST, path, (const char *)0, (UBYTE *)0, 0, (const struct DateStamp *)0, 0, (const char *)0, &reply);
-    if (err) return; /* leave the existing cache as-is; next access retries */
+    if (err) return err; /* leave the existing cache as-is; next access retries */
 
     vol_note_now(reply->server_now);
 
@@ -241,15 +249,31 @@ void vol_refresh(CNode *dir)
     }
 
     dir->listed = 1;
+    dir->ever_listed = 1;
     dir->cache_time = g_now;
 
     if (reply->entries) FreeVec(reply->entries);
+    return 0;
 }
 
-void vol_ensure_fresh(CNode *dir)
+int vol_is_fresh(CNode *dir)
 {
-    if (dir->type != CN_DIR) return;
-    if (!dir->listed || (g_now - dir->cache_time) > CACHE_TTL) vol_refresh(dir);
+    LONG now = g_now > backend_now() ? g_now : backend_now();
+    LONG ttl = backend_cache_ttl() > 0 ? backend_cache_ttl() : CACHE_TTL;
+
+    if (dir->type != CN_DIR) return 1;
+    return dir->listed && (now - dir->cache_time) <= ttl;
+}
+
+LONG vol_ensure_fresh(CNode *dir)
+{
+    int never_listed;
+    LONG err;
+
+    if (vol_is_fresh(dir)) return 0;
+    never_listed = !dir->ever_listed;
+    err = vol_refresh(dir);
+    return never_listed ? err : 0;
 }
 
 /* ---- locks ------------------------------------------------------------ */
