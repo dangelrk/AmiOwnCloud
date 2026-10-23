@@ -14,6 +14,8 @@ CNode *g_root;
 static ULONG g_seq = 0;
 static LONG  g_now = 0; /* see vol_note_now() */
 static LONG  g_lookup_err = 0; /* see vol_lookup_error() */
+static int   g_offline = 0;    /* see vol_set_offline() */
+static int   g_would_block = 0;
 
 ULONG vol_next_seq(void)
 {
@@ -265,12 +267,27 @@ int vol_is_fresh(CNode *dir)
     return dir->listed && (now - dir->cache_time) <= ttl;
 }
 
+void vol_set_offline(int on)
+{
+    g_offline = on;
+    g_would_block = 0;
+}
+
+int vol_would_block(void)
+{
+    return g_would_block;
+}
+
 LONG vol_ensure_fresh(CNode *dir)
 {
     int never_listed;
     LONG err;
 
     if (vol_is_fresh(dir)) return 0;
+    if (g_offline) {
+        g_would_block = 1;
+        return ERROR_OBJECT_NOT_FOUND; /* result is discarded, see vol.h */
+    }
     never_listed = !dir->ever_listed;
     err = vol_refresh(dir);
     return never_listed ? err : 0;

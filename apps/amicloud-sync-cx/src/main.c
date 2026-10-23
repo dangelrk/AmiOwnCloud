@@ -104,8 +104,8 @@ static int sync_progress(long done, long total, const char *name)
     char line[256], rate[24];
     int  redraw;
 
-    /* Ctrl-C ("Break" on this process) stops the sync; the signal stays
-     * set, so the main loop then ends the commodity as usual. */
+    /* Ctrl-C ("Break" on this process) stops the sync; it stays latched
+     * (ui_hooks.h), so the main loop then ends the commodity as usual. */
     if (ui_break_pending()) return 0;
     if (!name) name = "";
     if (strcmp(name, g_sync_last_name) != 0 || done < g_sync_rate.last_bytes) {
@@ -309,6 +309,7 @@ int main(int argc, char *argv[])
         if (autosync_enabled) sigmask |= ac_timer_sigmask();
         if (window_open)      sigmask |= gui_sigmask();
 
+        if (ui_break_pending()) break; /* Ctrl-C during a sync, see sync_progress() */
         sig = Wait(sigmask);
 
         if (sig & SIGBREAKF_CTRL_C) running = 0;

@@ -163,7 +163,9 @@ void __saveds _start(void)
  * trip and without creating or freeing tree nodes -- safe to run while
  * another packet's request is still out at the worker (that one holds
  * CNode pointers; only network actions ever free nodes, and those wait).
- * Examine counts only while its directory listing is fresh. */
+ * 1 = always, 2 = only if no directory on its way needs refreshing (tried
+ * in vol offline mode, queued if it would block), 0 = never. Lock/Examine
+ * matter most: Info, List and Workbench all Lock() first. */
 static int answerable_while_busy(struct DosPacket *pkt)
 {
     switch (pkt->dp_Type) {
@@ -180,9 +182,14 @@ static int answerable_while_busy(struct DosPacket *pkt)
     case ACTION_SAME_LOCK:
     case ACTION_FREE_LOCK:
         return 1;
+    case ACTION_LOCATE_OBJECT:
     case ACTION_EXAMINE_OBJECT:
     case ACTION_EXAMINE_NEXT:
-        return vol_is_fresh(vol_node_from_lock(pkt->dp_Arg1));
+    case ACTION_PARENT:
+    case ACTION_PARENT_FH:
+    case ACTION_COPY_DIR:
+    case ACTION_COPY_DIR_FH:
+        return 2;
     default:
         return 0;
     }
@@ -198,12 +205,20 @@ static void serve_while_busy(void)
 
     while ((msg = GetMsg(g_my_port)) != (struct Message *)0) {
         struct DosPacket *pkt = (struct DosPacket *)msg->mn_Node.ln_Name;
-        if (answerable_while_busy(pkt)) {
+        int how = answerable_while_busy(pkt);
+        int done = 0;
+
+        if (how == 1) {
             dispatch(pkt);
-            PutMsg(pkt->dp_Port, pkt->dp_Link);
-        } else {
-            AddTail(&g_deferred, &msg->mn_Node);
+            done = 1;
+        } else if (how == 2) {
+            vol_set_offline(1);
+            dispatch(pkt);
+            vol_set_offline(0);
+            done = !vol_would_block();
         }
+        if (done) PutMsg(pkt->dp_Port, pkt->dp_Link);
+        else      AddTail(&g_deferred, &msg->mn_Node);
     }
 }
 

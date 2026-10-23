@@ -154,6 +154,14 @@ LONG   vol_ensure_fresh(CNode *dir);
 /* 1 if using dir (or a file) right now needs no network round trip. */
 int    vol_is_fresh(CNode *dir);
 
+/* Offline mode for answering packets while a worker request is running
+ * (handler.c serve_while_busy()): with it on, a directory that would need
+ * a refresh is not refreshed; vol_ensure_fresh() fails instead and
+ * vol_would_block() turns 1, telling the caller to queue the packet and
+ * run it again later, ignoring whatever result it produced. */
+void   vol_set_offline(int on);
+int    vol_would_block(void);
+
 /* Forces dir's *next* access to refresh regardless of TTL (docs/handler-
  * plan.md Stufe 2: mutations "invalidieren Parent" after applying their
  * own change to the tree directly). Safe to call on NULL. */

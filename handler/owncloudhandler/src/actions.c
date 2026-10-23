@@ -759,7 +759,12 @@ void act_delete_object(struct DosPacket *pkt)
 
     parent = rp.node->parent;
     vol_unlink(rp.node);
-    vol_free_node(rp.node);
+    /* Someone may have locked it while the request was out (Lock is
+     * answered during a running request, handler.c serve_while_busy()):
+     * then it stays allocated -- detached, so nothing finds it anymore --
+     * rather than leaving that lock pointing at freed memory. */
+    if (rp.node->lock_count == 0 && !rp.node->excl_lock && rp.node->open_count == 0)
+        vol_free_node(rp.node);
     vol_invalidate(parent);
     pkt->dp_Res1 = DOSTRUE;
     pkt->dp_Res2 = 0;
