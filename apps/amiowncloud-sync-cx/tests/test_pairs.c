@@ -2,15 +2,15 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * test_pairs.c -- host round-trip regression test for AmiCloudSync's
- * pairs.c (apps/amicloud-sync-cx/src/pairs.c). Compiles the REAL
+ * test_pairs.c -- host round-trip regression test for AmiOwnCloudSync's
+ * pairs.c (apps/amiowncloud-sync-cx/src/pairs.c). Compiles the REAL
  * project sources (pairs.c + libcloudcore's config.c) natively, no
  * PLATFORM_AMIGA, no cross-toolchain -- just system cc. Not part of any
  * Amiga Makefile.amiga-cross's OWN_SRCS, so it's never pulled into the
- * AmiCloudSync/AmiCloudSyncPrefs binaries.
+ * AmiOwnCloudSync/AmiOwnCloudSyncPrefs binaries.
  *
  * Written to reproduce a reported bug: "several folder pairs can be
- * added in AmiCloudSyncPrefs, but loading only returns the first one,
+ * added in AmiOwnCloudSyncPrefs, but loading only returns the first one,
  * and after saving only one remains in the file." Found and fixed:
  * pairs_load()'s line[]/val[] buffers (and config_load()'s, same bug)
  * were sized far smaller than AC_MAX_PATH/AC_MAX_URL, the very fields
@@ -52,7 +52,7 @@ static void dump_file(const char *path)
     printf("--- end (pair= lines counted: %d) ---\n\n", pair_lines);
 }
 
-/* Scenario 1: realistic short pairs -- the shape AmiCloudSyncPrefs users
+/* Scenario 1: realistic short pairs -- the shape AmiOwnCloudSyncPrefs users
  * actually create (short Amiga volume:dir paths, short WebDAV paths). */
 static int test_short_pairs(void)
 {

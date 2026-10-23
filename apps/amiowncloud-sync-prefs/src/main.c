@@ -2,15 +2,15 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * amicloudsync-prefs -- Preferences editor for AmiCloudSync.cfg (the
- * AmiCloudSync commodity, apps/amicloud-sync-cx). GadTools
+ * amiowncloud-sync-prefs -- Preferences editor for AmiOwnCloudSync.cfg (the
+ * AmiOwnCloudSync commodity, apps/amiowncloud-sync-cx). GadTools
  * window built on core/common's prefsgui.h toolbox (see repo plan
  * "Drei getrennte Prefs-Programme"); own program, no dependency on
  * amicloud-prefs or amivcs-prefs.
  *
- * Owns BOTH halves of AmiCloudSync.cfg: the OwnCloud profile
+ * Owns BOTH halves of AmiOwnCloudSync.cfg: the OwnCloud profile
  * (server/user/pass/verify_ssl) AND this commodity's own interval=/
- * pair= lines (apps/amicloud-sync-cx/src/pairs.h) -- the
+ * pair= lines (apps/amiowncloud-sync-cx/src/pairs.h) -- the
  * folder-pair add/edit/remove UI that used to live in the commodity's
  * own gui.c has moved here; the commodity itself now only shows a
  * read-only list and syncs (see repo plan part D). pairs.{c,h} stays
@@ -23,9 +23,9 @@
  * legacy collection URL (containing "/remote.php/") still works too.
  *
  * Classic Workbench-Prefs USE/SAVE/CANCEL semantics (bindend, see the
- * plan): Benutzen writes only ENV:AmiCloudSync.cfg (live now, gone
- * after a reboot); Speichern writes ENVARC:AmiCloudSync.cfg AND
- * ENV:AmiCloudSync.cfg (live now, and permanent); Abbrechen writes
+ * plan): Benutzen writes only ENV:AmiOwnCloudSync.cfg (live now, gone
+ * after a reboot); Speichern writes ENVARC:AmiOwnCloudSync.cfg AND
+ * ENV:AmiOwnCloudSync.cfg (live now, and permanent); Abbrechen writes
  * nothing. The commodity itself now reads ENV: first, then ENVARC: (see
  * its main.c) -- so "Benutzen" takes effect on its very next autosync
  * tick or "Alle syncen" click without a restart. No third fallback: if
@@ -52,16 +52,16 @@
 #include <stdlib.h>
 
 long __stack = 65536;
-const char amiga_ver[] = "$VER: AmiCloudSyncPrefs " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: AmiOwnCloudSyncPrefs " AC_VERSION " (27.09.2026)";
 
-#define PREFS_ENV     "ENV:AmiCloudSync.cfg"
-#define PREFS_ENVARC  "ENVARC:AmiCloudSync.cfg"
+#define PREFS_ENV     "ENV:AmiOwnCloudSync.cfg"
+#define PREFS_ENVARC  "ENVARC:AmiOwnCloudSync.cfg"
 
 /* ------------------------------------------------------------------ */
 /* NewList()/AddTail()/RemHead() are amiga.lib (alib) helpers, not real
  * exec.library calls -- hand-rolled here rather than linking amiga.lib
  * for three trivial pointer-chases, same code (and rationale) as
- * apps/amicloud-sync-cx/src/gui.c. */
+ * apps/amiowncloud-sync-cx/src/gui.c. */
 static void ac_list_init(struct List *l)
 {
     l->lh_Head     = (struct Node *)&l->lh_Tail;
@@ -139,7 +139,7 @@ static void refresh_listview(struct Window *win, struct Gadget *lv, const PairLi
 /* own blocking prefsgui_wait_action() loop, reusing the main window's   */
 /* screen/VisualInfo via prefsgui's field helpers (only ever callable    */
 /* while the main window is open). Modelled on the dialog that used to   */
-/* live in amicloud-sync-cx/src/gui.c's run_pair_dialog().                */
+/* live in amiowncloud-sync-cx/src/gui.c's run_pair_dialog().                */
 /* ------------------------------------------------------------------ */
 
 #define DGID_LOCAL  1
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 
     /* Folder-pair listview -- plain CreateGadget (not in prefsgui's
      * toolbox; see this file's own list-node helpers above), same shape
-     * as amicloud-sync-cx/src/gui.c's read-only one but read-write here. */
+     * as amiowncloud-sync-cx/src/gui.c's read-only one but read-write here. */
     {
         struct NewGadget ng;
         memset(&ng, 0, sizeof(ng));
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
         WA_IDCMP,     IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | IDCMP_GADGETUP,
         WA_Flags,     WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET | WFLG_ACTIVATE | WFLG_RMBTRAP,
         WA_Gadgets,   (ULONG)glist,
-        WA_Title,     (ULONG)"AmiCloudSync-Einstellungen",
+        WA_Title,     (ULONG)"AmiOwnCloudSync-Einstellungen",
         WA_PubScreen, (ULONG)prefsgui_screen(),
         TAG_DONE);
     if (!win) goto fail;

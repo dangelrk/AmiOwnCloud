@@ -5,8 +5,8 @@ Diese Anleitung beschreibt, wie man AmiOwnCloud aus den Quellen baut:
 - **Amiga** (AmigaOS 3.x, 68000): alle Programme – per Cross-Compiler vbcc
   von macOS, Linux oder Windows aus, oder nativ auf dem Amiga mit dem
   Skript `Build-Amiga`.
-- **PC** (macOS, Linux, Windows): die Kommandozeilenprogramme `webdavsync`
-  und `webdavsynctest`.
+- **PC** (macOS, Linux, Windows): die Kommandozeilenprogramme `amiowncloud-sync`
+  und `amiowncloud-synctest`.
 
 Installation der fertigen Programme: [INSTALL.md](INSTALL.md).
 
@@ -14,12 +14,12 @@ Installation der fertigen Programme: [INSTALL.md](INSTALL.md).
 
 | Programm | Verzeichnis | Amiga | PC | Ausgabe |
 |---|---|:-:|:-:|---|
-| `owncloud-handler`, `owncloud-worker` | `handler/owncloudhandler` | ✓ | – | `bin/amiga/` |
-| `OwnCloudPrefs` | `apps/owncloud-prefs` | ✓ | – | `bin/amiga/` |
-| `AmiCloudSync` (Commodity) | `apps/amicloud-sync-cx` | ✓ | – | `bin/amiga/` |
-| `AmiCloudSyncPrefs` | `apps/amicloudsync-prefs` | ✓ | – | `bin/amiga/` |
-| `webdavsync` | `apps/webdavsync` | ✓ | ✓ | `bin/amiga/`, `bin/pc/` |
-| `webdavsynctest` | `apps/webdavsynctest` | ✓ | ✓ | `bin/amiga/`, `bin/pc/` |
+| `amiowncloud-handler`, `amiowncloud-worker` | `handler/owncloudhandler` | ✓ | – | `bin/amiga/` |
+| `AmiOwnCloudPrefs` | `apps/amiowncloud-prefs` | ✓ | – | `bin/amiga/` |
+| `AmiOwnCloudSync` (Commodity) | `apps/amiowncloud-sync-cx` | ✓ | – | `bin/amiga/` |
+| `AmiOwnCloudSyncPrefs` | `apps/amiowncloud-sync-prefs` | ✓ | – | `bin/amiga/` |
+| `amiowncloud-sync` | `apps/amiowncloud-sync` | ✓ | ✓ | `bin/amiga/`, `bin/pc/` |
+| `amiowncloud-synctest` | `apps/amiowncloud-synctest` | ✓ | ✓ | `bin/amiga/`, `bin/pc/` |
 
 AmiOwnCloud hat keine Qt- oder MUI-Programme; alle Amiga-Oberflächen sind
 GadTools/Commodities. `make qt` tut in diesem Projekt deshalb nichts.
@@ -67,8 +67,8 @@ Alle Ziele werden in der Projektwurzel aufgerufen (`make help` zeigt sie):
 Jedes Programm lässt sich auch einzeln bauen, z. B.:
 
 ```sh
-make -C apps/webdavsync -f Makefile.pc
-make -C apps/amicloud-sync-cx -f Makefile.amiga-cross
+make -C apps/amiowncloud-sync -f Makefile.pc
+make -C apps/amiowncloud-sync-cx -f Makefile.amiga-cross
 ```
 
 ## PC: macOS, Linux, Windows
@@ -94,7 +94,7 @@ sudo make install              # nach /usr/local/bin
 # oder z. B.:  make install PREFIX=$HOME/.local
 ```
 
-Ergebnis: `bin/pc/webdavsync` und `bin/pc/webdavsynctest`.
+Ergebnis: `bin/pc/amiowncloud-sync` und `bin/pc/amiowncloud-synctest`.
 
 **Getestet** wurde der PC-Build bisher nur unter macOS (Apple Silicon).
 Linux und Windows sind in den Makefiles vorgesehen, aber nicht
@@ -111,8 +111,8 @@ make pc
 ```
 
 Dort verhalten sich die Programme wie unter Linux (Konfiguration in
-`~/.webdavsyncrc`). In den Umgebungen „MINGW64“/„UCRT64“ würden sie als
-native Windows-Programme übersetzt (Konfiguration dann `webdavsync.cfg` im
+`~/.amiowncloud-syncrc`). In den Umgebungen „MINGW64“/„UCRT64“ würden sie als
+native Windows-Programme übersetzt (Konfiguration dann `amiowncloud-sync.cfg` im
 aktuellen Verzeichnis) – auch das ist ungetestet.
 
 ## Amiga: Cross-Compile mit vbcc (von macOS, Linux oder Windows)
@@ -262,8 +262,8 @@ ungetestet.**
 
 ### Host-Regressionstest für die Ordnerpaare
 
-`scripts/test_pairs.sh` übersetzt `apps/amicloud-sync-cx/tests/test_pairs.c`
-zusammen mit den echten Quellen `apps/amicloud-sync-cx/src/pairs.c` und
+`scripts/test_pairs.sh` übersetzt `apps/amiowncloud-sync-cx/tests/test_pairs.c`
+zusammen mit den echten Quellen `apps/amiowncloud-sync-cx/src/pairs.c` und
 `core/libcloudcore/src/config.c` mit dem Host-Compiler (`cc`) und prüft,
 dass Ordnerpaare – auch mit sehr langen Pfaden – verlustfrei gespeichert
 und wieder geladen werden. Kein Amiga und kein vbcc nötig:
@@ -274,10 +274,10 @@ scripts/test_pairs.sh
 
 ### Testsuite gegen einen echten Server
 
-`webdavsynctest` (PC und Amiga) prüft den Zwei-Wege-Abgleich gegen einen
+`amiowncloud-synctest` (PC und Amiga) prüft den Zwei-Wege-Abgleich gegen einen
 echten ownCloud/Nextcloud-Server – siehe Handbuch
 [AmiOwnCloud-Handbuch.html](user/AmiOwnCloud-Handbuch.html), Kapitel
-„webdavsynctest“.
+„amiowncloud-synctest“.
 
 ### Im Emulator (FS-UAE)
 
@@ -290,7 +290,7 @@ export FSUAE_CONFIG=/pfad/zu/entwicklung.fs-uae   # Pflicht
 export FSUAE_SHARED=/pfad/zu/shared               # Standard: build/fsuae-shared
 export FSUAE_BIN=/pfad/zu/fs-uae                  # Standard: fs-uae aus PATH bzw. FS-UAE.app
 make fsuae                                        # alle Programme
-make fsuae PROGS="owncloud-handler owncloud-worker"   # nur diese
+make fsuae PROGS="amiowncloud-handler amiowncloud-worker"   # nur diese
 ```
 
 In der FS-UAE-Konfiguration muss der geteilte Ordner als Laufwerk

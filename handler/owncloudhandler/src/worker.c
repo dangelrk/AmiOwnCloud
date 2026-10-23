@@ -2,12 +2,12 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * worker.c -- owncloud-worker: a normal AmigaOS process (full vbcc
+ * worker.c -- amiowncloud-worker: a normal AmigaOS process (full vbcc
  * startup, libc, bsdsocket/AmiSSL) that does all HTTP/TLS work on behalf
  * of the OWNCLOUD: handler, which is exec.library-only and can never
  * touch the network stack itself (see handler.c's file header). Talks to
  * the handler over proto.h's WorkerMsg protocol through the well-known
- * port AC_WORKER_PORT ("OwnCloud-Worker").
+ * port AC_WORKER_PORT ("AmiOwnCloud-Worker").
  *
  * Structurally identical to handler/cloudhandler/src/worker.c -- same
  * dispatch()/ensure_net_ready()/map_get_status()/map_put_status() shape,
@@ -58,7 +58,7 @@
 
 extern int ac_errors_to_stderr; /* http_amiga.c */
 
-const char amiga_ver[] = "$VER: owncloud-worker " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: amiowncloud-worker " AC_VERSION " (27.09.2026)";
 
 static AcConfig g_cfg;
 static int      g_net_ready = 0;
@@ -321,7 +321,7 @@ int main(int argc, char **argv)
 
     (void)argc; (void)argv;
 
-    config_load("ENV:owncloud.cfg", &g_cfg);
+    config_load("ENV:amiowncloud.cfg", &g_cfg);
 
     {
         UiHooks h;

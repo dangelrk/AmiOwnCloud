@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# OWNCLOUD: DOS handler + owncloud-worker -- AmigaOS 3.x (VBCC), CROSS-
+# OWNCLOUD: DOS handler + amiowncloud-worker -- AmigaOS 3.x (VBCC), CROSS-
 # compiled from a host (macOS/Linux/Windows) using the toolchain
 # described in docs/BUILD.md. For a *native* build on a
 # real/emulated Amiga, use Build-Amiga (project root) instead -- it is
@@ -13,11 +13,11 @@
 # compiled straight into this directory's obj/amiga/ and linked in
 # directly. Unlike handler/cloudhandler's own Makefile.amiga-cross, this
 # one deliberately leaves cmd.c and parson.c out of HTTP_SRCS/CORE_SRCS --
-# owncloud-worker never speaks AmiCloud's api.php/JSON protocol (see
+# amiowncloud-worker never speaks AmiCloud's api.php/JSON protocol (see
 # src/worker.c's file header), so it needs webdavcmd.c instead of cmd.c,
 # and has no use for parson.c at all.
 #
-# owncloud-handler is linked -nostdlib but still needs -lvc (actions.c's
+# amiowncloud-handler is linked -nostdlib but still needs -lvc (actions.c's
 # division needs vc.lib's __divs helper). -nostdlib only suppresses the
 # crt0 startup module, not vc.lib itself: leaving -lvc off fails with
 # "undefined symbol __divs". Because of -nostdlib, handler.o must also stay
@@ -59,11 +59,11 @@ WORKER_CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) \
                  -I$(AMISSL_INC) -I$(NET_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
 WORKER_LDFLAGS = $(TARGET) -L$(RUNTIME_LIB) -lmieee
 
-HANDLER      = $(BINDIR)/owncloud-handler
+HANDLER      = $(BINDIR)/amiowncloud-handler
 HANDLER_SRCS = handler actions vol util backend
 HANDLER_OBJS = $(HANDLER_SRCS:%=$(OBJDIR)/%.o)
 
-WORKER      = $(BINDIR)/owncloud-worker
+WORKER      = $(BINDIR)/amiowncloud-worker
 WORKER_OBJS = $(OBJDIR)/worker.o
 
 CORE_SRCS = config base64 md5 ui_hooks cloudtime progress

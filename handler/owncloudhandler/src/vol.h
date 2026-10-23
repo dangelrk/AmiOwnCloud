@@ -5,7 +5,7 @@
 #define OWNCLOUDHANDLER_VOL_H
 
 /*
- * vol.h -- the RAM tree behind CLOUD:. Stage 1 was the only copy of the
+ * vol.h -- the RAM tree behind OWNCLOUD:. Stage 1 was the only copy of the
  * data (a plain RAM filesystem); from Stage 2 on this is a *cache* of
  * server state (docs/handler-plan.md Stufe 2):
  *   - CNode no longer holds file content -- that lives per-open-handle on

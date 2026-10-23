@@ -1,16 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# amicloudsync-prefs -- AmigaOS 3.x (VBCC), CROSS-compiled from a host
-# (macOS/Linux/Windows) using the toolchain described in
+# amiowncloud-prefs -- AmigaOS 3.x (VBCC), CROSS-compiled from a host (macOS/
+# Linux/Windows) using the toolchain described in
 # docs/BUILD.md. GadTools/Intuition only (see core/common/
-# src/prefsgui.c) -- no MUI, so no MUI_INC/mui_stubs.[ch] and no -lamiga
-# (GadTools/Commodities have proper VBCC-native inline stubs in the NDK,
-# same reasoning as amicloud-sync-cx/Makefile.amiga-cross).
-#
-# Compiles apps/amicloud-sync-cx/src/pairs.c directly (PAIRS_DIR
-# below) -- that file is the ONE source for the PairList/SyncPair
-# interval=/pair= format shared with the AmiCloudSync commodity itself;
-# never copy it here.
+# src/prefsgui.c) -- no MUI, same shape as amicloud-prefs/Makefile.amiga-cross
+# (this program is a straight fork of it, see src/main.c's file header).
 #
 # No oml on the host, so this links directly against the lib .o files
 # (compiled into obj/amiga/ alongside this app's own objects) instead of
@@ -31,14 +25,12 @@ NDK_INC     = $(VBCC)/sdk/NDK_3.2/Include_H
 LIBS_DIR   = ../../core
 CORE_DIR   = $(LIBS_DIR)/libcloudcore
 COMMON_DIR = ../../core/common
-PAIRS_DIR  = ../amicloud-sync-cx/src
 
 CORE_INC   = $(CORE_DIR)/include/cloudcore
 COMMON_INC = $(COMMON_DIR)/include/common
 
 CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) \
-          -Isrc -I$(PAIRS_DIR) -I$(COMMON_INC) -I$(CORE_INC) \
-          -I$(NDK_INC) -I$(RUNTIME_INC)
+          -I$(COMMON_INC) -I$(CORE_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
 # -lmieee: config.c/parson (libcloudcore) use double arithmetic, which on
 # a 68000 (no FPU) needs mathieeedoubbas.library's stub routines --
 # undefined-symbol link errors otherwise.
@@ -46,13 +38,13 @@ LDFLAGS = $(TARGET) -L$(RUNTIME_LIB) -lmieee
 
 OBJDIR = obj/amiga
 BINDIR = ../../bin/amiga
-TARGET_BIN = $(BINDIR)/AmiCloudSyncPrefs
+TARGET_BIN = $(BINDIR)/AmiOwnCloudPrefs
 
 CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress
 CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
 
 OWN_SRCS = main
-OWN_OBJS = $(OWN_SRCS:%=$(OBJDIR)/%.o) $(OBJDIR)/prefsgui.o $(OBJDIR)/pairs.o
+OWN_OBJS = $(OWN_SRCS:%=$(OBJDIR)/%.o) $(OBJDIR)/prefsgui.o
 
 all: $(OBJDIR) $(BINDIR) $(TARGET_BIN)
 
@@ -66,9 +58,6 @@ $(OBJDIR)/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/prefsgui.o: $(COMMON_DIR)/src/prefsgui.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJDIR)/pairs.o: $(PAIRS_DIR)/pairs.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/core_%.o: $(CORE_DIR)/src/%.c

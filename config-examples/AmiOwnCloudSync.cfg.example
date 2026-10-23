@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# AmiCloudSync-Einstellungen (AmiOwnCloud) -- Commodity AmiCloudSync
-# (apps/amicloud-sync-cx), eigenes Profil (siehe config-examples/README.md).
+# AmiOwnCloudSync-Einstellungen (AmiOwnCloud) -- Commodity AmiOwnCloudSync
+# (apps/amiowncloud-sync-cx), eigenes Profil (siehe config-examples/README.md).
 #
-# Ablage:         ENV:AmiCloudSync.cfg (Benutzen) / ENVARC:AmiCloudSync.cfg
+# Ablage:         ENV:AmiOwnCloudSync.cfg (Benutzen) / ENVARC:AmiOwnCloudSync.cfg
 #                 (Speichern). Die Commodity liest ENV: zuerst, dann
 #                 ENVARC: -- kein weiterer Ort. Gibt es keine der beiden,
 #                 ist das einfach der erste Start: alle Felder leer.
-# Gelesen von:    AmiCloudSync (beim Start, beim Oeffnen des Fensters, bei
+# Gelesen von:    AmiOwnCloudSync (beim Start, beim Oeffnen des Fensters, bei
 #                 jedem Autosync und bei "Neu laden")
-# Bearbeitet mit: AmiCloudSyncPrefs -- Benutzen schreibt nur nach ENV:,
+# Bearbeitet mit: AmiOwnCloudSyncPrefs -- Benutzen schreibt nur nach ENV:,
 #                 Speichern nach ENVARC: UND ENV:, Abbrechen schreibt nichts.
 #
-# ACHTUNG: AmiCloudSyncPrefs schreibt die Datei beim Benutzen/Speichern
+# ACHTUNG: AmiOwnCloudSyncPrefs schreibt die Datei beim Benutzen/Speichern
 # komplett neu -- Kommentare und von Hand ergaenzte Zeilen (z.B. debug=)
 # gehen dabei verloren. Diese Datei ist nur ein Beispiel zum Nachvollziehen
 # bzw. zum Anlegen von Hand.
@@ -35,7 +35,7 @@ pass=geheim
 # "... Fehler!" in der Statuszeile. Mit debug= landen hier jede
 # HTTP-Anfrage/-Antwort und je fehlgeschlagener Aktion die betroffene
 # Datei. T: liegt in der RAM-Disk (weg nach Reboot). Nur von Hand setzbar.
-#debug=T:AmiCloudSync.log
+#debug=T:AmiOwnCloudSync.log
 
 # Autosync-Intervall in Minuten (Standard 15; 0 oder negativ = kein
 # Autosync, nur manueller Abgleich im Fenster). OB Autosync laeuft, wird

@@ -149,7 +149,7 @@ static LONG resolve(CNode *base, const char *cpath, ResolvedPath *rp)
     if (rp->leaf[0] == '\0') { rp->node = rp->dir; return 0; }
     rp->node = vol_find_child(rp->dir, rp->leaf);
     /* Directory not listable (server unreachable): say so instead of
-     * "not found" -- a Copy to CLOUD: must not think it may create it. */
+     * "not found" -- a Copy to OWNCLOUD: must not think it may create it. */
     if (!rp->node && vol_lookup_error()) return vol_lookup_error();
     return 0;
 }

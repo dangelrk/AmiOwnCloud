@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * AmiCloudSync -- OwnCloud-Sync-Commodity for AmigaOS 3.x (see the
+ * AmiOwnCloudSync -- OwnCloud-Sync-Commodity for AmigaOS 3.x (see the
  * project plan). Registers a CxBroker (commodity.c) so it shows up in
  * Exchange and responds to Enable/Disable/Appear/Disappear/Kill; a
  * HotKey toggles a GadTools window (gui.c) listing local<->remote
@@ -21,16 +21,16 @@
  *
  * All settings -- the OwnCloud profile (server/username/password),
  * verify_ssl, the autosync interval, AND the folder-pair list -- are
- * edited by the separate amicloudsync-prefs program now (see repo plan
+ * edited by the separate amiowncloud-sync-prefs program now (see repo plan
  * "Drei getrennte Prefs-Programme"), never by this commodity itself:
  * this GUI (gui.c) only ever DISPLAYS the pair list (read-only) and
  * triggers "Jetzt syncen"/"Alle syncen"; it never writes
- * AmiCloudSync.cfg. Reads ENV: first, then ENVARC: (see below) -- so
- * amicloudsync-prefs's "Benutzen" (ENV: only) takes effect on this
+ * AmiOwnCloudSync.cfg. Reads ENV: first, then ENVARC: (see below) -- so
+ * amiowncloud-sync-prefs's "Benutzen" (ENV: only) takes effect on this
  * commodity's very next start, autosync tick, without needing a
  * "Speichern". No third fallback: if neither exists yet, that's simply
  * the very first run -- cfg/pl come back at their empty/default state
- * (see pairs_load()'s own doc), same as amicloudsync-prefs shows an
+ * (see pairs_load()'s own doc), same as amiowncloud-sync-prefs shows an
  * empty form in that case. Nothing to fall back TO.
  */
 #include "amicloud.h"
@@ -56,10 +56,10 @@
 #include <stdlib.h>
 
 long __stack = 65536;
-const char amiga_ver[] = "$VER: AmiCloudSync " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: AmiOwnCloudSync " AC_VERSION " (27.09.2026)";
 
-#define PREFS_ENV     "ENV:AmiCloudSync.cfg"
-#define PREFS_ENVARC  "ENVARC:AmiCloudSync.cfg"
+#define PREFS_ENV     "ENV:AmiOwnCloudSync.cfg"
+#define PREFS_ENVARC  "ENVARC:AmiOwnCloudSync.cfg"
 #define DEFAULT_HOTKEY "ctrl alt a"
 
 /* CX_POPKEY is the conventional tooltype name real Amiga commodities use
@@ -156,9 +156,9 @@ static int profile_incomplete(const AcConfig *cfg)
     return !cfg->server[0] || !cfg->username[0] || !cfg->password[0];
 }
 
-/* This process loads AmiCloudSync.cfg exactly once at startup and
+/* This process loads AmiOwnCloudSync.cfg exactly once at startup and
  * then runs for hours/days (Exchange-managed commodity) -- if
- * amicloudsync-prefs edits it (Benutzen/Speichern) while THIS is
+ * amiowncloud-sync-prefs edits it (Benutzen/Speichern) while THIS is
  * already running, nothing here would ever notice without an explicit
  * re-read. Called before the pair window opens and before every
  * autosync tick, so a running commodity picks up edited settings
@@ -188,7 +188,7 @@ static void reload_prefs(AcConfig *cfg, PairList *pl, char *prefs_path, size_t p
 
     pairs_load(prefs_path, cfg, pl);
 
-    /* Wire cfg->debug (e.g. "debug=T:AmiCloudSync.log" in AmiCloudSync.cfg)
+    /* Wire cfg->debug (e.g. "debug=T:AmiOwnCloudSync.log" in AmiOwnCloudSync.cfg)
      * to http_amiga.c's verbose HTTP log AND sync.c's ac_log_printf() error
      * detail (see sync.c's out->errors++ sites) -- same mechanism
      * handler/cloudhandler/src/worker.c already uses for its own
@@ -198,7 +198,7 @@ static void reload_prefs(AcConfig *cfg, PairList *pl, char *prefs_path, size_t p
      * console of its own and never calls ui_set_hooks(), so ui_notify()'s
      * default printf() goes nowhere when launched from Workbench/
      * WBStartup. Re-run on every reload_prefs() call, not just at
-     * startup, so editing debug= in amicloudsync-prefs and clicking "Neu
+     * startup, so editing debug= in amiowncloud-sync-prefs and clicking "Neu
      * laden" takes effect without a restart. */
     if (cfg->debug[0]) {
         http_log_bptr = 1;
@@ -219,13 +219,13 @@ static void startup_error(int from_shell, const char *text)
     struct EasyStruct es;
     ULONG args[1];
 
-    if (from_shell) fprintf(stderr, "AmiCloudSync: %s\n", text);
+    if (from_shell) fprintf(stderr, "AmiOwnCloudSync: %s\n", text);
 
     IntuitionBase = (struct IntuitionBase *)OpenLibrary((CONST_STRPTR)"intuition.library", 37L);
     if (!IntuitionBase) return;
     es.es_StructSize   = sizeof(es);
     es.es_Flags        = 0;
-    es.es_Title        = (UBYTE *)"AmiCloudSync";
+    es.es_Title        = (UBYTE *)"AmiOwnCloudSync";
     es.es_TextFormat   = (UBYTE *)"%s";
     es.es_GadgetFormat = (UBYTE *)"OK";
     args[0] = (ULONG)text;
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
         ui_set_hooks(&h);
     }
 
-    /* ENV: first, then ENVARC: -- amicloudsync-prefs's "Benutzen" writes
+    /* ENV: first, then ENVARC: -- amiowncloud-sync-prefs's "Benutzen" writes
      * only ENV: (see repo plan's USE/SAVE/CANCEL semantics), so it must
      * outrank ENVARC: here for that to take effect without a
      * "Speichern". */
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!ac_commodity_open("AMICLOUDSYNC", "AmiCloudSync",
+    if (!ac_commodity_open("AMIOWNCLOUDSYNC", "AmiOwnCloudSync",
                            "OwnCloud-Ordnerabgleich", hotkey)) {
         /* NULL = another instance is already running and has been told
          * to show its window -- quitting quietly is correct then. */
@@ -323,17 +323,17 @@ int main(int argc, char *argv[])
             case CX_ACTION_TOGGLE_WINDOW:
                 if (window_open) { gui_close(); window_open = 0; }
                 else {
-                    /* Pick up anything amicloudsync-prefs saved while
+                    /* Pick up anything amiowncloud-sync-prefs saved while
                      * this commodity sat running in the background --
                      * see reload_prefs()'s own comment. */
                     reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
-                    window_open = gui_open(&pl, "AmiCloudSync");
+                    window_open = gui_open(&pl, "AmiOwnCloudSync");
                 }
                 break;
             case CX_ACTION_SHOW_WINDOW:
                 if (!window_open) {
                     reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
-                    window_open = gui_open(&pl, "AmiCloudSync");
+                    window_open = gui_open(&pl, "AmiOwnCloudSync");
                 } else {
                     gui_show();
                 }
@@ -349,12 +349,12 @@ int main(int argc, char *argv[])
         if (autosync_enabled && (sig & ac_timer_sigmask())) {
             ac_timer_consume();
             /* Same reload as opening the window -- an autosync tick is
-             * the other place "did amicloudsync-prefs save something
+             * the other place "did amiowncloud-sync-prefs save something
              * new while I was running" needs to be picked up. */
             reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
             if (window_open) gui_refresh_list(&pl);
             if (profile_incomplete(&cfg)) {
-                if (window_open) gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiCloudSync.cfg");
+                if (window_open) gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiOwnCloudSync.cfg");
             } else {
                 int i;
                 for (i = 0; i < pl.n; i++) {
@@ -373,13 +373,13 @@ int main(int argc, char *argv[])
             case GUI_ACT_CLOSE:
                 /* Nothing to persist here anymore -- this window is
                  * read-only (see repo plan part D); pair edits happen
-                 * exclusively in amicloudsync-prefs now. */
+                 * exclusively in amiowncloud-sync-prefs now. */
                 gui_close();
                 window_open = 0;
                 break;
             case GUI_ACT_SYNC_ONE:
                 if (profile_incomplete(&cfg)) {
-                    gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiCloudSync.cfg");
+                    gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiOwnCloudSync.cfg");
                 } else if (sel >= 0 && sel < pl.n) {
                     char status[256];
                     gui_set_status("Synchronisiere...");
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
                 break;
             case GUI_ACT_SYNC_ALL:
                 if (profile_incomplete(&cfg)) {
-                    gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiCloudSync.cfg");
+                    gui_set_status("Profil unvollstaendig (Server/Benutzer/Passwort) -- siehe AmiOwnCloudSync.cfg");
                 } else {
                     int i;
                     for (i = 0; i < pl.n; i++) {
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
                 }
                 break;
             case GUI_ACT_REFRESH:
-                /* Manual "I just saved in AmiCloudSyncPrefs, notice
+                /* Manual "I just saved in AmiOwnCloudSyncPrefs, notice
                  * it NOW" -- reload_prefs() already runs automatically
                  * on window-open and before every autosync tick, but
                  * this window may have been open the whole time. */

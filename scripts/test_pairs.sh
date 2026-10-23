@@ -1,9 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# AmiCloudSync-Ordnerpaar-Regressionstest -- kompiliert und laeuft nativ
+# AmiOwnCloudSync-Ordnerpaar-Regressionstest -- kompiliert und laeuft nativ
 # auf dem Host (kein Amiga/vbcc noetig), gegen die ECHTEN Projekt-Quellen
-# apps/amicloud-sync-cx/src/pairs.c und
+# apps/amiowncloud-sync-cx/src/pairs.c und
 # core/libcloudcore/src/config.c.
 #
 # Prueft den Ordnerpaar-Speicher/Lade-Round-Trip (pairs_save/pairs_load),
@@ -17,7 +17,7 @@
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SYNC_CX="$ROOT/apps/amicloud-sync-cx"
+SYNC_CX="$ROOT/apps/amiowncloud-sync-cx"
 CORE="$ROOT/core/libcloudcore"
 OUT="$(mktemp -d)"
 trap 'rm -rf "$OUT"' EXIT

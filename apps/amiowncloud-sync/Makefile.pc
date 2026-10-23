@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# webdavsync — one-shot local<->WebDAV folder sync CLI, linked against
+# amiowncloud-sync — one-shot local<->WebDAV folder sync CLI, linked against
 # libcloudsync + libcloudhttp + libcloudfs + libcloudcore. Verifies Teil A
 # of the OwnCloud-Sync-Commodity plan (transport-neutral sync kernel +
 # WebDAV transport) against a real OwnCloud/Nextcloud server, before any
@@ -36,7 +36,7 @@ BINDIR = ../../bin/pc
 LIBDIR = ../../lib/pc
 LDFLAGS = -L$(LIBDIR) $(PKG_LF)
 
-TARGET = $(BINDIR)/webdavsync
+TARGET = $(BINDIR)/amiowncloud-sync
 OBJS   = $(OBJDIR)/main.o
 
 all: libs $(TARGET)

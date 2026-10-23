@@ -2,25 +2,25 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * owncloud-prefs -- Preferences editor for owncloud.cfg (owncloud-worker,
+ * amiowncloud-prefs -- Preferences editor for amiowncloud.cfg (amiowncloud-worker,
  * the backend behind the OWNCLOUD: DOS handler, handler/owncloudhandler
  * -- see config-examples/README.md's table). GadTools window built on
  * core/common's prefsgui.h toolbox (see repo plan "Drei getrennte
  * Prefs-Programme"), same field set as amicloud-prefs (AcConfig is
  * shared): own program, no dependency on amicloud-prefs, amivcs-prefs
- * or amicloudsync-prefs.
+ * or amiowncloud-sync-prefs.
  *
- * owncloud.cfg talks WebDAV to a plain ownCloud/Nextcloud server, not
+ * amiowncloud.cfg talks WebDAV to a plain ownCloud/Nextcloud server, not
  * AmiCloud's api.php -- "server" here is either a bare host or a full
  * "/remote.php/dav/files/USER" collection URL (see webdavcmd.h), and
- * credentials are never shared with amicloud.cfg/AmiCloudSync.cfg (own
+ * credentials are never shared with amicloud.cfg/AmiOwnCloudSync.cfg (own
  * profile, config-examples/README.md).
  *
  * Classic Workbench-Prefs USE/SAVE/CANCEL semantics (bindend, see the
- * plan): Benutzen writes only ENV:owncloud.cfg (live now, gone after a
- * reboot); Speichern writes ENVARC:owncloud.cfg AND ENV:owncloud.cfg
- * (live now, and permanent); Abbrechen writes nothing. owncloud-worker
- * itself only ever reads ENV:owncloud.cfg (worker.c) -- "Benutzen"
+ * plan): Benutzen writes only ENV:amiowncloud.cfg (live now, gone after a
+ * reboot); Speichern writes ENVARC:amiowncloud.cfg AND ENV:amiowncloud.cfg
+ * (live now, and permanent); Abbrechen writes nothing. amiowncloud-worker
+ * itself only ever reads ENV:amiowncloud.cfg (worker.c) -- "Benutzen"
  * takes effect on the worker's next spawn (e.g. after a fresh Mount);
  * an already-running worker needs killing and restarting to pick up
  * either.
@@ -43,7 +43,7 @@
 #include <stdlib.h>
 
 long __stack = 65536;
-const char amiga_ver[] = "$VER: OwnCloudPrefs " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: AmiOwnCloudPrefs " AC_VERSION " (27.09.2026)";
 
 #define GID_SERVER    1
 #define GID_USER      2
@@ -58,8 +58,8 @@ const char amiga_ver[] = "$VER: OwnCloudPrefs " AC_VERSION " (27.09.2026)";
 #define GID_SAVE      11
 #define GID_CANCEL    12
 
-#define PREFS_ENV    "ENV:owncloud.cfg"
-#define PREFS_ENVARC "ENVARC:owncloud.cfg"
+#define PREFS_ENV    "ENV:amiowncloud.cfg"
+#define PREFS_ENVARC "ENVARC:amiowncloud.cfg"
 
 int main(int argc, char *argv[])
 {

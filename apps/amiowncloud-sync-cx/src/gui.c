@@ -211,7 +211,7 @@ int gui_open(const PairList *pl, const char *title)
     ng.ng_GadgetText = NULL; ng.ng_GadgetID = GID_LISTVIEW; ng.ng_Flags = 0;
     /* NOT GTLV_ReadOnly -- "read-only" here (see this file's own header
      * comment) means the PAIR LIST CONTENTS can't be edited from this
-     * window (no add/edit/remove -- that moved to amicloudsync-prefs),
+     * window (no add/edit/remove -- that moved to amiowncloud-sync-prefs),
      * not that an entry can't be SELECTED. GTLV_ReadOnly disables click
      * selection entirely (see gadtools.doc), which broke "Jetzt syncen"
      * (it needs s_selected, see gui_poll() below) -- the status line
@@ -314,7 +314,7 @@ GuiAction gui_poll(PairList *pl, int *out_selected)
                 APTR ud = GTMENUITEM_USERDATA(item);
                 if (ud == MID_QUIT) action = GUI_ACT_CLOSE;
                 else if (ud == MID_ABOUT)
-                    gui_set_status("AmiCloudSync -- OwnCloud-Ordnerabgleich fuer AmigaOS");
+                    gui_set_status("AmiOwnCloudSync -- OwnCloud-Ordnerabgleich fuer AmigaOS");
             }
         } else if (class == IDCMP_GADGETUP) {
             if (gad == g_gad[GID_LISTVIEW]) {

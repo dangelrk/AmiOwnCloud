@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# webdavsynctest — console test suite for the WebDAV sync transport,
+# amiowncloud-synctest — console test suite for the WebDAV sync transport,
 # linked against libcloudsync + libcloudhttp + libcloudfs + libcloudcore.
 # Runs on PC/Mac for fast iteration; cross-compiles for AmigaOS via
 # Makefile.amiga-cross so the identical checks run on real/emulated
@@ -35,7 +35,7 @@ BINDIR = ../../bin/pc
 LIBDIR = ../../lib/pc
 LDFLAGS = -L$(LIBDIR) $(PKG_LF)
 
-TARGET = $(BINDIR)/webdavsynctest
+TARGET = $(BINDIR)/amiowncloud-synctest
 OBJS   = $(OBJDIR)/main.o
 
 all: libs $(TARGET)

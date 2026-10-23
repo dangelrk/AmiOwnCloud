@@ -9,7 +9,7 @@
  * handler/cloudhandler/src/proto.h (see ../../cloudhandler/README.md for
  * the two-process design this follows) -- this protocol is already
  * backend-agnostic (WREQ_LIST/GET/PUT/... say nothing about AmiCloud vs.
- * WebDAV), only the port name below differs so an owncloud-handler process
+ * WebDAV), only the port name below differs so an amiowncloud-handler process
  * can never accidentally talk to a running amicloud-worker or vice versa.
  * Included by both sides of the two-process split: handler.c/backend.c
  * (exec.library only, no libc, see handler.c's file header) and worker.c
@@ -34,7 +34,7 @@
 
 /* Well-known public port name the worker registers (AddPort) and the
  * handler looks for (FindPort) during ACTION_STARTUP -- see backend.c. */
-#define AC_WORKER_PORT "OwnCloud-Worker"
+#define AC_WORKER_PORT "AmiOwnCloud-Worker"
 
 typedef enum {
     WREQ_PING = 0,

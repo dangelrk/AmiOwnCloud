@@ -15,7 +15,7 @@
 
 #include "proto.h"
 
-/* Locates a running owncloud-worker (FindPort) or spawns L:owncloud-worker
+/* Locates a running amiowncloud-worker (FindPort) or spawns L:amiowncloud-worker
  * and waits (~30s, polling FindPort) for its port to appear. Must run
  * during ACTION_STARTUP, before dos.library is closed -- SystemTags()/
  * Open("NIL:", ...)/Delay() are all dos.library calls. Returns 1 on

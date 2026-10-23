@@ -7,7 +7,7 @@
  * for the design this follows) from handler/cloudhandler/src/handler.c --
  * only the mounted-as device (OWNCLOUD:, via mount/OWNCLOUD) and the
  * registered Workbench volume name (register_volume() below) differ.
- * vol.c's tree is a cache of server state, reached through owncloud-worker
+ * vol.c's tree is a cache of server state, reached through amiowncloud-worker
  * (worker.c, a separate process -- backend_init() below locates or spawns
  * it during startup).
  *
@@ -67,7 +67,7 @@
 struct ExecBase   *SysBase;
 struct DosLibrary *DOSBase;
 
-const char amiga_ver[] = "$VER: owncloud-handler 0.1 (27.09.2026)";
+const char amiga_ver[] = "$VER: amiowncloud-handler 0.1 (27.09.2026)";
 
 /* Forward declarations only -- see the file header comment on why _start()
  * itself must be the first function DEFINED below, ahead of all of these. */
@@ -115,7 +115,7 @@ void __saveds _start(void)
         return;
     }
 
-    /* Locate or spawn owncloud-worker -- must happen before the startup
+    /* Locate or spawn amiowncloud-worker -- must happen before the startup
      * packet is replied (unlike register_volume() below, this doesn't
      * touch the device list, so there's no deadlock risk in doing it
      * here). No worker, no point mounting -- fail cleanly. */

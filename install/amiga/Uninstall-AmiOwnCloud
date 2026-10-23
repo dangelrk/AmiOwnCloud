@@ -5,7 +5,7 @@
 ;
 ; Aufruf in einer Shell:  Execute Uninstall-AmiOwnCloud
 ;
-; Vorher AmiCloudSync über Exchange beenden. Der OWNCLOUD:-Handler
+; Vorher AmiOwnCloudSync über Exchange beenden. Der OWNCLOUD:-Handler
 ; lässt sich nicht aushängen - er verschwindet erst nach einem Neustart.
 
 FailAt 21
@@ -21,12 +21,12 @@ If NOT WARN
   Quit 0
 EndIf
 
-; ---- OWNCLOUD:-Handler + OwnCloudPrefs
-If EXISTS L:owncloud-handler
-  Delete L:owncloud-handler QUIET
+; ---- OWNCLOUD:-Handler + AmiOwnCloudPrefs
+If EXISTS L:amiowncloud-handler
+  Delete L:amiowncloud-handler QUIET
 EndIf
-If EXISTS L:owncloud-worker
-  Delete L:owncloud-worker QUIET
+If EXISTS L:amiowncloud-worker
+  Delete L:amiowncloud-worker QUIET
 EndIf
 If EXISTS DEVS:DOSDrivers/OWNCLOUD
   Delete DEVS:DOSDrivers/OWNCLOUD QUIET
@@ -40,39 +40,39 @@ EndIf
 If EXISTS SYS:Storage/DOSDrivers/OWNCLOUD.info
   Delete SYS:Storage/DOSDrivers/OWNCLOUD.info QUIET
 EndIf
-If EXISTS SYS:Prefs/OwnCloudPrefs
-  Delete SYS:Prefs/OwnCloudPrefs QUIET
+If EXISTS SYS:Prefs/AmiOwnCloudPrefs
+  Delete SYS:Prefs/AmiOwnCloudPrefs QUIET
 EndIf
-If EXISTS SYS:Prefs/OwnCloudPrefs.info
-  Delete SYS:Prefs/OwnCloudPrefs.info QUIET
+If EXISTS SYS:Prefs/AmiOwnCloudPrefs.info
+  Delete SYS:Prefs/AmiOwnCloudPrefs.info QUIET
 EndIf
 
-; ---- AmiCloudSync + AmiCloudSyncPrefs
-If EXISTS SYS:Tools/Commodities/AmiCloudSync
-  Delete SYS:Tools/Commodities/AmiCloudSync QUIET
+; ---- AmiOwnCloudSync + AmiOwnCloudSyncPrefs
+If EXISTS SYS:Tools/Commodities/AmiOwnCloudSync
+  Delete SYS:Tools/Commodities/AmiOwnCloudSync QUIET
 EndIf
-If EXISTS SYS:Tools/Commodities/AmiCloudSync.info
-  Delete SYS:Tools/Commodities/AmiCloudSync.info QUIET
+If EXISTS SYS:Tools/Commodities/AmiOwnCloudSync.info
+  Delete SYS:Tools/Commodities/AmiOwnCloudSync.info QUIET
 EndIf
-If EXISTS SYS:WBStartup/AmiCloudSync
-  Delete SYS:WBStartup/AmiCloudSync QUIET
+If EXISTS SYS:WBStartup/AmiOwnCloudSync
+  Delete SYS:WBStartup/AmiOwnCloudSync QUIET
 EndIf
-If EXISTS SYS:WBStartup/AmiCloudSync.info
-  Delete SYS:WBStartup/AmiCloudSync.info QUIET
+If EXISTS SYS:WBStartup/AmiOwnCloudSync.info
+  Delete SYS:WBStartup/AmiOwnCloudSync.info QUIET
 EndIf
-If EXISTS SYS:Prefs/AmiCloudSyncPrefs
-  Delete SYS:Prefs/AmiCloudSyncPrefs QUIET
+If EXISTS SYS:Prefs/AmiOwnCloudSyncPrefs
+  Delete SYS:Prefs/AmiOwnCloudSyncPrefs QUIET
 EndIf
-If EXISTS SYS:Prefs/AmiCloudSyncPrefs.info
-  Delete SYS:Prefs/AmiCloudSyncPrefs.info QUIET
+If EXISTS SYS:Prefs/AmiOwnCloudSyncPrefs.info
+  Delete SYS:Prefs/AmiOwnCloudSyncPrefs.info QUIET
 EndIf
 
 ; ---- Kommandozeilenprogramme
-If EXISTS C:webdavsync
-  Delete C:webdavsync QUIET
+If EXISTS C:amiowncloud-sync
+  Delete C:amiowncloud-sync QUIET
 EndIf
-If EXISTS C:webdavsynctest
-  Delete C:webdavsynctest QUIET
+If EXISTS C:amiowncloud-synctest
+  Delete C:amiowncloud-synctest QUIET
 EndIf
 
 ; ---- Handbuch
@@ -87,33 +87,33 @@ Echo "Programme entfernt."
 Echo ""
 
 ; ---- Konfiguration (enthält Zugangsdaten)
-Echo "Einstellungen: owncloud.cfg, AmiCloudSync.cfg, webdavsync.cfg"
+Echo "Einstellungen: amiowncloud.cfg, AmiOwnCloudSync.cfg, amiowncloud-sync.cfg"
 Ask "Auch die Einstellungen löschen? (y/n)"
 If WARN
-  If EXISTS ENV:owncloud.cfg
-    Delete ENV:owncloud.cfg QUIET
+  If EXISTS ENV:amiowncloud.cfg
+    Delete ENV:amiowncloud.cfg QUIET
   EndIf
-  If EXISTS ENVARC:owncloud.cfg
-    Delete ENVARC:owncloud.cfg QUIET
+  If EXISTS ENVARC:amiowncloud.cfg
+    Delete ENVARC:amiowncloud.cfg QUIET
   EndIf
-  If EXISTS ENV:AmiCloudSync.cfg
-    Delete ENV:AmiCloudSync.cfg QUIET
+  If EXISTS ENV:AmiOwnCloudSync.cfg
+    Delete ENV:AmiOwnCloudSync.cfg QUIET
   EndIf
-  If EXISTS ENVARC:AmiCloudSync.cfg
-    Delete ENVARC:AmiCloudSync.cfg QUIET
+  If EXISTS ENVARC:AmiOwnCloudSync.cfg
+    Delete ENVARC:AmiOwnCloudSync.cfg QUIET
   EndIf
-  If EXISTS ENV:webdavsync.cfg
-    Delete ENV:webdavsync.cfg QUIET
+  If EXISTS ENV:amiowncloud-sync.cfg
+    Delete ENV:amiowncloud-sync.cfg QUIET
   EndIf
-  If EXISTS ENVARC:webdavsync.cfg
-    Delete ENVARC:webdavsync.cfg QUIET
+  If EXISTS ENVARC:amiowncloud-sync.cfg
+    Delete ENVARC:amiowncloud-sync.cfg QUIET
   EndIf
   Echo "Einstellungen gelöscht."
 EndIf
 
 Echo ""
 Echo "Bitte noch von Hand:"
-Echo "- In S:User-Startup den Block ;BEGIN AmiCloudSync ... ;END AmiCloudSync"
+Echo "- In S:User-Startup den Block ;BEGIN AmiOwnCloudSync ... ;END AmiOwnCloudSync"
 Echo "  entfernen, falls vorhanden."
 Echo "- Die Abgleichsdateien .amicloudsync in den lokalen Ordnern der"
 Echo "  Ordnerpaare bleiben erhalten und können gelöscht werden."

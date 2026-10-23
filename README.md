@@ -2,8 +2,8 @@
 
 *Connects AmigaOS 3.x to a standard ownCloud/Nextcloud server via WebDAV:
 an `OWNCLOUD:` DOS handler that mounts the server as a drive, a background
-folder-sync commodity (AmiCloudSync) with GadTools preferences editors, and
-the portable command-line tools `webdavsync`/`webdavsynctest` for AmigaOS,
+folder-sync commodity (AmiOwnCloudSync) with GadTools preferences editors, and
+the portable command-line tools `amiowncloud-sync`/`amiowncloud-synctest` for AmigaOS,
 macOS, Linux and Windows. Written in C99, built with vbcc for the Amiga.*
 
 AmiOwnCloud bindet einen vorhandenen ownCloud- oder Nextcloud-Server an
@@ -15,7 +15,7 @@ Zwei unabhängige Wege, die sich auch kombinieren lassen:
 
 - **`OWNCLOUD:`-Handler** – der Server als Laufwerk. Jeder Zugriff geht
   live an den Server, keine lokale Kopie.
-- **AmiCloudSync** – eine Commodity, die lokale Amiga-Ordner mit Ordnern auf
+- **AmiOwnCloudSync** – eine Commodity, die lokale Amiga-Ordner mit Ordnern auf
   dem Server abgleicht (automatisch im Intervall oder auf Knopfdruck); die
   Dateien sind auch offline da.
 
@@ -23,12 +23,12 @@ Zwei unabhängige Wege, die sich auch kombinieren lassen:
 
 | Programm | Plattform | Zweck | Quellen |
 |---|---|---|---|
-| `owncloud-handler` + `owncloud-worker` | Amiga | DOS-Handler `OWNCLOUD:` (Volume `OwnCloud:`), WebDAV live | `handler/owncloudhandler` |
-| `OwnCloudPrefs` | Amiga | Einstellungs-Editor für `owncloud.cfg` (Handler) | `apps/owncloud-prefs` |
-| `AmiCloudSync` | Amiga | Commodity: Ordnerpaare im Hintergrund abgleichen, Fenster per Hotkey | `apps/amicloud-sync-cx` |
-| `AmiCloudSyncPrefs` | Amiga | Einstellungs-Editor für Profil und Ordnerpaare (`AmiCloudSync.cfg`) | `apps/amicloudsync-prefs` |
-| `webdavsync` | Amiga + PC | einmaliger Zwei-Wege-Abgleich eines Ordnerpaares per Kommandozeile | `apps/webdavsync` |
-| `webdavsynctest` | Amiga + PC | automatische Testsuite (14 Prüfungen) gegen einen echten Server | `apps/webdavsynctest` |
+| `amiowncloud-handler` + `amiowncloud-worker` | Amiga | DOS-Handler `OWNCLOUD:` (Volume `OwnCloud:`), WebDAV live | `handler/owncloudhandler` |
+| `AmiOwnCloudPrefs` | Amiga | Einstellungs-Editor für `amiowncloud.cfg` (Handler) | `apps/amiowncloud-prefs` |
+| `AmiOwnCloudSync` | Amiga | Commodity: Ordnerpaare im Hintergrund abgleichen, Fenster per Hotkey | `apps/amiowncloud-sync-cx` |
+| `AmiOwnCloudSyncPrefs` | Amiga | Einstellungs-Editor für Profil und Ordnerpaare (`AmiOwnCloudSync.cfg`) | `apps/amiowncloud-sync-prefs` |
+| `amiowncloud-sync` | Amiga + PC | einmaliger Zwei-Wege-Abgleich eines Ordnerpaares per Kommandozeile | `apps/amiowncloud-sync` |
+| `amiowncloud-synctest` | Amiga + PC | automatische Testsuite (14 Prüfungen) gegen einen echten Server | `apps/amiowncloud-synctest` |
 
 „PC“ heißt macOS, Linux und Windows; getestet ist bisher macOS.
 
@@ -38,7 +38,7 @@ Zwei unabhängige Wege, die sich auch kombinieren lassen:
 git clone --recurse-submodules https://github.com/dangelrk/AmiOwnCloud.git
 cd AmiOwnCloud
 
-make pc                          # webdavsync, webdavsynctest -> bin/pc/
+make pc                          # amiowncloud-sync, amiowncloud-synctest -> bin/pc/
 
 export VBCC=/pfad/zu/vbcc
 make amiga                       # alle Amiga-Programme -> bin/amiga/
@@ -81,7 +81,7 @@ HTTP/TLS über bsdsocket + AmiSSL bzw. libcurl, lokales Dateisystem,
 Sync-Kern), eingebunden als Submodul `core/`. Schwesterprojekte:
 
 - [AmiCloud](https://github.com/dangelrk/AmiCloud) – eigener PHP-Server mit
-  CLI, Shell, Commander und `CLOUD:`-Handler (unabhängig von AmiOwnCloud)
+  CLI, Shell, Commander und `AMICLOUD:`-Handler (unabhängig von AmiOwnCloud)
 - [AmiVCS](https://github.com/dangelrk/AmiVCS) – Versionsverwaltung für den
   Amiga
 

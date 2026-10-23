@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * webdavsynctest -- console test suite for the WebDAV sync transport
+ * amiowncloud-synctest -- console test suite for the WebDAV sync transport
  * (libcloudsync/webdav.h) and the transport-neutral sync kernel
  * (cloudsync_run_t, sync.h). Runs the same scenarios that were manually
  * verified against a real OwnCloud/Nextcloud server while building this
@@ -45,15 +45,15 @@
 
 #ifdef PLATFORM_AMIGA
 long __stack = 65536;
-const char amiga_ver[] = "$VER: webdavsynctest " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: amiowncloud-synctest " AC_VERSION " (27.09.2026)";
 #endif
 
 #ifdef PLATFORM_AMIGA
-#  define RAW_TMP_PATH "T:webdavsynctest.tmp"
+#  define RAW_TMP_PATH "T:amiowncloud-synctest.tmp"
 #elif defined(PLATFORM_WIN)
-#  define RAW_TMP_PATH "webdavsynctest.tmp"
+#  define RAW_TMP_PATH "amiowncloud-synctest.tmp"
 #else
-#  define RAW_TMP_PATH "/tmp/webdavsynctest.tmp"
+#  define RAW_TMP_PATH "/tmp/amiowncloud-synctest.tmp"
 #endif
 
 static int g_pass = 0, g_fail = 0;
@@ -90,7 +90,7 @@ static int read_file(const char *path, char *buf, size_t bufsz)
  * is not duplicated, though: it goes through webdav_derive_base_url()
  * (same function webdav_transport_open() itself calls), so a bare-host
  * cfg->server (e.g. "https://cloud.example.com", the "nur Hauptserver"
- * AmiCloudSyncPrefs shape) still resolves to the exact same collection
+ * AmiOwnCloudSyncPrefs shape) still resolves to the exact same collection
  * URL here as it does for the real transport being tested. */
 static void build_test_url(char *out, size_t outsz, const AcConfig *cfg, const char *remote_path)
 {
@@ -188,7 +188,7 @@ static int raw_get(const AcConfig *cfg, const char *remote_path, char *buf, size
 static void usage(const char *prog)
 {
     fprintf(stderr,
-        "webdavsynctest v" AC_VERSION " -- console test suite for the WebDAV sync transport\n"
+        "amiowncloud-synctest v" AC_VERSION " -- console test suite for the WebDAV sync transport\n"
         "Usage: %s [options] <local-scratch-dir> <remote-scratch-path>\n"
         "\n"
         "  <remote-scratch-path> must not already exist -- it is created,\n"
@@ -199,7 +199,7 @@ static void usage(const char *prog)
         "               https://host/remote.php/dav/files/USER\n"
         "  -u <user>    Username\n"
         "  -p <pass>    Password (Nextcloud: an app password)\n"
-        "  -c <file>    Config file (default: ~/.webdavsyncrc or ENV:webdavsync.cfg)\n"
+        "  -c <file>    Config file (default: ~/.amiowncloud-syncrc or ENV:amiowncloud-sync.cfg)\n"
         "  -k           Disable TLS certificate verification (development only)\n",
         prog);
     exit(1);
@@ -239,30 +239,30 @@ int main(int argc, char **argv)
         config_load(opt_cfgfile, &cfg);
     } else {
         char primary[AC_MAX_PATH], fallback[AC_MAX_PATH];
-        config_default_path("webdavsync", primary, sizeof(primary), fallback, sizeof(fallback));
+        config_default_path("amiowncloud-sync", primary, sizeof(primary), fallback, sizeof(fallback));
         if (!config_load(primary, &cfg) && fallback[0]) config_load(fallback, &cfg);
     }
     config_merge(&cfg, opt_server, opt_user, opt_pass, NULL);
     if (opt_noverify) cfg.verify_ssl = 0;
 
-    if (i + 1 >= argc) { fprintf(stderr, "webdavsynctest: <local-scratch-dir> and <remote-scratch-path> required\n"); usage(argv[0]); }
+    if (i + 1 >= argc) { fprintf(stderr, "amiowncloud-synctest: <local-scratch-dir> and <remote-scratch-path> required\n"); usage(argv[0]); }
     local_root  = argv[i++];
     remote_root = argv[i];
 
-    if (!cfg.server[0])   { fprintf(stderr, "webdavsynctest: WebDAV base URL required (-s or config file)\n"); usage(argv[0]); }
-    if (!cfg.username[0]) { fprintf(stderr, "webdavsynctest: username required (-u or config file)\n");        usage(argv[0]); }
-    if (!cfg.password[0]) { fprintf(stderr, "webdavsynctest: password required (-p or config file)\n");        usage(argv[0]); }
+    if (!cfg.server[0])   { fprintf(stderr, "amiowncloud-synctest: WebDAV base URL required (-s or config file)\n"); usage(argv[0]); }
+    if (!cfg.username[0]) { fprintf(stderr, "amiowncloud-synctest: username required (-u or config file)\n");        usage(argv[0]); }
+    if (!cfg.password[0]) { fprintf(stderr, "amiowncloud-synctest: password required (-p or config file)\n");        usage(argv[0]); }
     {
         size_t len = strlen(cfg.server);
         if (len > 0 && cfg.server[len-1] == '/') cfg.server[len-1] = '\0';
     }
 
     if (!http_init()) {
-        fprintf(stderr, "webdavsynctest: network initialisation failed\n");
+        fprintf(stderr, "amiowncloud-synctest: network initialisation failed\n");
         return 1;
     }
 
-    printf("webdavsynctest: %s <-> %s\n\n", local_root, remote_root);
+    printf("amiowncloud-synctest: %s <-> %s\n\n", local_root, remote_root);
 
     localfs_join(note1_path,    sizeof(note1_path),    local_root, "note1.txt");
     localfs_join(sub_dir,       sizeof(sub_dir),       local_root, "sub");
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
     t = webdav_transport_open(&cfg);
     if (!t) {
-        fprintf(stderr, "webdavsynctest: out of memory\n");
+        fprintf(stderr, "amiowncloud-synctest: out of memory\n");
         http_cleanup();
         return 1;
     }

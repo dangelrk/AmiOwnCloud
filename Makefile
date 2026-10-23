@@ -6,9 +6,9 @@
 # Makefile.pc / Makefile.amiga-cross / CMakeLists.txt.
 
 PROJECT    = AmiOwnCloud
-PC_DIRS    = apps/webdavsync apps/webdavsynctest
+PC_DIRS    = apps/amiowncloud-sync apps/amiowncloud-synctest
 QT_DIRS    = 
-AMIGA_DIRS = apps/webdavsync apps/webdavsynctest apps/amicloud-sync-cx apps/amicloudsync-prefs apps/owncloud-prefs handler/owncloudhandler
+AMIGA_DIRS = apps/amiowncloud-sync apps/amiowncloud-synctest apps/amiowncloud-sync-cx apps/amiowncloud-sync-prefs apps/amiowncloud-prefs handler/owncloudhandler
 
 # Zusaetzlich in die Amiga-Installationsschublade (make dist-amiga):
 # DOSDriver fuer den OWNCLOUD:-Handler -> <Schublade>/Storage/DOSDrivers/

@@ -2,8 +2,8 @@
  * Copyright (C) 2026 Ronny Krueger */
 /* OWNCLOUD: als klassischer Mountlist-Eintrag (dieselben Werte wie der
  * DOSDriver handler/owncloudhandler/mount/OWNCLOUD).
- * Voraussetzung: L:owncloud-handler und L:owncloud-worker installiert,
- * ENV:owncloud.cfg vorhanden (siehe docs/INSTALL.md).
+ * Voraussetzung: L:amiowncloud-handler und L:amiowncloud-worker installiert,
+ * ENV:amiowncloud.cfg vorhanden (siehe docs/INSTALL.md).
  * Mounten ohne DOSDriver:
  *   Mount OWNCLOUD: FROM <Pfad>/OWNCLOUD.mountlist
  * oder diesen Eintrag an DEVS:MountList anhaengen, dann genuegt
@@ -11,7 +11,7 @@
  * Fuer das automatische Mounten beim Systemstart stattdessen den
  * DOSDriver nach DEVS:DOSDrivers/ kopieren (macht das Install-Skript). */
 OWNCLOUD:
-Handler   = L:owncloud-handler
+Handler   = L:amiowncloud-handler
 StackSize = 16384
 Priority  = 5
 GlobVec   = -1      /* Pflicht fuer C-Handler -- kein BCPL-GlobVec */

@@ -132,7 +132,7 @@ int backend_init(void)
 
     /* SYS_Asynch closes nilIn/nilOut itself once the worker exits -- do
      * NOT close them here on the success path, ownership has transferred. */
-    started = SystemTags((CONST_STRPTR)"L:owncloud-worker",
+    started = SystemTags((CONST_STRPTR)"L:amiowncloud-worker",
                           SYS_Asynch,   (ULONG)TRUE,
                           SYS_Input,    (ULONG)nilIn,
                           SYS_Output,   (ULONG)nilOut,
@@ -189,7 +189,7 @@ LONG backend_send(WReqCmd cmd, const char *path, const char *path2,
     /* No worker at all in stub mode (see backend_init()/the big comment
      * above) -- fabricate a fixed, fake reply straight into g_req instead
      * of ever touching g_worker_port/PutMsg/Wait. Only WREQ_LIST is
-     * stubbed (that's all a plain "Dir CLOUD:" needs); anything else just
+     * stubbed (that's all a plain "Dir OWNCLOUD:" needs); anything else just
      * fails cleanly. */
     if (cmd == WREQ_LIST) {
         WEntry *fake = (WEntry *)AllocVec(3 * sizeof(WEntry), MEMF_PUBLIC | MEMF_CLEAR);

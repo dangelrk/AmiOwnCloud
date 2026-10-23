@@ -5,7 +5,7 @@
 #define PAIRS_H
 
 /*
- * pairs.h -- AmiCloudSync's own preferences: the OwnCloud profile
+ * pairs.h -- AmiOwnCloudSync's own preferences: the OwnCloud profile
  * (server/username/password/verify_ssl, loaded via libcloudcore's
  * config_load/config_merge exactly like every other app here) PLUS this
  * commodity's own extra keys (interval=, repeated pair= lines) in the
@@ -13,7 +13,7 @@
  * "a list of local<->remote folder pairs to autosync" is this
  * commodity's own business, nothing else in the repo needs it.
  *
- * File format (see docs, ENVARC:AmiCloudSync.cfg) -- user=/pass=, the
+ * File format (see docs, ENVARC:AmiOwnCloudSync.cfg) -- user=/pass=, the
  * same key names every other config file in this repo uses
  * (amicloud.cfg.example, AmiCloud/AMIVCS docs), not username=/password=:
  *   server=https://cloud.example.com/remote.php/dav/files/USER

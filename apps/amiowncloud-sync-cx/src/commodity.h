@@ -33,7 +33,7 @@ int ac_commodity_open(const char *broker_name, const char *broker_title,
 void ac_commodity_close(void);
 
 /* Why the last ac_commodity_open() failed, for a requester -- or NULL
- * when it failed only because another AmiCloudSync is already running
+ * when it failed only because another AmiOwnCloudSync is already running
  * (NBU_UNIQUE|NBU_NOTIFY: that instance has been told to show its
  * window, so the new one should just quit quietly). */
 const char *ac_commodity_error(void);

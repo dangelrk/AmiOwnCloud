@@ -16,7 +16,7 @@ Bauen aus den Quellen: [BUILD.md](BUILD.md). Bedienung:
 | TCP/IP-Stack | mit `bsdsocket.library` (Version 4 oder neuer), z. B. Roadshow, AmiTCP/Genesis, Miami. Muss laufen, bevor ein Programm den Server anspricht. |
 | AmiSSL 5 | `amisslmaster.library` – von allen Programmen gebraucht, die mit dem Server sprechen (auch bei `http://`) |
 | MUI | **nicht** nötig – alle Oberflächen sind GadTools/Commodities (intuition, gadtools, commodities.library aus dem Betriebssystem) |
-| Stack | nichts einzustellen: die Programme fordern selbst 64 KB an (vbcc `__stack`), `owncloud-worker` wird mit 64 KB gestartet, der Handler bekommt 16 KB aus dem DOSDriver |
+| Stack | nichts einzustellen: die Programme fordern selbst 64 KB an (vbcc `__stack`), `amiowncloud-worker` wird mit 64 KB gestartet, der Handler bekommt 16 KB aus dem DOSDriver |
 | Speicher | Der `OWNCLOUD:`-Handler hält eine geöffnete Datei komplett im RAM – für große Dateien entsprechend freien Speicher einplanen |
 | Server | Konto auf ownCloud/Nextcloud, am besten mit eigenem App-Passwort |
 
@@ -44,18 +44,18 @@ Execute Install-AmiOwnCloud
 
 Das Skript fragt jeden Teil einzeln ab (`y`/`n`):
 
-1. **OWNCLOUD:-Handler + OwnCloudPrefs** – kopiert `owncloud-handler` und
-   `owncloud-worker` nach `L:`, `OwnCloudPrefs` nach `SYS:Prefs/`, den
+1. **OWNCLOUD:-Handler + AmiOwnCloudPrefs** – kopiert `amiowncloud-handler` und
+   `amiowncloud-worker` nach `L:`, `AmiOwnCloudPrefs` nach `SYS:Prefs/`, den
    DOSDriver wahlweise nach `DEVS:DOSDrivers/` (Mount bei jedem Start) oder
-   `SYS:Storage/DOSDrivers/` (Mount von Hand). Fehlt `owncloud.cfg`, bietet
-   es an, OwnCloudPrefs zu starten, und danach, `OWNCLOUD:` zu mounten.
-2. **AmiCloudSync + AmiCloudSyncPrefs** – `AmiCloudSync` nach
-   `SYS:Tools/Commodities/`, `AmiCloudSyncPrefs` nach `SYS:Prefs/`. Bietet an,
-   AmiCloudSyncPrefs zu starten und eine Startzeile an `S:User-Startup`
-   anzuhängen (Block `;BEGIN AmiCloudSync` … `;END AmiCloudSync`, wird
+   `SYS:Storage/DOSDrivers/` (Mount von Hand). Fehlt `amiowncloud.cfg`, bietet
+   es an, AmiOwnCloudPrefs zu starten, und danach, `OWNCLOUD:` zu mounten.
+2. **AmiOwnCloudSync + AmiOwnCloudSyncPrefs** – `AmiOwnCloudSync` nach
+   `SYS:Tools/Commodities/`, `AmiOwnCloudSyncPrefs` nach `SYS:Prefs/`. Bietet an,
+   AmiOwnCloudSyncPrefs zu starten und eine Startzeile an `S:User-Startup`
+   anzuhängen (Block `;BEGIN AmiOwnCloudSync` … `;END AmiOwnCloudSync`, wird
    nicht doppelt eingetragen).
-3. **webdavsync + webdavsynctest** nach `C:`, auf Wunsch
-   `Examples/webdavsync.cfg.example` als `ENVARC:webdavsync.cfg`.
+3. **amiowncloud-sync + amiowncloud-synctest** nach `C:`, auf Wunsch
+   `Examples/amiowncloud-sync.cfg.example` als `ENVARC:amiowncloud-sync.cfg`.
 4. **Handbuch** nach `HELP:`, sofern `HELP:` zugewiesen ist.
 
 Vorhandene Konfigurationen in `ENV:`/`ENVARC:` und ein vorhandener
@@ -65,24 +65,24 @@ DOSDriver werden **nie überschrieben**.
 
 | Datei aus `C/` bzw. Schublade | Ziel | Hinweis |
 |---|---|---|
-| `owncloud-handler` | `L:` | Pfad steht im DOSDriver (`Handler = L:owncloud-handler`) |
-| `owncloud-worker` | `L:` | fest: der Handler startet `L:owncloud-worker` beim Mounten |
+| `amiowncloud-handler` | `L:` | Pfad steht im DOSDriver (`Handler = L:amiowncloud-handler`) |
+| `amiowncloud-worker` | `L:` | fest: der Handler startet `L:amiowncloud-worker` beim Mounten |
 | `Storage/DOSDrivers/OWNCLOUD` | `DEVS:DOSDrivers/` oder `SYS:Storage/DOSDrivers/` | in `DEVS:DOSDrivers/` beim Systemstart automatisch bzw. `Mount OWNCLOUD:`; in `SYS:Storage/DOSDrivers/` von Hand: `Mount SYS:Storage/DOSDrivers/OWNCLOUD` |
-| `OwnCloudPrefs` | `SYS:Prefs/` | Ort frei wählbar |
-| `AmiCloudSync` | `SYS:Tools/Commodities/` | Ort frei wählbar |
-| `AmiCloudSyncPrefs` | `SYS:Prefs/` | Ort frei wählbar |
-| `webdavsync`, `webdavsynctest` | `C:` | Ort frei wählbar |
+| `AmiOwnCloudPrefs` | `SYS:Prefs/` | Ort frei wählbar |
+| `AmiOwnCloudSync` | `SYS:Tools/Commodities/` | Ort frei wählbar |
+| `AmiOwnCloudSyncPrefs` | `SYS:Prefs/` | Ort frei wählbar |
+| `amiowncloud-sync`, `amiowncloud-synctest` | `C:` | Ort frei wählbar |
 | `Docs/AmiOwnCloud.guide` | `HELP:` | optional |
 
 ```
-Copy C/owncloud-handler L:
-Copy C/owncloud-worker L:
+Copy C/amiowncloud-handler L:
+Copy C/amiowncloud-worker L:
 Copy Storage/DOSDrivers/OWNCLOUD DEVS:DOSDrivers/
-Copy C/OwnCloudPrefs SYS:Prefs/
-Copy C/AmiCloudSync SYS:Tools/Commodities/
-Copy C/AmiCloudSyncPrefs SYS:Prefs/
-Copy C/webdavsync C:
-Copy C/webdavsynctest C:
+Copy C/AmiOwnCloudPrefs SYS:Prefs/
+Copy C/AmiOwnCloudSync SYS:Tools/Commodities/
+Copy C/AmiOwnCloudSyncPrefs SYS:Prefs/
+Copy C/amiowncloud-sync C:
+Copy C/amiowncloud-synctest C:
 ```
 
 Die Programme haben keine Piktogramme (`.info`); aus der Workbench über
@@ -92,17 +92,17 @@ Die Programme haben keine Piktogramme (`.info`); aus der Workbench über
 
 | Programm | liest | schreibt |
 |---|---|---|
-| `owncloud-worker` (OWNCLOUD:) | nur `ENV:owncloud.cfg`, nur einmal beim eigenen Start | – |
-| OwnCloudPrefs | `ENV:owncloud.cfg`, sonst `ENVARC:owncloud.cfg` | Benutzen → `ENV:`, Speichern → `ENVARC:` + `ENV:` |
-| AmiCloudSync | `ENV:AmiCloudSync.cfg`, sonst `ENVARC:AmiCloudSync.cfg` (beim Start, beim Öffnen des Fensters, vor jedem Autosync, bei „Neu laden“) | – |
-| AmiCloudSyncPrefs | `ENV:AmiCloudSync.cfg`, sonst `ENVARC:AmiCloudSync.cfg` | Benutzen → `ENV:`, Speichern → `ENVARC:` + `ENV:` |
-| webdavsync, webdavsynctest | `-c <datei>`, sonst `ENV:webdavsync.cfg`, sonst `webdavsync.cfg` im aktuellen Verzeichnis | – |
+| `amiowncloud-worker` (OWNCLOUD:) | nur `ENV:amiowncloud.cfg`, nur einmal beim eigenen Start | – |
+| AmiOwnCloudPrefs | `ENV:amiowncloud.cfg`, sonst `ENVARC:amiowncloud.cfg` | Benutzen → `ENV:`, Speichern → `ENVARC:` + `ENV:` |
+| AmiOwnCloudSync | `ENV:AmiOwnCloudSync.cfg`, sonst `ENVARC:AmiOwnCloudSync.cfg` (beim Start, beim Öffnen des Fensters, vor jedem Autosync, bei „Neu laden“) | – |
+| AmiOwnCloudSyncPrefs | `ENV:AmiOwnCloudSync.cfg`, sonst `ENVARC:AmiOwnCloudSync.cfg` | Benutzen → `ENV:`, Speichern → `ENVARC:` + `ENV:` |
+| amiowncloud-sync, amiowncloud-synctest | `-c <datei>`, sonst `ENV:amiowncloud-sync.cfg`, sonst `amiowncloud-sync.cfg` im aktuellen Verzeichnis | – |
 
 Beispiele und alle Schlüssel: [config-examples/README.md](../config-examples/README.md).
 
 ### OWNCLOUD: mounten
 
-1. `SYS:Prefs/OwnCloudPrefs` starten, Server (z. B.
+1. `SYS:Prefs/AmiOwnCloudPrefs` starten, Server (z. B.
    `https://cloud.example.com`), Benutzer, Passwort eintragen, **Speichern**.
 2. `Mount OWNCLOUD:`, wenn der DOSDriver in `DEVS:DOSDrivers` liegt (dann
    passiert das ab dem nächsten Start auch automatisch), bzw.
@@ -110,14 +110,14 @@ Beispiele und alle Schlüssel: [config-examples/README.md](../config-examples/RE
 3. `Dir OWNCLOUD:`
 
 Der Handler kann nicht ausgehängt werden, und der Worker liest seine
-Konfiguration nur beim Start: **Änderungen an `owncloud.cfg` wirken erst
+Konfiguration nur beim Start: **Änderungen an `amiowncloud.cfg` wirken erst
 nach einem Neustart.**
 
-### AmiCloudSync starten
+### AmiOwnCloudSync starten
 
-1. `SYS:Prefs/AmiCloudSyncPrefs` starten, Server, Benutzer, Passwort,
+1. `SYS:Prefs/AmiOwnCloudSyncPrefs` starten, Server, Benutzer, Passwort,
    Intervall und Ordnerpaare eintragen, **Speichern**.
-2. `Run >NIL: SYS:Tools/Commodities/AmiCloudSync` (oder per Piktogramm,
+2. `Run >NIL: SYS:Tools/Commodities/AmiOwnCloudSync` (oder per Piktogramm,
    Tooltype `CX_POPKEY=ctrl alt a`).
 3. Fenster per Hotkey `ctrl alt a` oder über Exchange.
 
@@ -134,15 +134,15 @@ Execute Uninstall-AmiOwnCloud
 
 (aus der Installationsschublade). Löscht Programme, DOSDriver und
 `HELP:AmiOwnCloud.guide`, fragt nach dem Löschen der Einstellungen. Von
-Hand: AmiCloudSync vorher über Exchange beenden, den Block in
+Hand: AmiOwnCloudSync vorher über Exchange beenden, den Block in
 `S:User-Startup` entfernen, `.amicloudsync`-Dateien in den lokalen
 Ordnerpaar-Ordnern löschen, neu starten (der Handler lässt sich nicht
 aushängen).
 
 ## PC (macOS, Linux, Windows)
 
-Am PC gibt es nur die Kommandozeilenprogramme `webdavsync` und
-`webdavsynctest`. Handler, Commodity und Prefs-Programme sind Amiga-only.
+Am PC gibt es nur die Kommandozeilenprogramme `amiowncloud-sync` und
+`amiowncloud-synctest`. Handler, Commodity und Prefs-Programme sind Amiga-only.
 
 ```sh
 make pc
@@ -151,21 +151,21 @@ make install PREFIX=$HOME/.local  # oder anderswohin
 make install DESTDIR=/tmp/paket   # für Paketbau
 ```
 
-Alternativ `bin/pc/webdavsync` und `bin/pc/webdavsynctest` von Hand an
+Alternativ `bin/pc/amiowncloud-sync` und `bin/pc/amiowncloud-synctest` von Hand an
 einen Ort im `PATH` kopieren. Laufzeit-Voraussetzung ist libcurl.
 
 Konfiguration (wenn nicht per `-c <datei>` angegeben):
 
 | System | Datei |
 |---|---|
-| macOS, Linux (und MSYS2-Umgebung „MSYS“) | `~/.webdavsyncrc` |
-| Windows (MinGW, ungetestet) | `webdavsync.cfg` im aktuellen Verzeichnis |
+| macOS, Linux (und MSYS2-Umgebung „MSYS“) | `~/.amiowncloud-syncrc` |
+| Windows (MinGW, ungetestet) | `amiowncloud-sync.cfg` im aktuellen Verzeichnis |
 
-Vorlage: `config-examples/webdavsync.cfg.example`. Die Datei enthält das
-Passwort im Klartext – z. B. mit `chmod 600 ~/.webdavsyncrc` schützen.
+Vorlage: `config-examples/amiowncloud-sync.cfg.example`. Die Datei enthält das
+Passwort im Klartext – z. B. mit `chmod 600 ~/.amiowncloud-syncrc` schützen.
 
 Deinstallation: die beiden Programme aus `$(PREFIX)/bin` und
-`~/.webdavsyncrc` löschen.
+`~/.amiowncloud-syncrc` löschen.
 
 Getestet ist der PC-Teil bisher nur unter macOS; Linux und Windows sind
 vorgesehen, aber ungetestet.

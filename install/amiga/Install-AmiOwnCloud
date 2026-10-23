@@ -15,7 +15,7 @@ FailAt 21
 Set oc_error 0
 Set ocdest DEVS:DOSDrivers/OWNCLOUD
 
-If NOT EXISTS C/owncloud-handler
+If NOT EXISTS C/amiowncloud-handler
   Echo "Fehler: Programme nicht gefunden."
   Echo "Bitte zuerst in die AmiOwnCloud-Schublade wechseln (CD ...)"
   Echo "und dann erneut  Execute Install-AmiOwnCloud  aufrufen."
@@ -37,23 +37,23 @@ If NOT EXISTS LIBS:amisslmaster.library
 EndIf
 
 ; ------------------------------------------------------------------
-; 1. OWNCLOUD:-Handler + OwnCloudPrefs
+; 1. OWNCLOUD:-Handler + AmiOwnCloudPrefs
 ; ------------------------------------------------------------------
-Ask "Laufwerk OWNCLOUD: (Handler) und OwnCloudPrefs installieren? (y/n)"
+Ask "Laufwerk OWNCLOUD: (Handler) und AmiOwnCloudPrefs installieren? (y/n)"
 If WARN
-  Copy C/owncloud-handler C/owncloud-worker TO L: QUIET
+  Copy C/amiowncloud-handler C/amiowncloud-worker TO L: QUIET
   If ERROR
     Echo "FEHLER: Kopieren nach L: fehlgeschlagen."
     Set oc_error 1
   Else
-    Echo "  owncloud-handler, owncloud-worker -> L:"
+    Echo "  amiowncloud-handler, amiowncloud-worker -> L:"
   EndIf
-  Copy C/OwnCloudPrefs TO SYS:Prefs/ QUIET
+  Copy C/AmiOwnCloudPrefs TO SYS:Prefs/ QUIET
   If ERROR
     Echo "FEHLER: Kopieren nach SYS:Prefs fehlgeschlagen."
     Set oc_error 1
   Else
-    Echo "  OwnCloudPrefs -> SYS:Prefs/"
+    Echo "  AmiOwnCloudPrefs -> SYS:Prefs/"
   EndIf
 
   Ask "OWNCLOUD: bei jedem Systemstart automatisch mounten? (y/n)"
@@ -79,20 +79,20 @@ If WARN
     EndIf
   EndIf
 
-  If NOT EXISTS ENVARC:owncloud.cfg
-    If NOT EXISTS ENV:owncloud.cfg
+  If NOT EXISTS ENVARC:amiowncloud.cfg
+    If NOT EXISTS ENV:amiowncloud.cfg
       Echo ""
-      Echo "Es gibt noch keine Konfiguration (ENV:owncloud.cfg)."
-      Echo "In OwnCloudPrefs Server, Benutzer und Passwort eintragen und"
+      Echo "Es gibt noch keine Konfiguration (ENV:amiowncloud.cfg)."
+      Echo "In AmiOwnCloudPrefs Server, Benutzer und Passwort eintragen und"
       Echo "'Speichern' wählen."
-      Ask "OwnCloudPrefs jetzt starten? (y/n)"
+      Ask "AmiOwnCloudPrefs jetzt starten? (y/n)"
       If WARN
-        SYS:Prefs/OwnCloudPrefs
+        SYS:Prefs/AmiOwnCloudPrefs
       EndIf
     EndIf
   EndIf
 
-  If EXISTS ENV:owncloud.cfg
+  If EXISTS ENV:amiowncloud.cfg
     Ask "OWNCLOUD: jetzt mounten? (y/n)"
     If WARN
       Mount $ocdest
@@ -103,88 +103,88 @@ If WARN
       EndIf
     EndIf
   Else
-    Echo "  OWNCLOUD: erst mounten, wenn ENV:owncloud.cfg existiert:"
-    Echo "  SYS:Prefs/OwnCloudPrefs starten, dann  Mount $ocdest"
+    Echo "  OWNCLOUD: erst mounten, wenn ENV:amiowncloud.cfg existiert:"
+    Echo "  SYS:Prefs/AmiOwnCloudPrefs starten, dann  Mount $ocdest"
   EndIf
   Echo ""
 EndIf
 
 ; ------------------------------------------------------------------
-; 2. Commodity AmiCloudSync + AmiCloudSyncPrefs
+; 2. Commodity AmiOwnCloudSync + AmiOwnCloudSyncPrefs
 ; ------------------------------------------------------------------
-Echo "Commodity AmiCloudSync (Ordnerabgleich) und AmiCloudSyncPrefs"
+Echo "Commodity AmiOwnCloudSync (Ordnerabgleich) und AmiOwnCloudSyncPrefs"
 Ask "Installieren? (y/n)"
 If WARN
   If NOT EXISTS SYS:Tools/Commodities
     MakeDir SYS:Tools/Commodities
   EndIf
-  Copy C/AmiCloudSync TO SYS:Tools/Commodities/ QUIET
+  Copy C/AmiOwnCloudSync TO SYS:Tools/Commodities/ QUIET
   If ERROR
     Echo "FEHLER: Kopieren nach SYS:Tools/Commodities fehlgeschlagen."
     Set oc_error 1
   Else
-    Echo "  AmiCloudSync -> SYS:Tools/Commodities/"
+    Echo "  AmiOwnCloudSync -> SYS:Tools/Commodities/"
   EndIf
-  Copy C/AmiCloudSyncPrefs TO SYS:Prefs/ QUIET
+  Copy C/AmiOwnCloudSyncPrefs TO SYS:Prefs/ QUIET
   If ERROR
     Echo "FEHLER: Kopieren nach SYS:Prefs fehlgeschlagen."
     Set oc_error 1
   Else
-    Echo "  AmiCloudSyncPrefs -> SYS:Prefs/"
+    Echo "  AmiOwnCloudSyncPrefs -> SYS:Prefs/"
   EndIf
 
-  If NOT EXISTS ENVARC:AmiCloudSync.cfg
-    If NOT EXISTS ENV:AmiCloudSync.cfg
+  If NOT EXISTS ENVARC:AmiOwnCloudSync.cfg
+    If NOT EXISTS ENV:AmiOwnCloudSync.cfg
       Echo ""
-      Echo "Es gibt noch keine Konfiguration (AmiCloudSync.cfg)."
-      Echo "In AmiCloudSyncPrefs Server, Benutzer, Passwort, Intervall und"
+      Echo "Es gibt noch keine Konfiguration (AmiOwnCloudSync.cfg)."
+      Echo "In AmiOwnCloudSyncPrefs Server, Benutzer, Passwort, Intervall und"
       Echo "Ordnerpaare eintragen und 'Speichern' wählen."
-      Ask "AmiCloudSyncPrefs jetzt starten? (y/n)"
+      Ask "AmiOwnCloudSyncPrefs jetzt starten? (y/n)"
       If WARN
-        SYS:Prefs/AmiCloudSyncPrefs
+        SYS:Prefs/AmiOwnCloudSyncPrefs
       EndIf
     EndIf
   EndIf
 
   Echo ""
-  Echo "AmiCloudSync kann beim Systemstart über S:User-Startup gestartet"
+  Echo "AmiOwnCloudSync kann beim Systemstart über S:User-Startup gestartet"
   Echo "werden. Der TCP/IP-Stack muss zu diesem Zeitpunkt schon laufen."
   Ask "Startzeile an S:User-Startup anhängen? (y/n)"
   If WARN
     If NOT EXISTS S:User-Startup
       Echo >S:User-Startup ";User-Startup"
     EndIf
-    Search >NIL: S:User-Startup "SYS:Tools/Commodities/AmiCloudSync" QUIET
+    Search >NIL: S:User-Startup "SYS:Tools/Commodities/AmiOwnCloudSync" QUIET
     If WARN
-      Echo >>S:User-Startup ";BEGIN AmiCloudSync"
-      Echo >>S:User-Startup "Run >NIL: SYS:Tools/Commodities/AmiCloudSync"
-      Echo >>S:User-Startup ";END AmiCloudSync"
+      Echo >>S:User-Startup ";BEGIN AmiOwnCloudSync"
+      Echo >>S:User-Startup "Run >NIL: SYS:Tools/Commodities/AmiOwnCloudSync"
+      Echo >>S:User-Startup ";END AmiOwnCloudSync"
       Echo "  Startzeile in S:User-Startup eingetragen."
     Else
-      Echo "  S:User-Startup startet AmiCloudSync bereits - nichts geändert."
+      Echo "  S:User-Startup startet AmiOwnCloudSync bereits - nichts geändert."
     EndIf
   EndIf
   Echo ""
 EndIf
 
 ; ------------------------------------------------------------------
-; 3. Kommandozeilenprogramme webdavsync + webdavsynctest
+; 3. Kommandozeilenprogramme amiowncloud-sync + amiowncloud-synctest
 ; ------------------------------------------------------------------
-Ask "webdavsync und webdavsynctest nach C: kopieren? (y/n)"
+Ask "amiowncloud-sync und amiowncloud-synctest nach C: kopieren? (y/n)"
 If WARN
-  Copy C/webdavsync C/webdavsynctest TO C: QUIET
+  Copy C/amiowncloud-sync C/amiowncloud-synctest TO C: QUIET
   If ERROR
     Echo "FEHLER: Kopieren nach C: fehlgeschlagen."
     Set oc_error 1
   Else
-    Echo "  webdavsync, webdavsynctest -> C:"
+    Echo "  amiowncloud-sync, amiowncloud-synctest -> C:"
   EndIf
-  If NOT EXISTS ENVARC:webdavsync.cfg
-    Ask "Beispielkonfiguration als ENVARC:webdavsync.cfg anlegen? (y/n)"
+  If NOT EXISTS ENVARC:amiowncloud-sync.cfg
+    Ask "Beispielkonfiguration als ENVARC:amiowncloud-sync.cfg anlegen? (y/n)"
     If WARN
-      Copy Examples/webdavsync.cfg.example TO ENVARC:webdavsync.cfg QUIET
-      Echo "  ENVARC:webdavsync.cfg angelegt. Mit einem Editor server, user"
-      Echo "  und pass eintragen, danach:  Copy ENVARC:webdavsync.cfg ENV:"
+      Copy Examples/amiowncloud-sync.cfg.example TO ENVARC:amiowncloud-sync.cfg QUIET
+      Echo "  ENVARC:amiowncloud-sync.cfg angelegt. Mit einem Editor server, user"
+      Echo "  und pass eintragen, danach:  Copy ENVARC:amiowncloud-sync.cfg ENV:"
     EndIf
   EndIf
   Echo ""
@@ -209,9 +209,9 @@ Else
   Echo "Fertig."
 EndIf
 Echo "- Handbuch:   MultiView Docs/AmiOwnCloud.guide  (ggf. auch in HELP:)"
-Echo "- Laufwerk:   SYS:Prefs/OwnCloudPrefs, dann  Mount $ocdest"
+Echo "- Laufwerk:   SYS:Prefs/AmiOwnCloudPrefs, dann  Mount $ocdest"
 Echo "              Geänderte Einstellungen wirken erst nach einem Neustart."
-Echo "- Abgleich:   SYS:Prefs/AmiCloudSyncPrefs, dann AmiCloudSync starten"
+Echo "- Abgleich:   SYS:Prefs/AmiOwnCloudSyncPrefs, dann AmiOwnCloudSync starten"
 Echo "              (Fenster per Hotkey ctrl alt a oder über Exchange)."
 Echo "- Entfernen:  Execute Uninstall-AmiOwnCloud"
 

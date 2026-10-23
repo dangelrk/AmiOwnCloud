@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * webdavsync -- one-shot CLI front-end for libcloudsync's cloudsync_run_t()
+ * amiowncloud-sync -- one-shot CLI front-end for libcloudsync's cloudsync_run_t()
  * bound to the WebDAV transport (libcloudsync/webdav.h). Exists purely to
  * verify Teil A of the OwnCloud-Sync-Commodity plan on a PC/Mac, against
  * a real OwnCloud/Nextcloud server, before any Amiga GUI code is written.
@@ -28,13 +28,13 @@
 
 #ifdef PLATFORM_AMIGA
 long __stack = 65536;
-const char amiga_ver[] = "$VER: webdavsync " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: amiowncloud-sync " AC_VERSION " (27.09.2026)";
 #endif
 
 static void usage(const char *prog)
 {
     fprintf(stderr,
-        "webdavsync v" AC_VERSION " -- one-shot local<->WebDAV folder sync\n"
+        "amiowncloud-sync v" AC_VERSION " -- one-shot local<->WebDAV folder sync\n"
         "Usage: %s [options] <local-dir> <remote-dir>\n"
         "\n"
         "Options:\n"
@@ -45,7 +45,7 @@ static void usage(const char *prog)
         "               https://host/remote.php/dav/files/USER\n"
         "  -u <user>    Username\n"
         "  -p <pass>    Password (Nextcloud: an app password)\n"
-        "  -c <file>    Config file (default: ~/.webdavsyncrc or ENV:webdavsync.cfg)\n"
+        "  -c <file>    Config file (default: ~/.amiowncloud-syncrc or ENV:amiowncloud-sync.cfg)\n"
         "  -k           Disable TLS certificate verification (development only)\n"
         "  -n           Dry run -- show what would happen, change nothing\n",
         prog);
@@ -84,19 +84,19 @@ int main(int argc, char **argv)
         config_load(opt_cfgfile, &cfg);
     } else {
         char primary[AC_MAX_PATH], fallback[AC_MAX_PATH];
-        config_default_path("webdavsync", primary, sizeof(primary), fallback, sizeof(fallback));
+        config_default_path("amiowncloud-sync", primary, sizeof(primary), fallback, sizeof(fallback));
         if (!config_load(primary, &cfg) && fallback[0]) config_load(fallback, &cfg);
     }
     config_merge(&cfg, opt_server, opt_user, opt_pass, NULL);
     if (opt_noverify) cfg.verify_ssl = 0;
 
-    if (i + 1 >= argc) { fprintf(stderr, "webdavsync: <local-dir> and <remote-dir> required\n"); usage(argv[0]); }
+    if (i + 1 >= argc) { fprintf(stderr, "amiowncloud-sync: <local-dir> and <remote-dir> required\n"); usage(argv[0]); }
     local_root  = argv[i++];
     remote_root = argv[i];
 
-    if (!cfg.server[0])   { fprintf(stderr, "webdavsync: WebDAV base URL required (-s or config file)\n"); usage(argv[0]); }
-    if (!cfg.username[0]) { fprintf(stderr, "webdavsync: username required (-u or config file)\n");        usage(argv[0]); }
-    if (!cfg.password[0]) { fprintf(stderr, "webdavsync: password required (-p or config file)\n");        usage(argv[0]); }
+    if (!cfg.server[0])   { fprintf(stderr, "amiowncloud-sync: WebDAV base URL required (-s or config file)\n"); usage(argv[0]); }
+    if (!cfg.username[0]) { fprintf(stderr, "amiowncloud-sync: username required (-u or config file)\n");        usage(argv[0]); }
+    if (!cfg.password[0]) { fprintf(stderr, "amiowncloud-sync: password required (-p or config file)\n");        usage(argv[0]); }
 
     {
         size_t len = strlen(cfg.server);
@@ -104,13 +104,13 @@ int main(int argc, char **argv)
     }
 
     if (!http_init()) {
-        fprintf(stderr, "webdavsync: network initialisation failed\n");
+        fprintf(stderr, "amiowncloud-sync: network initialisation failed\n");
         return 1;
     }
 
     t = webdav_transport_open(&cfg);
     if (!t) {
-        fprintf(stderr, "webdavsync: out of memory\n");
+        fprintf(stderr, "amiowncloud-sync: out of memory\n");
         http_cleanup();
         return 1;
     }

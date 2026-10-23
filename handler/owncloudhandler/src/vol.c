@@ -112,7 +112,7 @@ void vol_free_node(CNode *node)
  * still stale on every single entry of the very first listing of any
  * directory) -- unbounded recursion, one more backend_send() round trip
  * and stack frame per entry, straight into a stack overflow. Reported as
- * a full system freeze on the very first `Dir CLOUD:` after mount. */
+ * a full system freeze on the very first `Dir OWNCLOUD:` after mount. */
 static CNode *vol_find_child_raw(CNode *dir, const char *name)
 {
     CNode *c;

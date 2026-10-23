@@ -1,17 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ronny Krueger
-# AmiCloudSync -- AmigaOS 3.x (VBCC), CROSS-compiled from a host (macOS/
-# Linux/Windows) using the toolchain described in
-# docs/BUILD.md. Mirrors AmiCloud's apps/cloudsync/Makefile.
-# amiga-cross (no oml on the host, so this links directly against the
-# lib .o files instead of against .lib archives).
-#
-# No MUI here (GadTools/Intuition/Commodities only -- see gui.c/
-# commodity.c), so no MUI_INC and no mui_stubs.[ch] hack: GadTools and
-# Commodities have proper VBCC-native inline stubs in the NDK. No -lamiga
-# either -- that's only needed for MUI's DoMethod/DoSuperMethod BOOPSI
-# dispatch (see amivcs-gui-mui/Makefile.amiga-cross), which classic
-# GadTools never uses.
+# amiowncloud-sync — AmigaOS 3.x (VBCC), CROSS-compiled from a host (macOS/
+# Linux/Windows). Same source set as ../amiowncloud-synctest/Makefile.amiga-cross
+# (links the lib .o files directly, no oml on the host); only the own
+# main.c and the output name differ.
 #
 # Build:  export VBCC=/path/to/vbcc     (see docs/BUILD.md)
 #         make -f Makefile.amiga-cross
@@ -39,7 +31,7 @@ FS_INC   = $(FS_DIR)/include/cloudfs
 SYNC_INC = $(SYNC_DIR)/include/cloudsync
 
 # AMISSL_INC before NDK_INC/RUNTIME_INC -- see libcloudhttp/Makefile.amiga-cross
-CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) -Isrc \
+CFLAGS  = $(TARGET) -O2 -DAMIGA -DPLATFORM_AMIGA -cpu=$(CPU) \
           -I$(SYNC_INC) -I$(CORE_INC) -I$(HTTP_INC) -I$(FS_INC) \
           -I$(AMISSL_INC) -I$(NET_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
 # -lmieee: parson (libcloudcore) and syncstate.c/webdav.c both use double
@@ -49,9 +41,9 @@ LDFLAGS = $(TARGET) -L$(RUNTIME_LIB) -lmieee
 
 OBJDIR = obj/amiga
 BINDIR = ../../bin/amiga
-TARGET_BIN = $(BINDIR)/AmiCloudSync
+TARGET_BIN = $(BINDIR)/amiowncloud-sync
 
-CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress wbstartup
+CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress
 CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
 HTTP_SRCS = cmd http_amiga
 HTTP_OBJS = $(HTTP_SRCS:%=$(OBJDIR)/http_%.o)
@@ -60,8 +52,7 @@ FS_OBJS   = $(FS_SRCS:%=$(OBJDIR)/fs_%.o)
 SYNC_SRCS = sync syncstate webdav
 SYNC_OBJS = $(SYNC_SRCS:%=$(OBJDIR)/sync_%.o)
 
-OWN_SRCS = main commodity timer gui pairs
-OWN_OBJS = $(OWN_SRCS:%=$(OBJDIR)/%.o)
+OWN_OBJS = $(OBJDIR)/main.o
 
 all: $(OBJDIR) $(BINDIR) $(TARGET_BIN)
 
