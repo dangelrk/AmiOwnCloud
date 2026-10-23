@@ -226,6 +226,24 @@ static void dispatch(WorkerMsg *m)
         break;
     }
 
+    case WREQ_READ: {
+        char *buf = NULL;
+        long len = 0;
+        int status = 0;
+
+        if (!ensure_net_ready()) { m->result = map_get_status(0); break; }
+        if (webdavcmd_get_range(&g_cfg, m->path, (long)m->offset, (long)m->buflen, &buf, &len, &status) != 0) {
+            m->result = map_get_status(status);
+            m->buf = NULL;
+            m->buflen = 0;
+            break;
+        }
+        m->buf = (UBYTE *)buf;
+        m->buflen = (ULONG)len;
+        m->result = 0;
+        break;
+    }
+
     case WREQ_PUT: {
         int status = 0;
 

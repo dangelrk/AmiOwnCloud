@@ -549,8 +549,10 @@ Was nicht geht bzw. anders ist:
     Auflisten wieder weg.
   - Info OWNCLOUD: zeigt eine feste Platzhalter-Größe (etwa 2 GB,
     halb voll), nicht den echten Platz auf dem Server.
-  - Eine geöffnete Datei liegt komplett im RAM. Beim Schreiben wird
-    sie erst beim Schließen hochgeladen.
+  - Gelesen werden nur die Teile einer Datei, die ein Programm
+    wirklich liest; bei "Alle Dateien anzeigen" kostet eine Datei
+    ohne Icon 4 KB. Zum Ändern wird eine Datei ganz ins RAM geladen
+    und erst beim Schließen hochgeladen.
   - Immer nur eine Server-Anfrage zur Zeit. Während eine große Datei
     übertragen wird, beantwortet OWNCLOUD: trotzdem alles, was ohne
     Server geht (Info, Lesen und Schreiben geöffneter Dateien, frisch
@@ -992,7 +994,7 @@ OWNCLOUD:-Handler
 
   - Schutzbits und Dateikommentare werden nicht gespeichert.
   - Info zeigt keine echte Belegung.
-  - Geöffnete Dateien liegen komplett im RAM.
+  - Zu ändernde Dateien liegen komplett im RAM.
   - Eine Server-Anfrage zur Zeit; Timeout nur bei Stillstand.
   - Kein Aushängen; Konfigurationsänderungen erst nach Neustart.
 

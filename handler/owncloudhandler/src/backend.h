@@ -40,6 +40,11 @@ LONG backend_send(WReqCmd cmd, const char *path, const char *path2,
                   const struct DateStamp *mtime, LONG protection, const char *comment,
                   WorkerMsg **reply);
 
+/* WREQ_READ: bytes offset..offset+len-1 of path (fewer at the end of
+ * the file); *reply's buf/buflen hold them, owned by the caller exactly
+ * like a WREQ_GET body. Same waiting rules as backend_send(). */
+LONG backend_read(const char *path, LONG offset, ULONG len, WorkerMsg **reply);
+
 /* Crash-hunt diagnostic (temporary, see vol.h's is_diaglog comment): a
  * plain static ring buffer backend_send() appends fixed trace lines to at
  * each step of PutMsg/Wait/GetMsg/AbortIO/WaitIO -- exec.library only, no

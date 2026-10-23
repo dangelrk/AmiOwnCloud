@@ -64,10 +64,12 @@ Unterschiede zum `CLOUD:`-Handler:
 
 ## Bekannte Einschränkungen
 
-- **Dateien liegen beim Öffnen komplett im RAM.** Der Inhalt einer
-  geöffneten Datei wird vollständig geladen bzw. beim Schreiben erst im
-  Speicher gesammelt und beim Schließen hochgeladen. Sehr große Dateien
-  brauchen entsprechend viel freien Speicher.
+- **Lesen holt nur Teile, Ändern die ganze Datei.** Öffnen überträgt
+  nichts; jedes Read holt per `Range` nur, was es braucht (`.info` und
+  Dateien bis 4 KB ganz, sonst 4 KB beim ersten Zugriff, dann wachsende
+  Stücke bis 1 MB). So kostet eine Datei ohne Icon bei „Alle Dateien
+  anzeigen“ nur 4 KB. Erst Write/SetFileSize laden die ganze Datei ins
+  RAM; sie wird beim Schließen hochgeladen.
 - **Eine Server-Anfrage zur Zeit.** Während eine HTTP-Anfrage läuft,
   beantwortet der Handler weiter alles, was ohne Netz geht (`Info`,
   Lesen/Schreiben/Seek auf offenen Dateien, `Examine` frisch gelesener

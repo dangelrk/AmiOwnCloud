@@ -48,7 +48,8 @@ typedef enum {
     WREQ_SETCOMMENT,
     WREQ_SETPROTECT,
     WREQ_SETDATE,
-    WREQ_QUIT
+    WREQ_QUIT,
+    WREQ_READ        /* bytes offset..offset+buflen-1 of path into buf */
 } WReqCmd;
 
 #define WPATH_MAX 512
@@ -86,6 +87,7 @@ typedef struct {
  *              reply.
  *   WREQ_GET:  worker AllocVec's buf/buflen (the downloaded file
  *              content); handler FreeVec's it after copying/using it.
+ *   WREQ_READ: same as WREQ_GET, just one byte range of the file.
  *   WREQ_LIST: worker AllocVec's the entries array; handler FreeVec's it
  *              after merging it into the cache.
  */
@@ -98,6 +100,9 @@ typedef struct WorkerMsg {
 
     UBYTE  *buf;
     ULONG   buflen;
+    LONG    offset;             /* in: WREQ_READ -- buflen is the length
+                                  * wanted on the way in, the length got
+                                  * on the way out (less at end of file) */
 
     struct DateStamp mtime;     /* in: WREQ_SETDATE; out: WREQ_INFO -- see
                                   * WEntry.mtime, same worker-side

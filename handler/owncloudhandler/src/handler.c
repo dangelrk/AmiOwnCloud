@@ -174,14 +174,14 @@ static int answerable_while_busy(struct DosPacket *pkt)
     case ACTION_INFO:
     case ACTION_CURRENT_VOLUME:
     case ACTION_FLUSH:
-    case ACTION_READ:
-    case ACTION_WRITE:
     case ACTION_SEEK:
-    case ACTION_SET_FILE_SIZE:
     case ACTION_EXAMINE_FH:
     case ACTION_SAME_LOCK:
     case ACTION_FREE_LOCK:
         return 1;
+    case ACTION_READ:          /* may need a range from the server */
+    case ACTION_WRITE:         /* may need the whole file first */
+    case ACTION_SET_FILE_SIZE:
     case ACTION_LOCATE_OBJECT:
     case ACTION_EXAMINE_OBJECT:
     case ACTION_EXAMINE_NEXT:

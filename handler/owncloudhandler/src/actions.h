@@ -37,13 +37,16 @@ extern struct DateStamp   g_boot_date;
  *
  * Stage 2: the file content buffer lives HERE, per open handle, not on
  * the shared CNode anymore (docs/handler-plan.md Stufe 2 "Lesen"/
- * "Schreiben"). FINDINPUT/FINDUPDATE/FH_FROM_LOCK download the whole
- * object into data/size/alloc via WREQ_GET when opened; WRITE/
- * SET_FILE_SIZE grow and mutate that same buffer and set dirty; END
- * uploads it via WREQ_PUT iff dirty. This also means concurrent readers
- * of the same file each get their own independent snapshot from open
- * time -- deliberate, avoids any cross-handle cache-coherency problem for
- * file bodies (only directory listings are actually cached, see vol.h). */
+ * "Schreiben"). Opening an existing file transfers nothing: READ fetches
+ * just the bytes it needs (WREQ_READ into the win* window, growing chunks
+ * while a program reads on sequentially), small files come whole
+ * (WREQ_GET). Only WRITE/SET_FILE_SIZE load the whole file into
+ * data/size/alloc first (loaded) and mutate it, END uploads it via
+ * WREQ_PUT iff dirty. Workbench showing a drawer -- which opens every
+ * file without an icon to guess its type -- no longer drags each one
+ * over the line in full. A reader sees the server's current content
+ * range by range, not a snapshot from open time; a handle that writes
+ * works on its own full copy. */
 typedef struct OpenFile {
     struct CNode *node;
     LONG          pos;
@@ -53,8 +56,13 @@ typedef struct OpenFile {
                                * mirrored into node->excl_lock while open. */
     int           dirty;      /* data/size holds unpushed local changes */
     UBYTE        *data;        /* AllocVec'd, NULL if never grown/downloaded */
-    LONG          size;         /* bytes valid in *data */
+    LONG          size;         /* file size; bytes valid in *data once loaded */
     LONG          alloc;         /* bytes allocated at *data */
+    int           loaded;        /* 1 = data holds the whole file */
+    UBYTE        *win;           /* !loaded: last fetched byte range ... */
+    LONG          win_off;       /* ... starting at this file offset */
+    LONG          win_len;
+    LONG          next_chunk;    /* size of the next range to fetch */
 } OpenFile;
 
 /* Locks and directory lookups */

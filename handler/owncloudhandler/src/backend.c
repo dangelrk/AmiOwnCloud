@@ -155,12 +155,24 @@ int backend_init(void)
 }
 #endif /* AC_BACKEND_STUB_MODE */
 
+/* Offset for the next request, see backend_read(). */
+static LONG g_next_offset;
+
+LONG backend_read(const char *path, LONG offset, ULONG len, WorkerMsg **reply)
+{
+    g_next_offset = offset;
+    return backend_send(WREQ_READ, path, (const char *)0, (UBYTE *)0, len,
+                        (const struct DateStamp *)0, 0, (const char *)0, reply);
+}
+
 LONG backend_send(WReqCmd cmd, const char *path, const char *path2,
                   UBYTE *buf, ULONG buflen,
                   const struct DateStamp *mtime, LONG protection, const char *comment,
                   WorkerMsg **reply)
 {
     u_memset(&g_req, 0, sizeof(g_req));
+    g_req.offset  = g_next_offset;
+    g_next_offset = 0;
     g_req.msg.mn_ReplyPort = g_reply_port;
     g_req.msg.mn_Length    = sizeof(g_req);
 

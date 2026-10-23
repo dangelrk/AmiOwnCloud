@@ -239,9 +239,10 @@ eigenen AmiCloud-Server hat AmiOwnCloud nichts zu tun.</p>
   <li><strong>Stack:</strong> nichts einzustellen. Die Programme fordern
   selbst 64&nbsp;KB an, der Handler bekommt seinen Stack aus dem DOSDriver
   (16&nbsp;KB).</li>
-  <li><strong>Speicher:</strong> Der <code>OWNCLOUD:</code>-Handler hält
-  eine geöffnete Datei komplett im RAM. Für große Dateien entsprechend viel
-  freien Speicher einplanen.</li>
+  <li><strong>Speicher:</strong> Zum Ändern lädt der
+  <code>OWNCLOUD:</code>-Handler eine Datei komplett ins RAM; für große
+  Dateien entsprechend viel freien Speicher einplanen. Reines Lesen holt
+  nur die gelesenen Teile.</li>
 </ul>
 
 <h3>Server</h3>
@@ -580,8 +581,10 @@ Worker baut die Verbindung erst beim ersten echten Zugriff auf.</p>
   weg.</li>
   <li><code>Info OWNCLOUD:</code> zeigt eine feste Platzhalter-Größe (etwa
   2&nbsp;GB, halb voll), nicht den echten Platz auf dem Server.</li>
-  <li>Eine geöffnete Datei liegt komplett im RAM. Beim Schreiben wird sie
-  erst beim Schließen hochgeladen.</li>
+  <li>Gelesen werden nur die Teile einer Datei, die ein Programm wirklich
+  liest; bei „Alle Dateien anzeigen“ kostet eine Datei ohne Icon 4&nbsp;KB.
+  Zum Ändern wird eine Datei ganz ins RAM geladen und erst beim Schließen
+  hochgeladen.</li>
   <li>Immer nur eine Server-Anfrage zur Zeit. Während eine große Datei
   übertragen wird, beantwortet <code>OWNCLOUD:</code> trotzdem alles, was
   ohne Server geht (<code>Info</code>, Lesen und Schreiben geöffneter
@@ -951,7 +954,7 @@ Konflikt.</p>
 <ul>
   <li>Schutzbits und Dateikommentare werden nicht gespeichert.</li>
   <li><code>Info</code> zeigt keine echte Belegung.</li>
-  <li>Geöffnete Dateien liegen komplett im RAM.</li>
+  <li>Zu ändernde Dateien liegen komplett im RAM.</li>
   <li>Eine Server-Anfrage zur Zeit; Timeout nur bei Stillstand.</li>
   <li>Kein Aushängen; Konfigurationsänderungen erst nach Neustart.</li>
 </ul>

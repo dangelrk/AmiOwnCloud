@@ -472,6 +472,7 @@ static int try_open_diaglog(struct DosPacket *pkt, LONG mode, CNode *base, const
     of->data = snapshot;
     of->size = (LONG)g_diag_pos;
     of->alloc = of->size;
+    of->loaded = 1;
 
     fh = (struct FileHandle *)BADDR(pkt->dp_Arg1);
     fh->fh_Arg1 = (LONG)of;
@@ -534,21 +535,12 @@ static void do_find(struct DosPacket *pkt, LONG mode)
     of->exclusive = (mode == ACTION_FINDOUTPUT);
 
     if (mode != ACTION_FINDOUTPUT && !created_now) {
-        /* FINDINPUT/FINDUPDATE on an existing object -- fetch the whole
-         * file now (docs/handler-plan.md Stufe 2 "Lesen"); a brand-new
-         * FINDUPDATE-created file has nothing on the server yet. */
-        char fullpath[AC_PATH_BUF];
-        WorkerMsg *reply;
-
-        vol_build_path(node, fullpath, sizeof(fullpath));
-        err = backend_send(WREQ_GET, fullpath, (const char *)0, (UBYTE *)0, 0, (const struct DateStamp *)0, 0, (const char *)0, &reply);
-        if (err) {
-            FreeVec(of);
-            pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return;
-        }
-        of->data  = reply->buf;
-        of->size  = (LONG)reply->buflen;
-        of->alloc = (LONG)reply->buflen;
+        /* An existing file: nothing is transferred yet, reads fetch what
+         * they need (act_read()). The size comes from the listing. */
+        of->size = node->size;
+        of->loaded = 0;
+    } else {
+        of->loaded = 1; /* new or truncated: empty, and complete */
     }
 
     node->open_count++;
@@ -567,9 +559,6 @@ void act_fh_from_lock(struct DosPacket *pkt)
     struct FileLock *fl;
     CNode *node;
     OpenFile *of;
-    char fullpath[AC_PATH_BUF];
-    WorkerMsg *reply;
-    LONG err;
 
     if (!pkt->dp_Arg2) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_OBJECT_NOT_FOUND; return; }
     fl = (struct FileLock *)BADDR(pkt->dp_Arg2);
@@ -583,18 +572,9 @@ void act_fh_from_lock(struct DosPacket *pkt)
     of->pos = 0;
     of->exclusive = (fl->fl_Access == EXCLUSIVE_LOCK);
 
-    /* A lock only ever exists on an already-existing object -- always
-     * fetch (unlike do_find(), there's no "brand new, nothing to
-     * download yet" case here). */
-    vol_build_path(node, fullpath, sizeof(fullpath));
-    err = backend_send(WREQ_GET, fullpath, (const char *)0, (UBYTE *)0, 0, (const struct DateStamp *)0, 0, (const char *)0, &reply);
-    if (err) {
-        FreeVec(of);
-        pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return;
-    }
-    of->data  = reply->buf;
-    of->size  = (LONG)reply->buflen;
-    of->alloc = (LONG)reply->buflen;
+    /* Nothing transferred on open, as in do_find(). */
+    of->size = node->size;
+    of->loaded = 0;
 
     /* absorb the lock -- RKRM DOS 14.1.4 */
     if (fl->fl_Access != EXCLUSIVE_LOCK && node->lock_count > 0) node->lock_count--;
@@ -605,6 +585,86 @@ void act_fh_from_lock(struct DosPacket *pkt)
     fh->fh_Arg1 = (LONG)of;
     pkt->dp_Res1 = DOSTRUE;
     pkt->dp_Res2 = 0;
+}
+
+/* ---- lazy file content (see actions.h OpenFile) -------------------- */
+
+/* .info files come whole on the first read (WREQ_GET), whatever their
+ * size: Workbench needs every byte of an icon. Other files only if they
+ * are tiny -- one request either way. */
+#define READ_WHOLE_MAX  4096
+/* Range sizes for everything else: the first read (Workbench guessing a
+ * type for a file without an icon reads a few hundred bytes) costs at
+ * most READ_CHUNK_MIN; a program reading on sequentially gets doubling
+ * chunks up to READ_CHUNK_MAX, so a Copy still moves in large requests. */
+#define READ_CHUNK_MIN  4096
+#define READ_CHUNK_MAX  (1024L * 1024L)
+
+static int is_info_name(const char *name)
+{
+    ULONG n = u_strlen(name);
+    return n >= 5 && u_stricmp_latin1(name + n - 5, ".info") == 0;
+}
+
+static void drop_window(OpenFile *of)
+{
+    if (of->win) FreeVec(of->win);
+    of->win = (UBYTE *)0;
+    of->win_off = 0;
+    of->win_len = 0;
+}
+
+/* Makes data hold the whole file (WREQ_GET). 0 = ok, else a DOS error;
+ * in offline mode (handler.c serve_while_busy()) it changes nothing and
+ * the caller's result is discarded anyway. */
+static LONG load_whole(OpenFile *of)
+{
+    char fullpath[AC_PATH_BUF];
+    WorkerMsg *reply;
+    LONG err;
+
+    if (of->loaded) return 0;
+    if (!vol_need_network()) return ERROR_OBJECT_IN_USE;
+    vol_build_path(of->node, fullpath, sizeof(fullpath));
+    err = backend_send(WREQ_GET, fullpath, (const char *)0, (UBYTE *)0, 0,
+                       (const struct DateStamp *)0, 0, (const char *)0, &reply);
+    if (err) return err;
+    drop_window(of);
+    if (of->data) FreeVec(of->data);
+    of->data   = reply->buf;
+    of->size   = (LONG)reply->buflen;
+    of->alloc  = (LONG)reply->buflen;
+    of->loaded = 1;
+    return 0;
+}
+
+/* Fetches the range starting at pos (at least want bytes, see
+ * READ_CHUNK_*) into the window. 0 = ok (the window may be shorter than
+ * asked at the end of the file), else a DOS error. */
+static LONG fetch_window(OpenFile *of, LONG pos, LONG want)
+{
+    char fullpath[AC_PATH_BUF];
+    WorkerMsg *reply;
+    LONG err, len;
+
+    if (!vol_need_network()) return ERROR_OBJECT_IN_USE;
+    if (of->win && pos == of->win_off + of->win_len) {
+        /* reading on sequentially: bigger steps */
+        of->next_chunk = of->next_chunk < READ_CHUNK_MAX / 2 ? of->next_chunk * 2 : READ_CHUNK_MAX;
+    } else {
+        of->next_chunk = READ_CHUNK_MIN;
+    }
+    len = want > of->next_chunk ? want : of->next_chunk;
+    if (len > of->size - pos) len = of->size - pos;
+
+    vol_build_path(of->node, fullpath, sizeof(fullpath));
+    err = backend_read(fullpath, pos, (ULONG)len, &reply);
+    if (err) return err;
+    drop_window(of);
+    of->win     = reply->buf;
+    of->win_off = pos;
+    of->win_len = (LONG)reply->buflen;
+    return 0;
 }
 
 void act_end(struct DosPacket *pkt)
@@ -633,6 +693,7 @@ void act_end(struct DosPacket *pkt)
             if (node->open_count > 0) node->open_count--;
             if (of->exclusive) node->excl_lock = 0;
             if (of->data) FreeVec(of->data);
+            drop_window(of);
             FreeVec(of);
             pkt->dp_Res1 = DOSFALSE;
             pkt->dp_Res2 = err;
@@ -646,6 +707,7 @@ void act_end(struct DosPacket *pkt)
     if (node->open_count > 0) node->open_count--;
     if (of->exclusive) node->excl_lock = 0;
     if (of->data) FreeVec(of->data);
+    drop_window(of);
     FreeVec(of);
 
     pkt->dp_Res1 = DOSTRUE;
@@ -657,17 +719,48 @@ void act_read(struct DosPacket *pkt)
     OpenFile *of = (OpenFile *)pkt->dp_Arg1;
     UBYTE *buf = (UBYTE *)pkt->dp_Arg2;
     LONG want = pkt->dp_Arg3;
-    LONG avail;
+    LONG avail, done = 0, pos = of->pos;
+    LONG err;
 
     if (want < 0) { pkt->dp_Res1 = -1; pkt->dp_Res2 = ERROR_SEEK_ERROR; return; }
 
     avail = of->size - of->pos;
     if (avail < 0) avail = 0;
     if (want > avail) want = avail;
-    if (want > 0) u_memcpy(buf, of->data + of->pos, (ULONG)want);
-    of->pos += want;
 
-    pkt->dp_Res1 = want;
+    if (want > 0 && !of->loaded && (of->size <= READ_WHOLE_MAX || is_info_name(of->node->name))) {
+        err = load_whole(of);
+        if (err) { pkt->dp_Res1 = -1; pkt->dp_Res2 = err; return; }
+        if (want > of->size - pos) want = of->size - pos > 0 ? of->size - pos : 0;
+    }
+
+    if (of->loaded) {
+        if (want > 0) u_memcpy(buf, of->data + pos, (ULONG)want);
+        done = want;
+    } else {
+        /* Bigger file, not loaded: serve from the fetched range, fetch
+         * the next one where it runs out. pos is only committed at the
+         * end, so a read given up in offline mode leaves nothing changed. */
+        while (done < want) {
+            LONG off = pos + done;
+            if (of->win && off >= of->win_off && off < of->win_off + of->win_len) {
+                LONG n = of->win_off + of->win_len - off;
+                if (n > want - done) n = want - done;
+                u_memcpy(buf + done, of->win + (off - of->win_off), (ULONG)n);
+                done += n;
+                continue;
+            }
+            err = fetch_window(of, off, want - done);
+            if (err || of->win_len == 0) {
+                if (done > 0) break;      /* hand out what we have */
+                if (!err) break;          /* server has less than listed: EOF */
+                pkt->dp_Res1 = -1; pkt->dp_Res2 = err; return;
+            }
+        }
+    }
+    of->pos = pos + done;
+
+    pkt->dp_Res1 = done;
     pkt->dp_Res2 = 0;
 }
 
@@ -679,6 +772,10 @@ void act_write(struct DosPacket *pkt)
     LONG need_end;
 
     if (want < 0) { pkt->dp_Res1 = -1; pkt->dp_Res2 = ERROR_SEEK_ERROR; return; }
+    if (!of->loaded) {
+        LONG err = load_whole(of); /* changing a file needs all of it */
+        if (err) { pkt->dp_Res1 = -1; pkt->dp_Res2 = err; return; }
+    }
 
     need_end = of->pos + want;
     if (need_end > of->alloc && !vol_grow_buf(&of->data, &of->alloc, of->size, need_end)) {
@@ -728,6 +825,10 @@ void act_set_file_size(struct DosPacket *pkt)
 
     newsize = base + offset;
     if (newsize < 0) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_SEEK_ERROR; return; }
+    if (!of->loaded) {
+        LONG err = load_whole(of);
+        if (err) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return; }
+    }
     if (newsize > of->alloc && !vol_grow_buf(&of->data, &of->alloc, of->size, newsize)) {
         pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_DISK_FULL; return;
     }

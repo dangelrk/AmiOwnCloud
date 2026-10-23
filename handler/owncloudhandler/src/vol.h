@@ -161,6 +161,11 @@ int    vol_is_fresh(CNode *dir);
 void   vol_set_offline(int on);
 int    vol_would_block(void);
 
+/* For actions that are about to send a worker request themselves: 1 =
+ * go ahead; 0 = offline mode is on, the would-block flag is now set and
+ * the caller must give up without changing anything. */
+int    vol_need_network(void);
+
 /* Forces dir's *next* access to refresh regardless of TTL (docs/handler-
  * plan.md Stufe 2: mutations "invalidieren Parent" after applying their
  * own change to the tree directly). Safe to call on NULL. */

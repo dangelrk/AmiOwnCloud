@@ -308,6 +308,13 @@ int vol_would_block(void)
     return g_would_block;
 }
 
+int vol_need_network(void)
+{
+    if (!g_offline) return 1;
+    g_would_block = 1;
+    return 0;
+}
+
 LONG vol_ensure_fresh(CNode *dir)
 {
     int never_listed;
