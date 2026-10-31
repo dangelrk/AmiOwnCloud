@@ -810,6 +810,33 @@ Konflikt. Deshalb am besten mit einem leeren lokalen Ordner (alles wird
 heruntergeladen) oder einem leeren Server-Ordner (alles wird hochgeladen)
 beginnen. Gefahrlos ausprobieren: <code>amiowncloud-sync -n &lt;lokal&gt;
 &lt;remote&gt;</code>.</div>
+<h4>Schutz vor Datenverlust (ab 0.2)</h4>
+<ul>
+<li>Kann ein Ordner auf einer Seite nicht gelesen werden (Netzfehler,
+gesperrter Ordner), bricht der Abgleich ab, bevor er etwas ändert.</li>
+<li>Ctrl-C bricht nach der laufenden Übertragung ab. Ein abgebrochener
+Abgleich löscht nichts; der nächste macht den Rest.</li>
+<li>Ist der Ordner auf dem Server verschwunden (etwa umbenannt), wird er
+nicht leer neu angelegt; der Abgleich bricht ab.</li>
+<li>Gehört <code>.amicloudsync</code> zu einem anderen Server, Benutzer
+oder Server-Ordner, wird der Stand verworfen. Der Abgleich führt dann nur
+zusammen und löscht nichts.</li>
+<li>Ein Ordner wird nur gelöscht, wenn auch alles darin gelöscht wird.
+Liegt darin etwas Neues, wird er wieder angelegt.</li>
+<li>Dateien, die während des Abgleichs geändert werden, werden weder
+überschrieben noch gelöscht.</li>
+<li>Hochgeladen wird nur, wenn die Datei auf dem Server noch die beim
+Abgleich gesehene ist. Sonst wird ein Konflikt gemeldet.</li>
+<li>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, und Namen,
+die für das Dateisystem zu lang sind (klassisches FFS: 30 Zeichen), werden
+übersprungen und gemeldet.</li>
+<li>Nie abgeglichen werden <code>.DS_Store</code>, <code>._*</code>,
+<code>Thumbs.db</code>, <code>desktop.ini</code>, <code>~$*</code>,
+<code>*.part</code> sowie Namen mit Backslash oder Steuerzeichen.</li>
+</ul>
+<p>Lokale Dateien bekommen die Ortszeit nach <code>gmt_offset</code> und
+<code>dst</code> aus der Konfigurationsdatei (die Sommerzeit wird von Hand
+umgestellt).</p>
 
 <p class="backtotop"><a href="#top">nach oben</a></p>
 

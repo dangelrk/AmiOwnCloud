@@ -823,6 +823,32 @@ oder einem leeren Server-Ordner (alles wird hochgeladen) beginnen.
 Den Abgleich vorher gefahrlos ausprobieren:
   amiowncloud-sync -n <lokal> <remote>   (zeigt nur an, ändert nichts)
 
+Schutz vor Datenverlust (ab 0.2):
+
+  - Kann ein Ordner auf einer Seite nicht gelesen werden (Netzfehler,
+    gesperrter Ordner), bricht der Abgleich ab, bevor er etwas ändert.
+  - Ctrl-C bricht nach der laufenden Übertragung ab. Ein abgebrochener
+    Abgleich löscht nichts; der nächste macht den Rest.
+  - Ist der Ordner auf dem Server verschwunden (etwa umbenannt), wird
+    er nicht leer neu angelegt; der Abgleich bricht ab.
+  - Gehört .amicloudsync zu einem anderen Server, Benutzer oder
+    Server-Ordner, wird der Stand verworfen. Der Abgleich führt dann
+    nur zusammen und löscht nichts.
+  - Ein Ordner wird nur gelöscht, wenn auch alles darin gelöscht
+    wird. Liegt darin etwas Neues, wird er wieder angelegt.
+  - Dateien, die während des Abgleichs geändert werden, werden weder
+    überschrieben noch gelöscht.
+  - Hochgeladen wird nur, wenn die Datei auf dem Server noch die beim
+    Abgleich gesehene ist. Sonst wird ein Konflikt gemeldet.
+  - Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, und
+    Namen, die für das Dateisystem zu lang sind (klassisches FFS:
+    30 Zeichen), werden übersprungen und gemeldet.
+  - Nie abgeglichen werden .DS_Store, ._*, Thumbs.db, desktop.ini,
+    ~$*, *.part sowie Namen mit Backslash oder Steuerzeichen.
+
+Zeiten: Lokale Dateien bekommen die Ortszeit nach gmt_offset und dst
+aus der Konfigurationsdatei (die Sommerzeit wird von Hand umgestellt).
+
 @endnode
 
 @node Webdavsync "amiowncloud-sync"
