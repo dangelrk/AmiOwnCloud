@@ -22,6 +22,7 @@
 #include "http.h"
 #include "sync.h"
 #include "localfs.h"
+#include "charset.h"
 #include "webdav.h"
 #include <stdio.h>
 #include <string.h>
@@ -62,6 +63,7 @@ int main(int argc, char **argv)
     const char *local_root, *remote_root;
     Progress      pr;
     SyncSummary   sum;
+    char        remote_utf8[AC_MAX_PATH];
     SyncTransport *t;
 
     memset(&cfg, 0, sizeof(cfg));
@@ -113,6 +115,13 @@ int main(int argc, char **argv)
      * handler (gmt_offset/dst from the config; no-op on the PC) */
     localfs_set_tz(cfg.gmt_offset, cfg.dst);
 
+    /* Phase 4: local file names in the system codeset (codesets.library);
+     * the remote folder from the command line is converted to UTF-8 */
+    if (!cs_open(cfg.charset))
+        fprintf(stderr, "amiowncloud-sync: codesets.library (ab 6) nicht gefunden -- "
+                "Dateinamen werden als ISO-8859-1 behandelt\n");
+    cs_to_utf8(remote_root, remote_utf8, sizeof(remote_utf8));
+
     t = webdav_transport_open(&cfg);
     if (!t) {
         fprintf(stderr, "amiowncloud-sync: out of memory\n");
@@ -126,7 +135,7 @@ int main(int argc, char **argv)
         sync_options_init(&o);
         o.dry_run = opt_dryrun;
         o.verbose = 1;
-        cloudsync_run_ex(t, local_root, remote_root, &o, &pr, &sum);
+        cloudsync_run_ex(t, local_root, remote_utf8, &o, &pr, &sum);
     }
 
     webdav_transport_close(t);

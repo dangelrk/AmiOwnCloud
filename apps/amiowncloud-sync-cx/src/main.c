@@ -38,6 +38,7 @@
 #include "http.h"
 #include "sync.h"
 #include "localfs.h"
+#include "charset.h"
 #include "webdav.h"
 #include "pairs.h"
 #include "commodity.h"
@@ -134,6 +135,7 @@ static void do_sync_pair(const AcConfig *cfg, SyncPair *p, char *status, size_t 
     SyncTransport *t;
     Progress    pr;
     SyncSummary sum;
+    char        remote_utf8[AC_MAX_PATH];
 
     if (!p->enabled) {
         snprintf(status, status_sz, "%s: deaktiviert, uebersprungen", p->local);
@@ -141,11 +143,13 @@ static void do_sync_pair(const AcConfig *cfg, SyncPair *p, char *status, size_t 
     }
 
     localfs_set_tz(cfg->gmt_offset, cfg->dst);   /* S16, see amiowncloud-sync */
+    cs_open(cfg->charset);                        /* Phase 4, see amiowncloud-sync */
+    cs_to_utf8(p->remote, remote_utf8, sizeof(remote_utf8));
     t = webdav_transport_open(cfg);
     if (!t) { snprintf(status, status_sz, "%s: kein Speicher", p->local); return; }
 
     progress_reset(&pr);
-    cloudsync_run_ex(t, p->local, p->remote, NULL, &pr, &sum);
+    cloudsync_run_ex(t, p->local, remote_utf8, NULL, &pr, &sum);
     webdav_transport_close(t);
 
     snprintf(status, status_sz, "%s: %d hoch, %d runter, %d Konflikt(e)%s%s",

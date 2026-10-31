@@ -39,6 +39,7 @@
 #include "sync.h"
 #include "webdav.h"
 #include "localfs.h"
+#include "charset.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -285,6 +286,7 @@ int main(int argc, char **argv)
     /* S16: local file dates in local time, like the shell and the
      * handler (gmt_offset/dst from the config; no-op on the PC) */
     localfs_set_tz(cfg.gmt_offset, cfg.dst);
+    cs_open(cfg.charset);   /* Phase 4: same codeset as the real sync tools */
 
     t = webdav_transport_open(&cfg);
     if (!t) {

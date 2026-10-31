@@ -51,7 +51,7 @@ OBJDIR = obj/amiga
 BINDIR = ../../bin/amiga
 TARGET_BIN = $(BINDIR)/AmiOwnCloudSync
 
-CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress wbstartup
+CORE_SRCS = config base64 parson md5 ui_hooks cloudtime progress wbstartup charset
 CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
 HTTP_SRCS = cmd http_amiga
 HTTP_OBJS = $(HTTP_SRCS:%=$(OBJDIR)/http_%.o)
