@@ -38,6 +38,10 @@ If WARN
   Echo "AmiOwnCloud @VERSION@ braucht mindestens einen 68020."
   Quit 10
 EndIf
+If NOT EXISTS LIBS:codesets.library
+  Echo "Hinweis: LIBS:codesets.library fehlt -- Umlaute in Dateinamen"
+  Echo "werden dann als ISO-8859-1 behandelt (Aminet: util/libs/codesets)."
+EndIf
 
 Echo ""
 Echo "AmiOwnCloud @VERSION@ - Installation"

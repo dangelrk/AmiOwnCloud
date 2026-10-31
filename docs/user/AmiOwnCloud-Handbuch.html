@@ -488,9 +488,17 @@ dst=0
 <tr><td><code>debug</code></td><td>Datei, in die <code>amiowncloud-worker</code> jede HTTP-Anfrage und -Antwort schreibt, z.&nbsp;B. <code>T:amiowncloud.log</code></td><td>leer = aus</td></tr>
 <tr><td><code>gmt_offset</code></td><td>Abstand der Ortszeit zu UTC in Minuten (MEZ = 60). Die Amiga-Uhr kennt keine Zeitzone; ohne diesen Wert stimmen die Dateizeiten um die Zeitzone nicht.</td><td><code>0</code></td></tr>
 <tr><td><code>dst</code></td><td><code>1</code> = Sommerzeit aktiv (eine Stunde mehr). Muss bei der Zeitumstellung von Hand angepasst werden.</td><td><code>0</code></td></tr>
+<tr><td><code>charset</code></td><td>Zeichensatz der Dateinamen, z.&nbsp;B. <code>ISO-8859-2</code> oder <code>AmigaPL</code>; leer = Zeichensatz des Systems</td><td>(System)</td></tr>
 <tr><td><code>timeout</code></td><td>Netz-Timeout in Sekunden: so lange darf eine Verbindung ganz ohne Datenfluss bleiben. Die Dauer einer Übertragung ist nie begrenzt – eine große Datei über ein Modem läuft, solange Daten fließen. Gilt auch für AmiOwnCloudSync und <code>amiowncloud-sync</code>.</td><td><code>120</code></td></tr>
 <tr><td><code>cache_ttl</code></td><td>Wie viele Sekunden eine Verzeichnisliste zwischengespeichert wird; über ein Modem lohnen 120 bis 300.</td><td><code>30</code></td></tr>
 </table>
+<p><strong>Umlaute in Dateinamen (ab 0.2):</strong> ownCloud/Nextcloud speichern
+Namen in UTF-8, der Amiga in seinem eigenen Zeichensatz. Handler und
+Abgleichprogramme wandeln um, über die <code>codesets.library</code> (ab Version&nbsp;6,
+Aminet <code>util/libs/codesets</code>). Fehlt sie, gilt ISO-8859-1. Zeichen, die es
+lokal nicht gibt (Emoji, <code>?</code>, chinesische Schrift), erscheinen als
+<code>_</code>; die Datei bleibt unter diesem Namen erreichbar, und der Abgleich ordnet
+sie wieder richtig zu.</p>
 <p><strong>Wichtig:</strong> Der Worker liest die Datei nur einmal beim
 Start. Weil der Handler nicht ausgehängt werden kann, wirken Änderungen
 zuverlässig erst nach einem Neustart des Amiga.</p>

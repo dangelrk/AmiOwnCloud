@@ -44,6 +44,13 @@ pass=geheim
 #gmt_offset=60
 #dst=0
 
+# Zeichensatz der Dateinamen auf dem Amiga (nur Amiga). Server und PC
+# arbeiten mit UTF-8; umgewandelt wird ueber codesets.library (ab 6,
+# Aminet util/libs/codesets). Ohne Angabe gilt der Zeichensatz des Systems
+# (Locale), ohne codesets.library ISO-8859-1. Zeichen, die es lokal nicht
+# gibt (z. B. Emoji), erscheinen als '_'. Beispiele: ISO-8859-2, AmigaPL.
+#charset=ISO-8859-15
+
 # Netz-Timeout in Sekunden (Standard 120): so lange darf eine Verbindung
 # ganz ohne Datenfluss bleiben. Die Dauer einer Uebertragung ist nie
 # begrenzt -- eine grosse Datei ueber ein Modem laeuft, solange Daten

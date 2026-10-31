@@ -427,6 +427,16 @@ Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
   cache_ttl   Wie viele Sekunden eine Verzeichnisliste
               zwischengespeichert wird, Standard 30. Über ein Modem
               lohnen 120 bis 300.
+  charset     Zeichensatz der Dateinamen, z. B. ISO-8859-2 oder
+              AmigaPL. Leer = Zeichensatz des Systems (Locale).
+
+Umlaute in Dateinamen (ab 0.2): ownCloud/Nextcloud speichern Namen in
+UTF-8, der Amiga in seinem eigenen Zeichensatz. Handler und
+Abgleichprogramme wandeln um, über die codesets.library (ab Version 6,
+Aminet util/libs/codesets). Fehlt sie, gilt ISO-8859-1. Zeichen, die
+es lokal nicht gibt (Emoji, '?', chinesische Schrift), erscheinen als
+'_'; die Datei bleibt unter diesem Namen erreichbar, und der Abgleich
+ordnet sie wieder richtig zu.
 
 Wichtig: Der Worker liest die Datei nur einmal beim Start. Weil der
 Handler nicht ausgehängt werden kann, wirken Änderungen zuverlässig

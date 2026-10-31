@@ -121,6 +121,9 @@
          "MUI wird nicht gebraucht."
          (if (= 0 (exists "LIBS:amisslmaster.library" (noreq)))
            "\n\nAmiSSL 5 wurde nicht gefunden\n(Installation geht trotzdem)."
+           "")
+         (if (= 0 (exists "LIBS:codesets.library" (noreq)))
+           "\n\ncodesets.library fehlt (Umlaute in Namen;\nAminet util/libs/codesets)."
            ""))
 
 ; ---- Auswahl -------------------------------------------------------------
