@@ -29,7 +29,7 @@ Existing settings and an existing DOSDriver are never overwritten.
 
 Requirements
 ------------
-- AmigaOS 3.x, 68000 or better, no FPU needed
+- AmigaOS 3.x, 68020 or better (since 0.2), no FPU needed
 - a TCP/IP stack with bsdsocket.library (Roadshow, AmiTCP, Miami, ...)
 - AmiSSL 5
 - an account on an ownCloud or Nextcloud server

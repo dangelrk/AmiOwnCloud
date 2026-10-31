@@ -282,6 +282,10 @@ int main(int argc, char **argv)
     write_file(note1_path, "initial content A\n");
     write_file(note2_path, "initial content B\n");
 
+    /* S16: local file dates in local time, like the shell and the
+     * handler (gmt_offset/dst from the config; no-op on the PC) */
+    localfs_set_tz(cfg.gmt_offset, cfg.dst);
+
     t = webdav_transport_open(&cfg);
     if (!t) {
         fprintf(stderr, "amiowncloud-synctest: out of memory\n");

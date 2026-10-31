@@ -12,7 +12,7 @@ Bauen aus den Quellen: [BUILD.md](BUILD.md). Bedienung:
 
 | Was | Details |
 |---|---|
-| Betriebssystem | AmigaOS 3.x, Prozessor 68000 oder besser |
+| Betriebssystem | AmigaOS 3.x, Prozessor 68020 oder besser (seit 0.2) |
 | TCP/IP-Stack | mit `bsdsocket.library` (Version 4 oder neuer), z. B. Roadshow, AmiTCP/Genesis, Miami. Muss laufen, bevor ein Programm den Server anspricht. |
 | AmiSSL 5 | `amisslmaster.library` – von allen Programmen gebraucht, die mit dem Server sprechen (auch bei `http://`) |
 | MUI | **nicht** nötig – alle Oberflächen sind GadTools/Commodities (intuition, gadtools, commodities.library aus dem Betriebssystem) |

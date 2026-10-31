@@ -2,7 +2,7 @@
 
 Diese Anleitung beschreibt, wie man AmiOwnCloud aus den Quellen baut:
 
-- **Amiga** (AmigaOS 3.x, 68000): alle Programme – per Cross-Compiler vbcc
+- **Amiga** (AmigaOS 3.x, 68020): alle Programme – per Cross-Compiler vbcc
   von macOS, Linux oder Windows aus, oder nativ auf dem Amiga mit dem
   Skript `Build-Amiga`.
 - **PC** (macOS, Linux, Windows): die Kommandozeilenprogramme `amiowncloud-sync`
@@ -153,7 +153,7 @@ make amiga
 ```
 
 `make amiga` stellt `$VBCC/bin` selbst an den Anfang von `PATH`. Ziel ist
-ein 68000 mit AmigaOS 3.x; Fließkomma-Mathematik kommt aus `-lmieee`.
+ein 68020 mit AmigaOS 3.x (seit 0.2); Fließkomma-Mathematik kommt aus `-lmieee`.
 Ergebnis: alle Programme in `bin/amiga/`.
 
 Danach die Installationsschublade erzeugen:

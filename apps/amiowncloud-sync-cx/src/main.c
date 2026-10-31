@@ -37,6 +37,7 @@
 #include "config.h"
 #include "http.h"
 #include "sync.h"
+#include "localfs.h"
 #include "webdav.h"
 #include "pairs.h"
 #include "commodity.h"
@@ -139,6 +140,7 @@ static void do_sync_pair(const AcConfig *cfg, SyncPair *p, char *status, size_t 
         return;
     }
 
+    localfs_set_tz(cfg->gmt_offset, cfg->dst);   /* S16, see amiowncloud-sync */
     t = webdav_transport_open(cfg);
     if (!t) { snprintf(status, status_sz, "%s: kein Speicher", p->local); return; }
 
