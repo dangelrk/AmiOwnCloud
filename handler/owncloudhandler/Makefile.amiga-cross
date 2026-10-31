@@ -66,7 +66,7 @@ HANDLER_OBJS = $(HANDLER_SRCS:%=$(OBJDIR)/%.o)
 WORKER      = $(BINDIR)/amiowncloud-worker
 WORKER_OBJS = $(OBJDIR)/worker.o
 
-CORE_SRCS = config base64 md5 ui_hooks cloudtime progress
+CORE_SRCS = config base64 md5 ui_hooks cloudtime progress charset
 CORE_OBJS = $(CORE_SRCS:%=$(OBJDIR)/core_%.o)
 HTTP_SRCS = webdavcmd http_amiga
 HTTP_OBJS = $(HTTP_SRCS:%=$(OBJDIR)/http_%.o)
