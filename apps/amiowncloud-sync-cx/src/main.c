@@ -8,7 +8,7 @@
  * HotKey toggles a GadTools window (gui.c) listing local<->remote
  * folder pairs (pairs.c) that can be synced manually or automatically
  * on a timer.device interval (timer.c) via the transport-neutral sync
- * kernel bound to the WebDAV backend (libcloudsync's cloudsync_run_t +
+ * kernel bound to the WebDAV backend (libcloudsync's cloudsync_run_ex +
  * webdav_transport_open) -- no AmiCloud/api.php code anywhere here, see
  * webdav.h.
  *
@@ -94,7 +94,7 @@ static void configure_hotkey(int argc, char *argv[], char *hotkey, size_t hotkey
  * calls ui_progress() once per chunk during every PUT/GET, this commodity
  * just never had a hook installed to receive it. GT_SetGadgetAttrs()
  * (inside gui_set_status()) redraws immediately, no event-loop pump
- * needed even though this whole process is blocked inside cloudsync_run_t()
+ * needed even though this whole process is blocked inside cloudsync_run_ex()
  * for the duration. */
 static UiRateMeter g_sync_rate;
 static char        g_sync_last_name[64];
@@ -143,12 +143,12 @@ static void do_sync_pair(const AcConfig *cfg, SyncPair *p, char *status, size_t 
     if (!t) { snprintf(status, status_sz, "%s: kein Speicher", p->local); return; }
 
     progress_reset(&pr);
-    cloudsync_run_t(t, p->local, p->remote, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, p->local, p->remote, NULL, &pr, &sum);
     webdav_transport_close(t);
 
-    snprintf(status, status_sz, "%s: %d hoch, %d runter, %d Konflikt(e)%s",
+    snprintf(status, status_sz, "%s: %d hoch, %d runter, %d Konflikt(e)%s%s",
             p->local, sum.uploaded, sum.downloaded, sum.conflicts,
-            sum.errors ? ", Fehler!" : "");
+            sum.errors ? ", Fehler!" : "", sum.aborted ? ", abgebrochen" : "");
 }
 
 static int profile_incomplete(const AcConfig *cfg)

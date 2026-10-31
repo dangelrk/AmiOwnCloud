@@ -4,7 +4,7 @@
 /*
  * amiowncloud-synctest -- console test suite for the WebDAV sync transport
  * (libcloudsync/webdav.h) and the transport-neutral sync kernel
- * (cloudsync_run_t, sync.h). Runs the same scenarios that were manually
+ * (cloudsync_run_ex, sync.h). Runs the same scenarios that were manually
  * verified against a real OwnCloud/Nextcloud server while building this
  * tool, as an automated, repeatable regression check:
  *
@@ -117,7 +117,7 @@ static void make_test_auth(char *out, size_t outsz, const AcConfig *cfg)
 }
 
 /* Simulates "someone/something else changed this file" -- a raw PUT
- * straight through libcloudhttp, never touching cloudsync_run_t(). */
+ * straight through libcloudhttp, never touching cloudsync_run_ex(). */
 static int raw_put(const AcConfig *cfg, const char *remote_path, const char *content)
 {
     char url[AC_MAX_URL], auth[192];
@@ -292,12 +292,12 @@ int main(int argc, char **argv)
     /* ---- T1/T2: initial upload, then converge ---- */
     printf("\n--- T1/T2: initial sync + convergence ---\n");
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.uploaded == 2 && sum.downloaded == 0 && sum.errors == 0,
          "T1: initial sync uploads both new local files");
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.uploaded == 0 && sum.downloaded == 0 && sum.unchanged == 2 && sum.errors == 0,
          "T2: second sync transfers nothing (md5/token convergence)");
 
@@ -305,12 +305,12 @@ int main(int argc, char **argv)
     printf("\n--- T3: local change ---\n");
     write_file(note1_path, "locally modified content\n");
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.uploaded == 1 && sum.downloaded == 0 && sum.errors == 0,
          "T3a: local change triggers exactly one upload");
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.uploaded == 0 && sum.downloaded == 0 && sum.errors == 0,
          "T3b: sync after upload is stable (no token-gap re-transfer)");
 
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
          "T4 setup: raw PUT simulating an external server-side edit");
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.downloaded == 1 && sum.uploaded == 0 && sum.errors == 0,
          "T4a: remote change triggers exactly one download");
 
@@ -329,7 +329,7 @@ int main(int argc, char **argv)
          "T4b: downloaded content matches the server's edit");
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.uploaded == 0 && sum.downloaded == 0 && sum.errors == 0,
          "T4c: sync after download is stable (post-download md5 patch works)");
 
@@ -337,7 +337,7 @@ int main(int argc, char **argv)
     printf("\n--- T5: local delete ---\n");
     remove(note2_path);
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.deleted == 1 && sum.errors == 0, "T5a: local delete propagates to the server");
 
     {
@@ -347,7 +347,7 @@ int main(int argc, char **argv)
     }
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.deleted == 0 && sum.uploaded == 0 && sum.downloaded == 0 && sum.errors == 0,
          "T5c: sync after delete is stable");
 
@@ -357,7 +357,7 @@ int main(int argc, char **argv)
     raw_put(&cfg, remote_note1, "remote edit Y\n");
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, 0, 0, &pr, &sum);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
     check(sum.conflicts == 1 && sum.uploaded == 0 && sum.downloaded == 0,
          "T6a: diverging changes are reported as a conflict, not resolved");
 

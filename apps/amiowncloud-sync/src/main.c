@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Ronny Krueger
  */
 /*
- * amiowncloud-sync -- one-shot CLI front-end for libcloudsync's cloudsync_run_t()
+ * amiowncloud-sync -- one-shot CLI front-end for libcloudsync's cloudsync_run_ex()
  * bound to the WebDAV transport (libcloudsync/webdav.h). Exists purely to
  * verify Teil A of the OwnCloud-Sync-Commodity plan on a PC/Mac, against
  * a real OwnCloud/Nextcloud server, before any Amiga GUI code is written.
@@ -116,7 +116,13 @@ int main(int argc, char **argv)
     }
 
     progress_reset(&pr);
-    cloudsync_run_t(t, local_root, remote_root, opt_dryrun, /*verbose=*/1, &pr, &sum);
+    {
+        SyncOptions o;
+        sync_options_init(&o);
+        o.dry_run = opt_dryrun;
+        o.verbose = 1;
+        cloudsync_run_ex(t, local_root, remote_root, &o, &pr, &sum);
+    }
 
     webdav_transport_close(t);
     http_cleanup();
