@@ -50,7 +50,7 @@ HTTP_INC = $(HTTP_DIR)/include/cloudhttp
 OBJDIR = obj/amiga
 BINDIR = ../../bin/amiga
 
-HANDLER_CFLAGS  = $(TARGET) -O1 -cpu=$(CPU) -nostdlib -Isrc -I$(NDK_INC) -I$(RUNTIME_INC)
+HANDLER_CFLAGS  = $(TARGET) -O1 -cpu=$(CPU) -nostdlib -Isrc -I$(CORE_INC) -I$(NDK_INC) -I$(RUNTIME_INC)
 HANDLER_LDFLAGS = $(TARGET) -nostdlib -L$(RUNTIME_LIB)
 
 # AMISSL_INC before NDK_INC/RUNTIME_INC -- see libcloudhttp/Makefile.amiga-cross

@@ -22,7 +22,8 @@ Bauen aus den Quellen: [BUILD.md](BUILD.md). Bedienung:
 
 ### Installation mit dem Install-Skript
 
-Die Installationsschublade entsteht mit `make dist-amiga`
+Die Installationsschublade kommt aus dem Release-Archiv
+`AmiOwnCloud-<version>.lha` oder entsteht mit `make dist-amiga`
 (`build/dist/AmiOwnCloud/`, als Archiv `build/AmiOwnCloud.lha`). Inhalt:
 
 | Pfad | Inhalt |
@@ -31,18 +32,24 @@ Die Installationsschublade entsteht mit `make dist-amiga`
 | `Docs/AmiOwnCloud.guide` | Handbuch (AmigaGuide) |
 | `Examples/` | Beispielkonfigurationen, `OWNCLOUD.mountlist` |
 | `Storage/DOSDrivers/OWNCLOUD` | DOSDriver für den Handler |
-| `Install-AmiOwnCloud`, `Uninstall-AmiOwnCloud` | Installations-/Deinstallationsskript |
+| `Install-AmiOwnCloud` | Installationsskript (Commodore-Installer, Icon) |
+| `Install-AmiOwnCloud.shell` | dasselbe als Shell-Skript |
+| `Uninstall-AmiOwnCloud` | Deinstallationsskript (Icon oder `Execute`) |
 | `ReadMe`, `LICENSE`, `THIRD-PARTY-NOTICES` | Kurzbeschreibung, GPLv3, Lizenz der Fremdkomponente Parson (MIT) |
 
-Auf dem Amiga in einer Shell:
+Archiv auspacken (z. B. `LhA x AmiOwnCloud-0.1.lha RAM:`). Alle Teile haben
+Workbench-Icons. Zum Installieren in der Schublade das Icon **Install-AmiOwnCloud** doppelt anklicken.
+Es startet den Commodore-Installer (bei AmigaOS 3.2 in `SYS:System`, bei
+älteren Systemen von der Install-Diskette nach `C:` kopieren); in einer
+Shell geht dasselbe mit `Installer Install-AmiOwnCloud`. Ohne Installer gibt es dasselbe als
+Shell-Skript:
 
 ```
-LhA x AmiOwnCloud.lha RAM:
 CD RAM:AmiOwnCloud
-Execute Install-AmiOwnCloud
+Execute Install-AmiOwnCloud.shell
 ```
 
-Das Skript fragt jeden Teil einzeln ab (`y`/`n`):
+Der Installer fragt zuerst, welche Teile installiert werden sollen:
 
 1. **OWNCLOUD:-Handler + AmiOwnCloudPrefs** – kopiert `amiowncloud-handler` und
    `amiowncloud-worker` nach `L:`, `AmiOwnCloudPrefs` nach `SYS:Prefs/`, den
@@ -60,6 +67,25 @@ Das Skript fragt jeden Teil einzeln ab (`y`/`n`):
 
 Vorhandene Konfigurationen in `ENV:`/`ENVARC:` und ein vorhandener
 DOSDriver werden **nie überschrieben**.
+
+### Aktualisieren
+
+Eine neuere Version installiert man genauso: Archiv auspacken und den
+Installer erneut starten. Er vergleicht bei jedem Programm die installierte
+Version mit der im Archiv (`$VER`-Angabe, `getversion`):
+
+- **Einsteiger / Geübter Benutzer:** gleiche und ältere Versionen werden
+  ersetzt. Ist die installierte Version *neuer*, bleibt sie stehen; der
+  Installer nennt sie am Ende.
+- **Experte:** für jedes schon installierte Programm zeigt der Installer beide
+  Versionen und fragt, ob ersetzt werden soll.
+
+Vorhandene Icons bleiben erhalten (eigene Tooltypes und Positionen gehen
+nicht verloren), ebenso Einstellungen und DOSDriver. Die Shell-Variante
+`Install-AmiOwnCloud.shell` fragt nur nach, wenn ein installiertes Programm neuer ist
+als das im Archiv (Hilfsskript `Install-Datei`, Vergleich mit
+`Version … FILE`). Ist `OWNCLOUD:` schon gemountet, arbeitet es bis zum nächsten
+Neustart mit der alten Version weiter.
 
 ### Manuelle Installation
 

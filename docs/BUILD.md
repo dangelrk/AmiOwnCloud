@@ -56,7 +56,8 @@ Alle Ziele werden in der Projektwurzel aufgerufen (`make help` zeigt sie):
 | `make pc` | Kommandozeilenprogramme für den Host bauen → `bin/pc/` (Standardziel) |
 | `make qt` | Qt6-Programme bauen – in AmiOwnCloud gibt es keine |
 | `make amiga` | alle AmigaOS-Programme per vbcc cross-kompilieren → `bin/amiga/` |
-| `make dist-amiga` | Amiga-Installationsschublade `build/dist/AmiOwnCloud/` erzeugen, zusätzlich `build/AmiOwnCloud.lha`, falls `lha` installiert ist |
+| `make dist-amiga` | Amiga-Installationsschublade `build/dist/AmiOwnCloud/` mit Icons erzeugen, dazu `build/AmiOwnCloud.lha` |
+| `make release` | wie `dist-amiga`, dazu `build/release/AmiOwnCloud-<version>.lha` und `.readme` |
 | `make build-amiga-script` | das native Amiga-Buildskript `Build-Amiga` neu erzeugen |
 | `make verify-amiga-script` | … und auf dem Host mit vbcc gegenprüfen |
 | `make check-guide` | AmigaGuide-Handbuch in `docs/user/` prüfen (Knoten, Verweise, Latin-1, Zeilenlänge) |
@@ -161,8 +162,8 @@ Danach die Installationsschublade erzeugen:
 make dist-amiga
 ```
 
-Sie liegt in `build/dist/AmiOwnCloud/` (und als `build/AmiOwnCloud.lha`,
-wenn `lha` installiert ist) und enthält:
+Sie liegt in `build/dist/AmiOwnCloud/` (und als `build/AmiOwnCloud.lha`)
+und enthält:
 
 | Pfad in der Schublade | Inhalt |
 |---|---|
@@ -170,8 +171,34 @@ wenn `lha` installiert ist) und enthält:
 | `Docs/` | `AmiOwnCloud.guide` |
 | `Examples/` | Inhalt von `config-examples/` |
 | `Storage/DOSDrivers/OWNCLOUD` | DOSDriver für den Handler (über `DIST_EXTRA` im `Makefile`) |
-| `Install-AmiOwnCloud`, `Uninstall-AmiOwnCloud`, `ReadMe` | aus `install/amiga/` |
+| `Install-AmiOwnCloud` (Installer), `Install-AmiOwnCloud.shell`, `Uninstall-AmiOwnCloud`, `ReadMe` | aus `install/amiga/` |
 | `LICENSE` | GPLv3 |
+| `*.info` | erzeugt nach `install/amiga/icons.spec` |
+
+Zu allen Teilen der Schublade erzeugt `core/tools/mkicon.py` Workbench-Icons
+nach `install/amiga/icons.spec` (Bild, Standardprogramm, Tooltypes, Position).
+Gepackt wird mit `core/tools/lhapack.py` zu `build/AmiOwnCloud.lha` – einem eigenen
+LHA-Packer (Methode `-lh5-`, Level-2-Köpfe) in reinem Python, weil es unter
+macOS keinen LHA-*Packer* gibt (Homebrews `lha` ist Lhasa und packt nur aus).
+Die Archive lassen sich mit Lhasa und mit dem `lha` von AmigaOS 3.2 auspacken.
+
+### Release
+
+```sh
+make release
+```
+
+baut `make dist-amiga` und legt in `build/release/` die Dateien für
+Aminet/GitHub ab: `AmiOwnCloud-<version>.lha` und `AmiOwnCloud-<version>.readme` (aus
+`install/amiga/aminet.readme`, `@VERSION@` wird ersetzt). Version und
+Datum stehen nur in `core/libcloudcore/include/cloudcore/version.h`
+(`AC_VERSION`, `AC_DATE`): daraus bauen alle Programme ihre `$VER`-Angabe,
+und `make dist-amiga` setzt beide in die Installer-Skripte ein (`@VERSION@`,
+`@DATE@`, für die Shell-Variante `@VER_MAJOR@`/`@VER_REVN@`). Weil die
+Installer nur ersetzen, wenn die Version im Archiv nicht älter ist, **vor
+jedem Release `AC_VERSION` erhöhen** (und `AC_DATE` anpassen). Ist Lhasa
+installiert, prüft `lha t` das Archiv gleich mit.
+
 
 ### Cross-Compile unter Windows (MSYS2) – ungetestet
 

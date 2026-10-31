@@ -1,0 +1,214 @@
+; $VER: Install-AmiOwnCloud.shell @VERSION@ (@DATE@)
+; Installationsskript für AmiOwnCloud (AmigaOS 3.x), Shell-Variante für
+; Systeme ohne Installer (sonst: Icon Install-AmiOwnCloud)
+; SPDX-License-Identifier: GPL-3.0-or-later
+; Copyright (C) 2026 Ronny Krueger
+;
+; Aufruf in einer Shell, in der entpackten AmiOwnCloud-Schublade:
+;   CD <Pfad>/AmiOwnCloud
+;   Execute Install-AmiOwnCloud.shell
+;
+; Das Skript fragt jeden Teil einzeln ab, überschreibt keine vorhandenen
+; Konfigurationsdateien (ENV:/ENVARC:) und keinen vorhandenen DOSDriver.
+; Ein erneuter Aufruf aktualisiert eine vorhandene Installation; ist ein
+; installiertes Programm neuer als das im Archiv, fragt das Skript nach.
+; Nur AmigaDOS-Bordmittel (Ask, Copy, If, Assign, MakeDir, Echo, Set).
+
+FailAt 21
+Set ocerror 0
+; Version dieses Archivs (setzt make dist-amiga ein). Install-Datei
+; ersetzt damit installierte Programme nur nach Rückfrage, wenn sie
+; neuer sind als die im Archiv; vorhandene Icons bleiben erhalten.
+Set instver @VER_MAJOR@
+Set instrevn @VER_REVN@
+Set instfehler 0
+Set ocdest DEVS:DOSDrivers/OWNCLOUD
+
+If NOT EXISTS Install-Datei
+  Echo "Fehler: Programme nicht gefunden."
+  Echo "Bitte zuerst in die AmiOwnCloud-Schublade wechseln (CD ...)"
+  Echo "und dann erneut  Execute Install-AmiOwnCloud.shell  aufrufen."
+  Quit 10
+EndIf
+
+Echo ""
+Echo "AmiOwnCloud @VERSION@ - Installation"
+Echo "===================================="
+Echo "Bindet AmigaOS an einen ownCloud/Nextcloud-Server (WebDAV) an."
+Echo "Antworten jeweils mit  y = ja  oder  n = nein  und RETURN."
+Echo ""
+
+If NOT EXISTS LIBS:amisslmaster.library
+  Echo "Hinweis: LIBS:amisslmaster.library nicht gefunden."
+  Echo "         Alle Programme brauchen AmiSSL 5 und einen TCP/IP-Stack"
+  Echo "         mit bsdsocket.library (z.B. Roadshow, AmiTCP, Miami)."
+  Echo ""
+EndIf
+
+; ------------------------------------------------------------------
+; 1. OWNCLOUD:-Handler + AmiOwnCloudPrefs
+; ------------------------------------------------------------------
+Ask "Laufwerk OWNCLOUD: (Handler) und AmiOwnCloudPrefs installieren? (y/n)"
+If WARN
+  Execute Install-Datei amiowncloud-handler L:
+  Execute Install-Datei amiowncloud-worker L:
+  Execute Install-Datei AmiOwnCloudPrefs SYS:Prefs/ ICON
+
+  Ask "OWNCLOUD: bei jedem Systemstart automatisch mounten? (y/n)"
+  If WARN
+    Set ocdir DEVS:DOSDrivers
+    Set ocdest DEVS:DOSDrivers/OWNCLOUD
+  Else
+    Set ocdir SYS:Storage/DOSDrivers
+    Set ocdest SYS:Storage/DOSDrivers/OWNCLOUD
+  EndIf
+  If NOT EXISTS $ocdir
+    MakeDir $ocdir
+  EndIf
+  If EXISTS $ocdest
+    Echo "  $ocdest ist schon vorhanden - nicht überschrieben."
+  Else
+    Copy Storage/DOSDrivers/OWNCLOUD TO $ocdest QUIET
+    If EXISTS Storage/DOSDrivers/OWNCLOUD.info
+      Copy Storage/DOSDrivers/OWNCLOUD.info TO $ocdir/ QUIET
+    EndIf
+    If ERROR
+      Echo "FEHLER: DOSDriver konnte nicht nach $ocdir kopiert werden."
+      Set ocerror 1
+    Else
+      Echo "  DOSDriver OWNCLOUD -> $ocdest"
+    EndIf
+  EndIf
+
+  If NOT EXISTS ENVARC:amiowncloud.cfg
+    If NOT EXISTS ENV:amiowncloud.cfg
+      Echo ""
+      Echo "Es gibt noch keine Konfiguration (ENV:amiowncloud.cfg)."
+      Echo "In AmiOwnCloudPrefs Server, Benutzer und Passwort eintragen und"
+      Echo "'Speichern' wählen."
+      Ask "AmiOwnCloudPrefs jetzt starten? (y/n)"
+      If WARN
+        SYS:Prefs/AmiOwnCloudPrefs
+      EndIf
+    EndIf
+  EndIf
+
+  If EXISTS ENV:amiowncloud.cfg
+    Ask "OWNCLOUD: jetzt mounten? (y/n)"
+    If WARN
+      Mount $ocdest
+      If ERROR
+        Echo "  Mount fehlgeschlagen - ist OWNCLOUD: schon gemountet?"
+      Else
+        Echo "  OWNCLOUD: ist gemountet. Test:  Dir OWNCLOUD:"
+      EndIf
+    EndIf
+  Else
+    Echo "  OWNCLOUD: erst mounten, wenn ENV:amiowncloud.cfg existiert:"
+    Echo "  SYS:Prefs/AmiOwnCloudPrefs starten, dann  Mount $ocdest"
+  EndIf
+  Echo ""
+EndIf
+
+; ------------------------------------------------------------------
+; 2. Commodity AmiOwnCloudSync + AmiOwnCloudSyncPrefs
+; ------------------------------------------------------------------
+Echo "Commodity AmiOwnCloudSync (Ordnerabgleich) und AmiOwnCloudSyncPrefs"
+Ask "Installieren? (y/n)"
+If WARN
+  If NOT EXISTS SYS:Tools/Commodities
+    MakeDir SYS:Tools/Commodities
+  EndIf
+  Execute Install-Datei AmiOwnCloudSync SYS:Tools/Commodities/ ICON
+  Execute Install-Datei AmiOwnCloudSyncPrefs SYS:Prefs/ ICON
+
+  If NOT EXISTS ENVARC:AmiOwnCloudSync.cfg
+    If NOT EXISTS ENV:AmiOwnCloudSync.cfg
+      Echo ""
+      Echo "Es gibt noch keine Konfiguration (AmiOwnCloudSync.cfg)."
+      Echo "In AmiOwnCloudSyncPrefs Server, Benutzer, Passwort, Intervall und"
+      Echo "Ordnerpaare eintragen und 'Speichern' wählen."
+      Ask "AmiOwnCloudSyncPrefs jetzt starten? (y/n)"
+      If WARN
+        SYS:Prefs/AmiOwnCloudSyncPrefs
+      EndIf
+    EndIf
+  EndIf
+
+  Echo ""
+  Echo "AmiOwnCloudSync kann beim Systemstart über S:User-Startup gestartet"
+  Echo "werden. Der TCP/IP-Stack muss zu diesem Zeitpunkt schon laufen."
+  Ask "Startzeile an S:User-Startup anhängen? (y/n)"
+  If WARN
+    If NOT EXISTS S:User-Startup
+      Echo >S:User-Startup ";User-Startup"
+    EndIf
+    Search >NIL: S:User-Startup "SYS:Tools/Commodities/AmiOwnCloudSync" QUIET
+    If WARN
+      Echo >>S:User-Startup ";BEGIN AmiOwnCloudSync"
+      Echo >>S:User-Startup "Run >NIL: SYS:Tools/Commodities/AmiOwnCloudSync"
+      Echo >>S:User-Startup ";END AmiOwnCloudSync"
+      Echo "  Startzeile in S:User-Startup eingetragen."
+    Else
+      Echo "  S:User-Startup startet AmiOwnCloudSync bereits - nichts geändert."
+    EndIf
+  EndIf
+  Echo ""
+EndIf
+
+; ------------------------------------------------------------------
+; 3. Kommandozeilenprogramme amiowncloud-sync + amiowncloud-synctest
+; ------------------------------------------------------------------
+Ask "amiowncloud-sync und amiowncloud-synctest nach C: kopieren? (y/n)"
+If WARN
+  Execute Install-Datei amiowncloud-sync C:
+  Execute Install-Datei amiowncloud-synctest C:
+  If NOT EXISTS ENVARC:amiowncloud-sync.cfg
+    Ask "Beispielkonfiguration als ENVARC:amiowncloud-sync.cfg anlegen? (y/n)"
+    If WARN
+      Copy Examples/amiowncloud-sync.cfg.example TO ENVARC:amiowncloud-sync.cfg QUIET
+      Echo "  ENVARC:amiowncloud-sync.cfg angelegt. Mit einem Editor server, user"
+      Echo "  und pass eintragen, danach:  Copy ENVARC:amiowncloud-sync.cfg ENV:"
+    EndIf
+  EndIf
+  Echo ""
+EndIf
+
+; ------------------------------------------------------------------
+; 4. Handbuch
+; ------------------------------------------------------------------
+Assign >NIL: HELP: EXISTS
+If WARN
+  Echo "HELP: ist nicht zugewiesen - das Handbuch bleibt in Docs/:"
+  Echo "  Docs/AmiOwnCloud.guide"
+Else
+  Copy Docs/AmiOwnCloud.guide TO HELP: QUIET
+  If NOT EXISTS HELP:AmiOwnCloud.guide.info
+    Copy Docs/AmiOwnCloud.guide.info TO HELP: QUIET
+  EndIf
+  Echo "Handbuch -> HELP:AmiOwnCloud.guide"
+EndIf
+
+Echo ""
+If $instfehler EQ 1
+  Set ocerror 1
+EndIf
+If $ocerror EQ 1
+  Echo "Fertig, aber mit Fehlern (siehe oben) - bitte prüfen."
+Else
+  Echo "Fertig."
+EndIf
+Echo "- Handbuch:   MultiView Docs/AmiOwnCloud.guide  (ggf. auch in HELP:)"
+Echo "- Laufwerk:   SYS:Prefs/AmiOwnCloudPrefs, dann  Mount $ocdest"
+Echo "              Geänderte Einstellungen wirken erst nach einem Neustart."
+Echo "- Abgleich:   SYS:Prefs/AmiOwnCloudSyncPrefs, dann AmiOwnCloudSync starten"
+Echo "              (Fenster per Hotkey ctrl alt a oder über Exchange)."
+Echo "- Entfernen:  Execute Uninstall-AmiOwnCloud"
+
+UnSet ocdir
+UnSet ocdest
+UnSet ocerror
+UnSet instver
+UnSet instrevn
+UnSet instfehler
+UnSet instok

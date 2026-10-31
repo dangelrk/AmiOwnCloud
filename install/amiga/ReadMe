@@ -18,8 +18,10 @@ Inhalt der Schublade
   Docs/AmiOwnCloud.guide Handbuch (AmigaGuide, mit MultiView lesen)
   Examples/              Beispielkonfigurationen und Mountlist
   Storage/DOSDrivers/    DOSDriver OWNCLOUD für den Handler
-  Install-AmiOwnCloud    Installationsskript
-  Uninstall-AmiOwnCloud  Deinstallationsskript
+  Install-AmiOwnCloud    Installationsskript (Commodore-Installer, Icon)
+  Install-AmiOwnCloud.shell  dasselbe als Shell-Skript (ohne Installer)
+  Install-Datei              Hilfsskript der Shell-Variante
+  Uninstall-AmiOwnCloud  Deinstallationsskript (Icon oder Execute)
   LICENSE                GNU General Public License Version 3
   THIRD-PARTY-NOTICES    Lizenz der Fremdkomponente Parson (MIT)
 
@@ -27,11 +29,20 @@ Installation
 ------------
 
   1. Archiv entpacken, z.B. nach RAM: oder Work:
-  2. Shell öffnen:    CD RAM:AmiOwnCloud
-  3. Starten:         Execute Install-AmiOwnCloud
-  4. Fragen mit y/n beantworten, in den Prefs-Programmen
-     Server, Benutzer und Passwort eintragen und speichern.
-  5. Mount OWNCLOUD:  bzw. AmiOwnCloudSync starten.
+  2. Icon Install-AmiOwnCloud doppelt anklicken (braucht den
+     Installer, ab OS 3.2 in SYS:System). Ohne Installer:
+       CD RAM:AmiOwnCloud
+       Execute Install-AmiOwnCloud.shell
+  3. In den Prefs-Programmen Server, Benutzer und Passwort
+     eintragen und speichern (der Installer bietet den Start an).
+  4. Mount OWNCLOUD:  bzw. AmiOwnCloudSync starten.
+
+Aktualisieren
+-------------
+Neuere Version: Archiv auspacken und den Installer erneut starten.
+Programme werden nur ersetzt, wenn die installierte Version nicht
+neuer ist als die im Archiv (Experten werden jedes Mal gefragt).
+Vorhandene Icons, Einstellungen und DOSDriver bleiben erhalten.
 
 Voraussetzungen
 ---------------

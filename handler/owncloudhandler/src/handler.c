@@ -59,6 +59,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 
+#include "version.h"   /* AC_VERSION, AC_DATE (core) */
 #include "util.h"
 #include "vol.h"
 #include "actions.h"
@@ -67,7 +68,7 @@
 struct ExecBase   *SysBase;
 struct DosLibrary *DOSBase;
 
-const char amiga_ver[] = "$VER: amiowncloud-handler 0.1 (27.09.2026)";
+const char amiga_ver[] = "$VER: amiowncloud-handler " AC_VERSION " (" AC_DATE ")";
 
 /* Forward declarations only -- see the file header comment on why _start()
  * itself must be the first function DEFINED below, ahead of all of these. */

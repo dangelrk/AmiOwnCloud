@@ -3,7 +3,8 @@
 ; SPDX-License-Identifier: GPL-3.0-or-later
 ; Copyright (C) 2026 Ronny Krueger
 ;
-; Aufruf in einer Shell:  Execute Uninstall-AmiOwnCloud
+; Aufruf: Icon Uninstall-AmiOwnCloud doppelt anklicken (IconX), oder in
+; einer Shell:  Execute Uninstall-AmiOwnCloud
 ;
 ; Vorher AmiOwnCloudSync über Exchange beenden. Der OWNCLOUD:-Handler
 ; lässt sich nicht aushängen - er verschwindet erst nach einem Neustart.
@@ -80,6 +81,9 @@ Assign >NIL: HELP: EXISTS
 If NOT WARN
   If EXISTS HELP:AmiOwnCloud.guide
     Delete HELP:AmiOwnCloud.guide QUIET
+  EndIf
+  If EXISTS HELP:AmiOwnCloud.guide.info
+    Delete HELP:AmiOwnCloud.guide.info QUIET
   EndIf
 EndIf
 

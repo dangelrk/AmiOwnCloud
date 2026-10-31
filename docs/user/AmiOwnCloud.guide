@@ -145,18 +145,37 @@ Die Installationsschublade AmiOwnCloud (aus AmiOwnCloud.lha bzw. aus
   Docs/AmiOwnCloud.guide dieses Handbuch
   Examples/              Beispielkonfigurationen, Mountlist
   Storage/DOSDrivers/    DOSDriver OWNCLOUD für den Handler
-  Install-AmiOwnCloud    Installationsskript
+  Install-AmiOwnCloud    Installationsskript (Commodore-Installer)
+  Install-AmiOwnCloud.shell  dasselbe als Shell-Skript
   Uninstall-AmiOwnCloud  Deinstallationsskript
   ReadMe, LICENSE, THIRD-PARTY-NOTICES
 
 Installation:
 
   1. Archiv entpacken, z.B.:   LhA x AmiOwnCloud.lha RAM:
-  2. Shell öffnen und in die Schublade wechseln:
-                               CD RAM:AmiOwnCloud
-  3. Skript starten:           Execute Install-AmiOwnCloud
+  2. In der Schublade das Icon Install-AmiOwnCloud doppelt
+     anklicken. Es startet den Installer (bei OS 3.2 in SYS:System,
+     bei älteren Systemen von der Install-Diskette nach C: kopieren).
 
-Das Skript fragt jeden Teil einzeln ab (Antwort y oder n):
+Ohne Installer gibt es dasselbe als Shell-Skript (Fragen mit y oder n
+beantworten):
+
+  CD RAM:AmiOwnCloud
+  Execute Install-AmiOwnCloud.shell
+
+Aktualisieren: eine neuere Version installiert man genauso - Archiv
+auspacken, Installer erneut starten. Er vergleicht bei jedem Programm
+die installierte Version mit der im Archiv. Als Einsteiger oder
+Geübter Benutzer ersetzt er gleiche und ältere Versionen; eine
+NEUERE installierte Version bleibt stehen und wird am Ende genannt.
+Im Expertenmodus zeigt er bei jedem schon installierten Programm
+beide Versionen und fragt. Vorhandene Icons (mit eigenen Tooltypes
+und Positionen) bleiben erhalten. Die Shell-Variante fragt nur nach,
+wenn ein installiertes Programm neuer ist als das im Archiv.
+Ist OWNCLOUD: schon gemountet, arbeitet es bis zum nächsten Neustart
+mit der alten Version weiter.
+
+Der Installer fragt zuerst, welche Teile installiert werden sollen:
 
   - OWNCLOUD:-Handler und AmiOwnCloudPrefs. Wahlweise wird der DOSDriver
     nach DEVS:DOSDrivers (Mount bei jedem Systemstart) oder nach
@@ -186,9 +205,8 @@ Wie es danach weitergeht:
     ausfüllen, Speichern, dann @{" AmiOwnCloudSync " link AmiOwnCloudSync}
     starten.
 
-Die Programme haben keine eigenen Piktogramme (.info-Dateien). Aus der
-Workbench startet man sie mit "Fenster -> Alle Dateien zeigen" (dann
-erscheint ein Standard-Piktogramm) oder legt sich selbst eines an.
+Die Prefs-Programme, AmiOwnCloudSync (mit den Tooltypes DONOTWAIT und
+CX_POPKEY) und der DOSDriver werden mit Icons installiert.
 
 @endnode
 
@@ -221,9 +239,9 @@ Beispiel für die Shell (in der Schublade):
   Copy C/amiowncloud-handler L:
   Copy C/amiowncloud-worker L:
   Copy Storage/DOSDrivers/OWNCLOUD DEVS:DOSDrivers/
-  Copy C/AmiOwnCloudPrefs SYS:Prefs/
-  Copy C/AmiOwnCloudSync SYS:Tools/Commodities/
-  Copy C/AmiOwnCloudSyncPrefs SYS:Prefs/
+  Copy C/AmiOwnCloudPrefs(%|.info) SYS:Prefs/
+  Copy C/AmiOwnCloudSync(%|.info) SYS:Tools/Commodities/
+  Copy C/AmiOwnCloudSyncPrefs(%|.info) SYS:Prefs/
   Copy C/amiowncloud-sync C:
   Copy C/amiowncloud-synctest C:
 
@@ -1031,7 +1049,8 @@ Allgemein
 Deinstallation
 --------------
 
-In der Installationsschublade:
+In der Installationsschublade das Icon Uninstall-AmiOwnCloud doppelt
+anklicken oder in einer Shell:
 
   Execute Uninstall-AmiOwnCloud
 

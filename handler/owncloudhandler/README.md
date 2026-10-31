@@ -128,7 +128,8 @@ Programme, siehe `docs/BUILD.md`).
 ## Installieren
 
 Am einfachsten über die Installationsschublade (`make dist-amiga`,
-darin `Execute Install-AmiOwnCloud`, siehe `docs/INSTALL.md`). Von Hand:
+darin das Icon `Install-AmiOwnCloud` bzw. `Execute Install-AmiOwnCloud.shell`,
+siehe `docs/INSTALL.md`). Von Hand:
 
 ```
 Copy amiowncloud-handler L:

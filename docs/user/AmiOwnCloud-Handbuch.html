@@ -276,16 +276,34 @@ enthält:</p>
 <tr><td><code>Docs/AmiOwnCloud.guide</code></td><td>dieses Handbuch als AmigaGuide</td></tr>
 <tr><td><code>Examples/</code></td><td>Beispielkonfigurationen, Mountlist</td></tr>
 <tr><td><code>Storage/DOSDrivers/OWNCLOUD</code></td><td>DOSDriver für den Handler</td></tr>
-<tr><td><code>Install-AmiOwnCloud</code>, <code>Uninstall-AmiOwnCloud</code></td><td>Installations- und Deinstallationsskript</td></tr>
+<tr><td><code>Install-AmiOwnCloud</code></td><td>Installationsskript (Commodore-Installer)</td></tr>
+<tr><td><code>Install-AmiOwnCloud.shell</code></td><td>dasselbe als Shell-Skript</td></tr>
+<tr><td><code>Uninstall-AmiOwnCloud</code></td><td>Deinstallationsskript</td></tr>
 <tr><td><code>ReadMe</code>, <code>LICENSE</code>, <code>THIRD-PARTY-NOTICES</code></td><td>Kurzbeschreibung, Lizenztext, Lizenz der Fremdkomponente Parson (MIT)</td></tr>
 </table>
 
-<pre>LhA x AmiOwnCloud.lha RAM:
-CD RAM:AmiOwnCloud
-Execute Install-AmiOwnCloud</pre>
+<p>Archiv auspacken, z.&nbsp;B. <code>LhA x AmiOwnCloud-0.1.lha RAM:</code>.</p>
+<p>Alle Teile haben Workbench-Icons. Zum Installieren in der Schublade das
+Icon <strong>Install-AmiOwnCloud</strong> doppelt anklicken. Es startet den
+Commodore-Installer (bei AmigaOS&nbsp;3.2 in <code>SYS:System</code>, bei
+älteren Systemen von der Install-Diskette nach <code>C:</code> kopieren).
+Ohne Installer gibt es dasselbe als Shell-Skript:</p>
+<pre>CD RAM:AmiOwnCloud
+Execute Install-AmiOwnCloud.shell</pre>
 
-<p>Das Skript fragt jeden Teil einzeln ab (Antwort <code>y</code> oder
-<code>n</code>):</p>
+<p><strong>Aktualisieren:</strong> Eine neuere Version installiert man genauso –
+Archiv auspacken, Installer erneut starten. Er vergleicht bei jedem Programm
+die installierte Version mit der im Archiv. Als Einsteiger oder Geübter
+Benutzer ersetzt er gleiche und ältere Versionen; eine <em>neuere</em>
+installierte Version bleibt stehen und wird am Ende genannt. Im
+Expertenmodus zeigt er bei jedem schon installierten Programm beide Versionen
+und fragt. Vorhandene Icons (mit eigenen Tooltypes und Positionen) bleiben
+erhalten. Die Shell-Variante fragt nur nach, wenn ein installiertes Programm
+neuer ist als das im Archiv. Ist <code>OWNCLOUD:</code> schon gemountet, arbeitet es bis zum
+nächsten Neustart mit der alten Version weiter.</p>
+
+<p>Das Skript fragt, welche Teile installiert werden sollen (im Installer per
+Auswahlliste, im Shell-Skript mit <code>y</code> oder <code>n</code>):</p>
 <ul>
   <li><strong>OWNCLOUD:-Handler und AmiOwnCloudPrefs.</strong> Wahlweise wird
   der DOSDriver nach <code>DEVS:DOSDrivers</code> (Mount bei jedem

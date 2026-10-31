@@ -52,7 +52,7 @@
 #include <stdlib.h>
 
 long __stack = 65536;
-const char amiga_ver[] = "$VER: AmiOwnCloudSyncPrefs " AC_VERSION " (27.09.2026)";
+const char amiga_ver[] = "$VER: AmiOwnCloudSyncPrefs " AC_VERSION " (" AC_DATE ")";
 
 #define PREFS_ENV     "ENV:AmiOwnCloudSync.cfg"
 #define PREFS_ENVARC  "ENVARC:AmiOwnCloudSync.cfg"

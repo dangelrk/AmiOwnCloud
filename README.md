@@ -43,9 +43,11 @@ make pc                          # amiowncloud-sync, amiowncloud-synctest -> bin
 export VBCC=/pfad/zu/vbcc
 make amiga                       # alle Amiga-Programme -> bin/amiga/
 make dist-amiga                  # Installationsschublade build/dist/AmiOwnCloud/
+make release                     # build/release/AmiOwnCloud-<version>.lha + .readme
 ```
 
-Auf dem Amiga dann in der Schublade `Execute Install-AmiOwnCloud`.
+Auf dem Amiga dann in der Schublade das Icon `Install-AmiOwnCloud` doppelt
+anklicken (Commodore-Installer; ohne Installer `Execute Install-AmiOwnCloud.shell`).
 
 ## Dokumentation
 

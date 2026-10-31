@@ -153,11 +153,11 @@ Echo "*N==> amiowncloud-handler"
 If NOT EXISTS obj/amiga/amiowncloud-handler
   MakeDir obj/amiga/amiowncloud-handler
 EndIf
-vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/handler.c -o obj/amiga/amiowncloud-handler/handler.o
-vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/actions.c -o obj/amiga/amiowncloud-handler/actions.o
-vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/vol.c -o obj/amiga/amiowncloud-handler/vol.o
-vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/util.c -o obj/amiga/amiowncloud-handler/util.o
-vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -c handler/owncloudhandler/src/backend.c -o obj/amiga/amiowncloud-handler/backend.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -c handler/owncloudhandler/src/handler.c -o obj/amiga/amiowncloud-handler/handler.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -c handler/owncloudhandler/src/actions.c -o obj/amiga/amiowncloud-handler/actions.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -c handler/owncloudhandler/src/vol.c -o obj/amiga/amiowncloud-handler/vol.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -c handler/owncloudhandler/src/util.c -o obj/amiga/amiowncloud-handler/util.o
+vc +aos68k -O1 -cpu=68000 -nostdlib -Ihandler/owncloudhandler/src -Icore/libcloudcore/include/cloudcore -c handler/owncloudhandler/src/backend.c -o obj/amiga/amiowncloud-handler/backend.o
 CD obj/amiga/amiowncloud-handler
 vc +aos68k -o ///bin/amiga/amiowncloud-handler handler.o actions.o vol.o util.o backend.o -nostdlib -lvc
 CD ///
