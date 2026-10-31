@@ -37,7 +37,7 @@ Die Installationsschublade kommt aus dem Release-Archiv
 | `Uninstall-AmiOwnCloud` | Deinstallationsskript (Icon oder `Execute`) |
 | `ReadMe`, `LICENSE`, `THIRD-PARTY-NOTICES` | Kurzbeschreibung, GPLv3, Lizenz der Fremdkomponente Parson (MIT) |
 
-Archiv auspacken (z. B. `LhA x AmiOwnCloud-0.1.lha RAM:`). Alle Teile haben
+Archiv auspacken (z. B. `LhA x AmiOwnCloud-0.2.lha RAM:`). Alle Teile haben
 Workbench-Icons. Zum Installieren in der Schublade das Icon **Install-AmiOwnCloud** doppelt anklicken.
 Es startet den Commodore-Installer (bei AmigaOS 3.2 in `SYS:System`, bei
 älteren Systemen von der Install-Diskette nach `C:` kopieren); in einer

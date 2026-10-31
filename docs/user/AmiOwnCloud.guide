@@ -1196,15 +1196,16 @@ Schwesterprojekte:
 Versionsgeschichte
 ------------------
 
-Programme (Stand der $VER-Angaben):
+Programme:
 
-  amiowncloud-sync       0.1 (13.07.2026)
-  amiowncloud-synctest   0.1 (14.07.2026)
-  AmiOwnCloudSync        0.1 (14.07.2026)
-  AmiOwnCloudSyncPrefs   0.1 (14.07.2026)
-  amiowncloud-handler    0.1 (16.07.2026)
-  amiowncloud-worker     0.1 (16.07.2026)
-  AmiOwnCloudPrefs       0.1 (16.07.2026)
+  0.2 (31.10.2026)  Abgleich sicherer: Abbruch bei Lesefehlern,
+                    Ctrl-C ohne Löschungen, Ordner werden nur
+                    gelöscht, wenn alles darin gelöscht wird,
+                    Upload nur auf das beim Abgleich gesehene ETag,
+                    zu lange und nur in der Schreibung verschiedene
+                    Namen werden übersprungen; Ortszeit für lokale
+                    Dateien; mindestens 68020.
+  0.1 (Juli 2026)   Erste Fassung aller Programme.
 
 Handbuch:
 
