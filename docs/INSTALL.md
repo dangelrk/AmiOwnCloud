@@ -15,7 +15,7 @@ Bauen aus den Quellen: [BUILD.md](BUILD.md). Bedienung:
 | Betriebssystem | AmigaOS 3.x, Prozessor 68020 oder besser (seit 0.2) |
 | TCP/IP-Stack | mit `bsdsocket.library` (Version 4 oder neuer), z. B. Roadshow, AmiTCP/Genesis, Miami. Muss laufen, bevor ein Programm den Server anspricht. |
 | AmiSSL 5 | `amisslmaster.library` – von allen Programmen gebraucht, die mit dem Server sprechen (auch bei `http://`) |
-| codesets.library | ab Version 6 (Aminet `util/libs/codesets`): Umlaute und andere Sonderzeichen in Dateinamen (seit 0.2); ohne sie gilt ISO-8859-1 |
+| codesets.library | ab Version 6 (Aminet `util/libs/codesets`): Umlaute und andere Sonderzeichen in Dateinamen (seit 0.3); ohne sie gilt ISO-8859-1 |
 | MUI | **nicht** nötig – alle Oberflächen sind GadTools/Commodities (intuition, gadtools, commodities.library aus dem Betriebssystem) |
 | Stack | nichts einzustellen: die Programme fordern selbst 64 KB an (vbcc `__stack`), `amiowncloud-worker` wird mit 64 KB gestartet, der Handler bekommt 16 KB aus dem DOSDriver |
 | Speicher | Der `OWNCLOUD:`-Handler hält eine geöffnete Datei komplett im RAM – für große Dateien entsprechend freien Speicher einplanen |

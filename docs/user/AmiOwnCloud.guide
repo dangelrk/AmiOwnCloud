@@ -430,7 +430,7 @@ Schlüssel (zusätzlich zu server, user, pass, verify_ssl):
   charset     Zeichensatz der Dateinamen, z. B. ISO-8859-2 oder
               AmigaPL. Leer = Zeichensatz des Systems (Locale).
 
-Umlaute in Dateinamen (ab 0.2): ownCloud/Nextcloud speichern Namen in
+Umlaute in Dateinamen (ab 0.3): ownCloud/Nextcloud speichern Namen in
 UTF-8, der Amiga in seinem eigenen Zeichensatz. Handler und
 Abgleichprogramme wandeln um, über die codesets.library (ab Version 6,
 Aminet util/libs/codesets). Fehlt sie, gilt ISO-8859-1. Zeichen, die
