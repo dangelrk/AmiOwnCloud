@@ -859,6 +859,13 @@ Schutz vor Datenverlust (ab 0.2):
 Zeiten: Lokale Dateien bekommen die Ortszeit nach gmt_offset und dst
 aus der Konfigurationsdatei (die Sommerzeit wird von Hand umgestellt).
 
+Virenprüfung (ab 0.3, optional): Ist die xvs.library installiert
+(Aminet util/virus), prüfen AmiOwnCloudSync und
+amiowncloud-sync jede Datei bis 2 MB vor dem Hochladen und vor dem Ablegen
+eines Downloads. Eine verseuchte Datei wird weder übertragen noch
+gelöscht, sondern als Fehler mit dem Namen des Virus gemeldet. Ohne die
+Bibliothek wird nicht geprüft.
+
 @endnode
 
 @node Webdavsync "amiowncloud-sync"
