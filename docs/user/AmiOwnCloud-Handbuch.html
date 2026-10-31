@@ -799,24 +799,42 @@ Server – letzter Stand“ erkennt er:</p>
 <tr><td>neues Verzeichnis</td><td>wird auf der anderen Seite angelegt</td></tr>
 </table>
 
-<h3>Konflikte</h3>
+<h3>Konflikte (ab 0.3)</h3>
+<p>Ab 0.3 geht bei einem Konflikt keine Fassung verloren und keine bleibt
+liegen:</p>
 <ul>
-  <li>Datei seit dem letzten Abgleich auf <em>beiden</em> Seiten geändert</li>
-  <li>Datei auf einer Seite gelöscht, auf der anderen geändert</li>
-  <li>Datei auf der einen, Verzeichnis gleichen Namens auf der anderen
-  Seite</li>
+<li>Datei auf beiden Seiten verschieden geändert → <strong>Konflikt</strong> (ab 0.3):
+beide Fassungen bleiben erhalten. Die Fassung vom Server behält den Namen, die
+lokale wird zur <em>Konfliktkopie</em> <code>Name_KJJMMTT-HHMM.ext</code>
+(z.&nbsp;B. <code>brief_K261031-2237.txt</code>) und ebenfalls hochgeladen.
+Sind beide Fassungen inhaltsgleich, passiert nichts.</li>
+<li>auf einer Seite gelöscht, auf der anderen geändert → die geänderte Fassung
+wird wieder auf die andere Seite übertragen; nichts Geändertes geht verloren</li>
+<li>Datei auf der einen, Ordner gleichen Namens auf der anderen Seite → die
+Datei wird zur Konfliktkopie, der Ordner bleibt</li>
 </ul>
-<p>Ein Konflikt wird nur gemeldet („1 Konflikt(e)“), keine Seite wird
-überschrieben. Auflösen: die unerwünschte Fassung löschen oder umbenennen
-und erneut abgleichen.</p>
+<p>Die Konfliktkopie danach in Ruhe vergleichen und die unerwünschte
+Fassung löschen; der nächste Abgleich überträgt das.</p>
+<p><strong>Viele Löschungen auf einmal (ab 0.3):</strong> Würde ein
+Abgleich auf einer Seite mehr als 20 Einträge <em>und</em> mehr als die Hälfte
+des letzten Stands löschen (etwa weil ein Ordner versehentlich geleert wurde),
+fragt er vorher nach. Wer verneint, behält die Dateien: der nächste Abgleich
+kopiert sie auf die geleerte Seite zurück. Im Probelauf (<code>-n</code>) gibt
+es stattdessen eine Warnung. In Skripten ohne Rückfrage: <code>-f</code> bzw.
+<code>FORCE</code> (vor oder hinter den Ordnern).</p>
+<p>Die Abschlusszeile zählt Konfliktkopien („1 Konfliktkopie(n)“) und nicht
+ausgeführte Löschungen („20 Loeschung(en) zurueckgehalten“) mit.</p>
+<p>Bei AmiOwnCloudSync erscheint die Rückfrage als Requester
+(„Löschen“ / „Nicht löschen“).</p>
 
 <div class="callout"><strong>Erster Abgleich eines Paares</strong><br>
 Es gibt noch keinen gemerkten Stand, und WebDAV liefert keine Prüfsummen.
-Liegt eine Datei mit gleichem Namen schon auf <em>beiden</em> Seiten, kann
-der Abgleich nicht feststellen, ob sie gleich ist, und meldet einen
-Konflikt. Deshalb am besten mit einem leeren lokalen Ordner (alles wird
-heruntergeladen) oder einem leeren Server-Ordner (alles wird hochgeladen)
-beginnen. Gefahrlos ausprobieren: <code>amiowncloud-sync -n &lt;lokal&gt;
+Liegt eine Datei mit gleichem Namen schon auf <em>beiden</em> Seiten, lädt
+der Abgleich die Server-Fassung und vergleicht den Inhalt: gleiche Dateien
+bleiben, wie sie sind, verschiedene werden wie ein Konflikt behandelt
+(Konfliktkopie). Das kostet beim ersten Abgleich Zeit; schneller geht es
+mit einem leeren lokalen Ordner (alles wird heruntergeladen) oder einem
+leeren Server-Ordner (alles wird hochgeladen). Gefahrlos ausprobieren: <code>amiowncloud-sync -n &lt;lokal&gt;
 &lt;remote&gt;</code>.</div>
 <h4>Schutz vor Datenverlust (ab 0.2)</h4>
 <ul>
@@ -834,7 +852,8 @@ Liegt darin etwas Neues, wird er wieder angelegt.</li>
 <li>Dateien, die während des Abgleichs geändert werden, werden weder
 überschrieben noch gelöscht.</li>
 <li>Hochgeladen wird nur, wenn die Datei auf dem Server noch die beim
-Abgleich gesehene ist. Sonst wird ein Konflikt gemeldet.</li>
+Abgleich gesehene ist. Sonst bleibt die Datei bis zum nächsten Abgleich
+liegen, der beide Fassungen behält.</li>
 <li>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, und Namen,
 die für das Dateisystem zu lang sind (klassisches FFS: 30 Zeichen), werden
 übersprungen und gemeldet.</li>
@@ -869,9 +888,11 @@ Skripte.</p>
 <tr><td><code>-c &lt;datei&gt;</code></td><td>Konfigurationsdatei statt der Standarddatei (siehe <a href="#cfg-amiowncloud-sync">amiowncloud-sync.cfg</a>)</td></tr>
 <tr><td><code>-k</code></td><td>TLS-Zertifikat nicht prüfen (nur für Tests)</td></tr>
 <tr><td><code>-n</code></td><td>Probelauf: zeigt, was passieren würde, ändert nichts</td></tr>
+<tr><td><code>-f</code>, <code>FORCE</code></td><td>löscht ohne Rückfrage, auch viele Dateien auf einmal (für Skripte, ab 0.3)</td></tr>
 <tr><td><code>--help</code></td><td>Kurzhilfe</td></tr>
 </table>
-<p>Die Optionen müssen vor den beiden Verzeichnissen stehen. Server,
+<p>Die Optionen müssen vor den beiden Verzeichnissen stehen (nur
+<code>FORCE</code> darf auch dahinter). Server,
 Benutzer und Passwort müssen angegeben sein (Option oder Datei).</p>
 <pre># Amiga
 amiowncloud-sync -n Work:Dokumente /Dokumente
@@ -915,9 +936,9 @@ Ordner verwenden.</div>
 <tr><td>T4 (Vorbereitung)</td><td>Datei direkt auf dem Server ändern</td></tr>
 <tr><td>T4a / T4b / T4c</td><td>Änderung auf dem Server → genau ein Download; Inhalt stimmt; danach stabil</td></tr>
 <tr><td>T5a / T5b / T5c</td><td>lokales Löschen wird übertragen; Datei ist auf dem Server weg; danach stabil</td></tr>
-<tr><td>T6a / T6b / T6c</td><td>Änderung auf beiden Seiten → Konflikt; lokale Datei und Server-Datei unverändert</td></tr>
+<tr><td>T6a / T6b / T6c / T6d</td><td>Änderung auf beiden Seiten → beide Fassungen bleiben: der Name trägt die Server-Fassung, die lokale liegt als Konfliktkopie auf beiden Seiten; danach stabil</td></tr>
 </table>
-<p>Insgesamt 14 Prüfungen. Jede meldet <code>[PASS]</code> oder
+<p>Insgesamt 15 Prüfungen. Jede meldet <code>[PASS]</code> oder
 <code>[FAIL]</code>, am Ende „n passed, m failed“. Rückgabewert
 <code>0</code> = alle bestanden, <code>1</code> = mindestens eine
 fehlgeschlagen.</p>
@@ -994,10 +1015,10 @@ gestartet, bevor das Netz lief, hat es sich sofort beendet.</p>
 Hotkey mit <code>CX_POPKEY</code> bzw. <code>-k</code> wählen. Während
 eines Abgleichs werden Hotkeys erst danach bearbeitet.</p>
 
-<h4>Viele Konflikte beim ersten Abgleich</h4>
+<h4>Viele Konfliktkopien beim ersten Abgleich</h4>
 <p>Siehe <a href="#abgleich">So funktioniert der Abgleich</a>:
-gleichnamige Dateien auf beiden Seiten ohne gemerkten Stand gelten als
-Konflikt.</p>
+gleichnamige Dateien mit verschiedenem Inhalt auf beiden Seiten ohne
+gemerkten Stand werden als Konflikt behandelt.</p>
 
 <h4>Falsche Dateizeiten auf OWNCLOUD:</h4>
 <p><code>gmt_offset</code> und <code>dst</code> in
@@ -1026,8 +1047,8 @@ Konflikt.</p>
   Dateiauswahl-Requester).</li>
   <li>WebDAV hat keinen Änderungszähler: jeder Abgleich liest den ganzen
   Remote-Ordner ein (bei sehr großen Ordnern entsprechend langsam).</li>
-  <li>Beim ersten Abgleich gelten gleichnamige Dateien auf beiden Seiten
-  als Konflikt.</li>
+  <li>Beim ersten Abgleich werden gleichnamige Dateien auf beiden Seiten
+  heruntergeladen und verglichen (WebDAV liefert keine Prüfsummen).</li>
 </ul>
 <h3>Allgemein</h3>
 <ul>

@@ -130,6 +130,19 @@ static int sync_progress(long done, long total, const char *name)
     return 1;
 }
 
+/* ui_confirm() for the commodity: a Workbench requester (phase 3: the
+ * mass deletion guard asks before many deletions). */
+static int cx_confirm(const char *msg)
+{
+    struct EasyStruct es;
+    es.es_StructSize   = sizeof(es);
+    es.es_Flags        = 0;
+    es.es_Title        = (UBYTE *)"AmiOwnCloudSync";
+    es.es_TextFormat   = (UBYTE *)"%s";
+    es.es_GadgetFormat = (UBYTE *)"L\xF6schen|Nicht l\xF6schen";   /* Latin-1 */
+    return EasyRequest(NULL, &es, NULL, (ULONG)msg) == 1;
+}
+
 static void do_sync_pair(const AcConfig *cfg, SyncPair *p, char *status, size_t status_sz)
 {
     SyncTransport *t;
@@ -268,6 +281,7 @@ int main(int argc, char *argv[])
         UiHooks h;
         memset(&h, 0, sizeof(h));
         h.progress = sync_progress;
+        h.confirm  = cx_confirm;   /* mass deletion guard (phase 3) */
         ui_set_hooks(&h);
     }
 

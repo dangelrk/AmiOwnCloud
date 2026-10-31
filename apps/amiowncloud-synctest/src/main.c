@@ -20,8 +20,9 @@
  *       then reconverges (regression check for the post-download md5
  *       patch, see sync.c's SA_DOWNLOAD case)
  *   T5  a local delete propagates to the server, then reconverges
- *   T6  diverging changes on both sides are reported as a conflict and
- *       resolve NEITHER side -- never silently overwritten
+ *   T6  diverging changes on both sides keep both versions: the server
+ *       version takes the name, the local one becomes the conflict copy
+ *       "note1_K<date>.txt" on both sides -- never silently overwritten
  *
  * Deliberately console-only (no GUI) so it cross-compiles and runs
  * identically on AmigaOS -- the same checks that ran against a real
@@ -218,6 +219,7 @@ int main(int argc, char **argv)
     SyncSummary sum;
     char note1_path[AC_MAX_PATH], sub_dir[AC_MAX_PATH], note2_path[AC_MAX_PATH], baseline_path[AC_MAX_PATH];
     char remote_note1[AC_MAX_PATH], remote_note2[AC_MAX_PATH];
+    char conflict_copy[AC_MAX_PATH] = "";
     char content[256];
 
     memset(&cfg, 0, sizeof(cfg));
@@ -364,25 +366,52 @@ int main(int argc, char **argv)
 
     progress_reset(&pr);
     cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
-    check(sum.conflicts == 1 && sum.uploaded == 0 && sum.downloaded == 0,
-         "T6a: diverging changes are reported as a conflict, not resolved");
+    check(sum.copies == 1 && sum.errors == 0,
+         "T6a: diverging changes keep both versions (one conflict copy)");
 
     check(read_file(note1_path, content, sizeof(content)) &&
-         strcmp(content, "local edit X\n") == 0,
-         "T6b: local file left untouched by the conflict");
+         strcmp(content, "remote edit Y\n") == 0,
+         "T6b: the original name holds the server version");
 
-    {
-        int status = 0;
-        int ok = raw_get(&cfg, remote_note1, content, sizeof(content), &status);
-        check(ok && strcmp(content, "remote edit Y\n") == 0,
-             "T6c: remote file left untouched by the conflict");
+    {   /* the local version lives on as note1_K<date>.txt, on both sides */
+        LocalDir *d = localfs_opendir(local_root);
+        LocalDirEntry de;
+        int found = 0, status = 0;
+        char rcopy[AC_MAX_PATH];
+        conflict_copy[0] = '\0';
+        while (d && localfs_readdir(d, &de))
+            if (strncmp(de.name, "note1_K", 7) == 0) {
+                strncpy(conflict_copy, de.name, sizeof(conflict_copy) - 1);
+                conflict_copy[sizeof(conflict_copy) - 1] = '\0';
+            }
+        if (d) localfs_closedir(d);
+        if (conflict_copy[0]) {
+            char lcopy[AC_MAX_PATH];
+            localfs_join(lcopy, sizeof(lcopy), local_root, conflict_copy);
+            snprintf(rcopy, sizeof(rcopy), "%s/%s", remote_root, conflict_copy);
+            found = read_file(lcopy, content, sizeof(content)) &&
+                    strcmp(content, "local edit X\n") == 0 &&
+                    raw_get(&cfg, rcopy, content, sizeof(content), &status) &&
+                    strcmp(content, "local edit X\n") == 0;
+        }
+        check(found, "T6c: the local version is kept as a conflict copy, locally and on the server");
     }
+
+    progress_reset(&pr);
+    cloudsync_run_ex(t, local_root, remote_root, NULL, &pr, &sum);
+    check(sum.uploaded == 0 && sum.downloaded == 0 && sum.copies == 0 && sum.errors == 0,
+         "T6d: sync after the conflict is stable");
 
     /* ---- Cleanup ---- */
     webdav_transport_close(t);
     raw_delete(&cfg, remote_root);
     remove(baseline_path);
     remove(note1_path);
+    if (conflict_copy[0]) {
+        char lcopy[AC_MAX_PATH];
+        localfs_join(lcopy, sizeof(lcopy), local_root, conflict_copy);
+        remove(lcopy);
+    }
 
     printf("\n%d passed, %d failed\n", g_pass, g_fail);
     http_cleanup();

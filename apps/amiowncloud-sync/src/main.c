@@ -49,7 +49,8 @@ static void usage(const char *prog)
         "  -p <pass>    Password (Nextcloud: an app password)\n"
         "  -c <file>    Config file (default: ~/.amiowncloud-syncrc or ENV:amiowncloud-sync.cfg)\n"
         "  -k           Disable TLS certificate verification (development only)\n"
-        "  -n           Dry run -- show what would happen, change nothing\n",
+        "  -n           Dry run -- show what would happen, change nothing\n"
+        "  -f, FORCE    Delete without asking, even many files at once (scripts)\n",
         prog);
     exit(1);
 }
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
 {
     AcConfig cfg;
     const char *opt_server = NULL, *opt_user = NULL, *opt_pass = NULL, *opt_cfgfile = NULL;
-    int opt_noverify = 0, opt_dryrun = 0;
+    int opt_noverify = 0, opt_dryrun = 0, opt_force = 0;
     int i;
     const char *local_root, *remote_root;
     Progress      pr;
@@ -72,6 +73,8 @@ int main(int argc, char **argv)
     cfg.verify_ssl  = 1;
 
     for (i = 1; i < argc; i++) {
+        /* AmigaDOS style keyword, before or after the two paths */
+        if (strcmp(argv[i], "FORCE") == 0 || strcmp(argv[i], "force") == 0) { opt_force = 1; continue; }
         if (argv[i][0] != '-') break;
         if      (strcmp(argv[i], "-s") == 0 && i+1 < argc) { opt_server  = argv[++i]; }
         else if (strcmp(argv[i], "-u") == 0 && i+1 < argc) { opt_user    = argv[++i]; }
@@ -79,6 +82,8 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "-c") == 0 && i+1 < argc) { opt_cfgfile = argv[++i]; }
         else if (strcmp(argv[i], "-k") == 0)               { opt_noverify = 1; }
         else if (strcmp(argv[i], "-n") == 0)               { opt_dryrun   = 1; }
+        else if (strcmp(argv[i], "-f") == 0 ||
+                 strcmp(argv[i], "--force") == 0)          { opt_force    = 1; }
         else if (strcmp(argv[i], "--help") == 0)           { usage(argv[0]); }
         else { fprintf(stderr, "Unknown option: %s\n", argv[i]); usage(argv[0]); }
     }
@@ -96,6 +101,10 @@ int main(int argc, char **argv)
     if (i + 1 >= argc) { fprintf(stderr, "amiowncloud-sync: <local-dir> and <remote-dir> required\n"); usage(argv[0]); }
     local_root  = argv[i++];
     remote_root = argv[i];
+    for (i++; i < argc; i++) {   /* FORCE may also follow the paths */
+        if (strcmp(argv[i], "FORCE") == 0 || strcmp(argv[i], "force") == 0) opt_force = 1;
+        else { fprintf(stderr, "Unknown argument: %s\n", argv[i]); usage(argv[0]); }
+    }
 
     if (!cfg.server[0])   { fprintf(stderr, "amiowncloud-sync: WebDAV base URL required (-s or config file)\n"); usage(argv[0]); }
     if (!cfg.username[0]) { fprintf(stderr, "amiowncloud-sync: username required (-u or config file)\n");        usage(argv[0]); }
@@ -134,6 +143,7 @@ int main(int argc, char **argv)
         SyncOptions o;
         sync_options_init(&o);
         o.dry_run = opt_dryrun;
+        o.force_deletes = opt_force;
         o.verbose = 1;
         cloudsync_run_ex(t, local_root, remote_utf8, &o, &pr, &sum);
     }
