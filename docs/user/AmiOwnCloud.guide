@@ -1235,6 +1235,13 @@ Versionsgeschichte
 
 Programme:
 
+  0.4 (01.11.2026)  SetDate und Copy CLONE auf OWNCLOUD: übernehmen
+                    das Datum (vorher immer 01.01.1978). Abgleich
+                    erkennt Änderungen auf dem Server zuverlässig,
+                    auch wenn ownCloud die Änderungskennung (ETag)
+                    beibehält. AmiOwnCloudSync: ein geändertes
+                    Intervall gilt sofort, Intervall 0 schaltet den
+                    Autosync ab (vorher Dauerabgleich).
   0.3 (01.11.2026)  Umlaute in Dateinamen (codesets.library, sonst
                     ISO-8859-1); Abgleich: bei Konflikten bleiben
                     beide Fassungen erhalten, Rückfrage vor dem
