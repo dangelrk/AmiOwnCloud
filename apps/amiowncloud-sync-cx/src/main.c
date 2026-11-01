@@ -253,6 +253,27 @@ static void startup_error(int from_shell, const char *text)
     IntuitionBase = NULL;
 }
 
+/* Follow the interval from AmiOwnCloudSync.cfg after every reload: turn
+ * autosync on or off and restart the timer when the value changed. Before,
+ * a new interval only counted after the old timer ran out, an interval set
+ * to 0 while running restarted the timer with 0 seconds (an endless sync
+ * loop), and autosync off at start stayed off until a restart. */
+static void apply_interval(int *enabled, long *cur_minutes, long minutes)
+{
+    if (minutes <= 0) {
+        if (*enabled) { ac_timer_close(); *enabled = 0; }
+        *cur_minutes = 0;
+        return;
+    }
+    if (!*enabled) {
+        *enabled = ac_timer_open();
+        if (*enabled) ac_timer_start(minutes * 60);
+    } else if (minutes != *cur_minutes) {
+        ac_timer_restart(minutes * 60);
+    }
+    *cur_minutes = *enabled ? minutes : 0;
+}
+
 int main(int argc, char *argv[])
 {
     AcConfig cfg;
@@ -260,6 +281,7 @@ int main(int argc, char *argv[])
     char prefs_path[AC_MAX_PATH];
     char hotkey[64];
     int window_open, running, autosync_enabled;
+    long autosync_minutes;
 
     memset(&cfg, 0, sizeof(cfg));
     pairs_init(&pl); /* pl->items must be NULL before reload_prefs()'s first pairs_free() */
@@ -316,8 +338,9 @@ int main(int argc, char *argv[])
         return why ? 1 : 0;
     }
 
-    autosync_enabled = (pl.interval_minutes > 0) && ac_timer_open();
-    if (autosync_enabled) ac_timer_start((long)pl.interval_minutes * 60);
+    autosync_enabled = 0;
+    autosync_minutes = 0;
+    apply_interval(&autosync_enabled, &autosync_minutes, (long)pl.interval_minutes);
 
     window_open = 0;
     running = 1;
@@ -347,12 +370,14 @@ int main(int argc, char *argv[])
                      * this commodity sat running in the background --
                      * see reload_prefs()'s own comment. */
                     reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
+                    apply_interval(&autosync_enabled, &autosync_minutes, (long)pl.interval_minutes);
                     window_open = gui_open(&pl, "AmiOwnCloudSync");
                 }
                 break;
             case CX_ACTION_SHOW_WINDOW:
                 if (!window_open) {
                     reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
+                    apply_interval(&autosync_enabled, &autosync_minutes, (long)pl.interval_minutes);
                     window_open = gui_open(&pl, "AmiOwnCloudSync");
                 } else {
                     gui_show();
@@ -366,8 +391,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (autosync_enabled && (sig & ac_timer_sigmask())) {
-            ac_timer_consume();
+        /* only when the request really came back: after a restart the
+         * signal may still be set without a message on the port */
+        if (autosync_enabled && (sig & ac_timer_sigmask()) && ac_timer_consume()) {
             /* Same reload as opening the window -- an autosync tick is
              * the other place "did amiowncloud-sync-prefs save something
              * new while I was running" needs to be picked up. */
@@ -383,7 +409,14 @@ int main(int argc, char *argv[])
                     if (window_open) gui_set_status(status);
                 }
             }
-            ac_timer_start((long)pl.interval_minutes * 60);
+            /* the request has completed: start the next one with the
+             * (possibly reloaded) interval, or stop autosync at 0 */
+            if (pl.interval_minutes > 0) {
+                ac_timer_start((long)pl.interval_minutes * 60);
+                autosync_minutes = (long)pl.interval_minutes;
+            } else {
+                apply_interval(&autosync_enabled, &autosync_minutes, 0);
+            }
         }
 
         if (window_open && (sig & gui_sigmask())) {
@@ -426,6 +459,7 @@ int main(int argc, char *argv[])
                  * on window-open and before every autosync tick, but
                  * this window may have been open the whole time. */
                 reload_prefs(&cfg, &pl, prefs_path, sizeof(prefs_path));
+                apply_interval(&autosync_enabled, &autosync_minutes, (long)pl.interval_minutes);
                 gui_refresh_list(&pl);
                 gui_set_status("Neu geladen.");
                 break;

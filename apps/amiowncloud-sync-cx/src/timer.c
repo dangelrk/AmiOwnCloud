@@ -59,13 +59,25 @@ void ac_timer_start(long seconds)
     SendIO((struct IORequest *)g_timer_req);
 }
 
+void ac_timer_restart(long seconds)
+{
+    if (!g_timer_req) return;
+    if (!CheckIO((struct IORequest *)g_timer_req)) {
+        AbortIO((struct IORequest *)g_timer_req);
+    }
+    WaitIO((struct IORequest *)g_timer_req);   /* also takes it off the port */
+    ac_timer_start(seconds);
+}
+
 ULONG ac_timer_sigmask(void)
 {
     return g_timer_port ? (1UL << g_timer_port->mp_SigBit) : 0;
 }
 
-void ac_timer_consume(void)
+int ac_timer_consume(void)
 {
-    struct Message *msg;
-    while ((msg = GetMsg(g_timer_port)) != NULL) { /* g_timer_req IS the message; nothing else to do */ }
+    int got = 0;
+    if (!g_timer_port) return 0;
+    while (GetMsg(g_timer_port) != NULL) got = 1;   /* g_timer_req IS the message */
+    return got;
 }

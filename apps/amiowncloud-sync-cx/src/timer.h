@@ -29,12 +29,16 @@ void  ac_timer_close(void);
  * request is still outstanding. */
 void  ac_timer_start(long seconds);
 
+/* Cancel a pending request (if any) and start a new one -- for an
+ * interval changed in AmiOwnCloudSyncPrefs while the commodity runs. */
+void  ac_timer_restart(long seconds);
+
 /* The signal bit main.c's Wait() should include for the timer -- 0 if
  * ac_timer_open() failed or wasn't called. */
 ULONG ac_timer_sigmask(void);
 
 /* Drains the completed tick after Wait() reports the timer signal, so
  * the port is clean before the next ac_timer_start(). */
-void  ac_timer_consume(void);
+int   ac_timer_consume(void);   /* 1 = the request came back */
 
 #endif /* AC_SYNC_CX_TIMER_H */
