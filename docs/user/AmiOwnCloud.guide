@@ -1235,6 +1235,12 @@ Versionsgeschichte
 
 Programme:
 
+  0.5 (01.11.2026)  Wird eine Anmeldung abgelehnt (falsches
+                    Passwort), versuchen es Handler, Abgleich
+                    und AmiOwnCloudSync mit denselben Zugangs-
+                    daten 15 Minuten lang nicht erneut. Vorher
+                    löste das schnell die Sperre von ownCloud
+                    aus.
   0.4 (01.11.2026)  SetDate und Copy CLONE auf OWNCLOUD: übernehmen
                     das Datum (vorher immer 01.01.1978). Abgleich
                     erkennt Änderungen auf dem Server zuverlässig,
