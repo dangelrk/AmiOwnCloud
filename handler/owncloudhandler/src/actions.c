@@ -1035,7 +1035,9 @@ void act_set_date(struct DosPacket *pkt)
     if (err) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = err; return; }
     if (!rp.node) { pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_OBJECT_NOT_FOUND; return; }
 
-    ds = (struct DateStamp *)BADDR(pkt->dp_Arg4);
+    /* dp_Arg4 is a CPTR (plain pointer), not a BPTR -- BADDR() read
+     * four times the address and set every date to 01-Jan-78 */
+    ds = (struct DateStamp *)pkt->dp_Arg4;
 
     vol_build_path(rp.node, fullpath, sizeof(fullpath));
     err = backend_send(WREQ_SETDATE, fullpath, (const char *)0, (UBYTE *)0, 0,

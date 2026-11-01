@@ -1,12 +1,11 @@
 Short:        ownCloud/Nextcloud drive and sync for OS3
 Author:       Ronny Krueger
-Uploader:     Ronny Krueger
+Uploader:     Ronny Krueger (amitools@planet-rk.de)
 Type:         comm/net
 Version:      @VERSION@
 Architecture: m68k-amigaos >= 3.0.0
 Requires:     TCP/IP stack (bsdsocket.library), AmiSSL 5
 Distribution: Aminet
-Replaces:     comm/net/AmiOwnCloud.lha
 
 AmiOwnCloud connects AmigaOS 3.x to an ordinary ownCloud or Nextcloud
 server over WebDAV (HTTPS):
@@ -41,5 +40,3 @@ License
 -------
 GNU General Public License, version 3 or later. Contains the JSON parser
 Parson (MIT license, see THIRD-PARTY-NOTICES).
-
-Source: https://github.com/dangelrk/AmiOwnCloud
