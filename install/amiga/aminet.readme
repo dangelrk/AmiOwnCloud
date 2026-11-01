@@ -1,10 +1,10 @@
-Short:        ownCloud/Nextcloud drive and sync for OS3
+Short:        ownCloud/Nextcloud drive and sync
 Author:       Ronny Krueger
-Uploader:     Ronny Krueger (amitools@planet-rk.de)
+Uploader:     amitools@planet-rk.de (Ronny Krueger)
 Type:         comm/net
 Version:      @VERSION@
 Architecture: m68k-amigaos >= 3.0.0
-Requires:     TCP/IP stack (bsdsocket.library), AmiSSL 5
+Requires:     util/libs/AmiSSL-v5-OS3.lha
 Distribution: Aminet
 
 AmiOwnCloud connects AmigaOS 3.x to an ordinary ownCloud or Nextcloud
@@ -30,7 +30,11 @@ Requirements
 ------------
 - AmigaOS 3.x, 68020 or better (since 0.2), no FPU needed
 - a TCP/IP stack with bsdsocket.library (Roadshow, AmiTCP, Miami, ...)
-- AmiSSL 5
+- AmiSSL 5 (Aminet util/libs/AmiSSL-v5-OS3.lha)
+- optional: codesets.library 6 or newer for umlauts in other charsets
+  than ISO-8859-1 (util/libs/codesets-6.22.lha)
+- optional: xvs.library for the virus check of downloads
+  (util/virus/xvslibrary.lha)
 - an account on an ownCloud or Nextcloud server
 
 Documentation and user interface are in German.
