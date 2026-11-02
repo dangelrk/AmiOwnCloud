@@ -1161,6 +1161,7 @@ href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOw
 
 <table>
 <tr><th>Programme</th><th>Änderungen</th></tr>
+<tr><td>0.7 (02.11.2026)</td><td>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden (auch Umlaute): <code>OWNCLOUD:</code> zeigt den zweiten als <code>name_2</code>, jeder führt zu seiner Datei; der Abgleich überspringt auch Umlaut-Paare.</td></tr>
 <tr><td>0.6 (02.11.2026)</td><td>Keine Änderungen an den Programmen; die Versionsnummer folgt dem gemeinsamen Release mit AmiCloud und AmiVCS.</td></tr>
 <tr><td>0.5 (01.11.2026)</td><td>Wird eine Anmeldung abgelehnt (falsches Passwort), versuchen es Handler, Abgleich und AmiOwnCloudSync mit denselben Zugangsdaten 15 Minuten lang nicht erneut. Vorher löste ein falsches Passwort schnell die Brute-Force-Sperre von ownCloud aus.</td></tr>
 <tr><td>0.4 (01.11.2026)</td><td><code>OWNCLOUD:</code>: <code>SetDate</code> und <code>Copy CLONE</code> übernehmen das Datum (vorher immer 01.01.1978). Abgleich erkennt Änderungen auf dem Server zuverlässig, auch wenn ownCloud die Änderungskennung (ETag) beibehält. AmiOwnCloudSync: ein geändertes Intervall gilt sofort, Intervall 0 schaltet den Autosync ab (vorher Dauerabgleich).</td></tr>

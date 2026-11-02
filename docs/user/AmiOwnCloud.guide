@@ -1245,6 +1245,11 @@ Versionsgeschichte
 
 Programme:
 
+  0.7 (02.11.2026)  Namen, die sich nur in Groß-/Klein-
+                    schreibung unterscheiden (auch Umlaute):
+                    OWNCLOUD: zeigt den zweiten als
+                    "name_2"; der Abgleich überspringt auch
+                    Umlaut-Paare.
   0.6 (02.11.2026)  Keine Änderungen an den Programmen; die
                     Versionsnummer folgt dem gemeinsamen
                     Release mit AmiCloud und AmiVCS.
