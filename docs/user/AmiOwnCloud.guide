@@ -438,6 +438,15 @@ es lokal nicht gibt (Emoji, '?', chinesische Schrift), erscheinen als
 '_'; die Datei bleibt unter diesem Namen erreichbar, und der Abgleich
 ordnet sie wieder richtig zu.
 
+Gleiche Namen bis auf Groß-/Kleinschreibung: Auf dem Server können
+"abc" und "ABC" (auch "Äpfel" und "äpfel") nebeneinander liegen, auf
+dem Amiga wären sie eine Datei. Der Handler zeigt dann die erste (nach
+Zeichencode) unter ihrem Namen, die anderen als "abc_2", "abc_3" usw.,
+vor der Endung ("x_2.info"); ebenso zwei Namen, die beide als '_'
+erscheinen würden. Unter diesen Namen lassen sie sich lesen,
+schreiben, umbenennen und löschen. Der Abgleich überspringt solche
+Namen und meldet sie.
+
 Wichtig: Der Worker liest die Datei nur einmal beim Start. Weil der
 Handler nicht ausgehängt werden kann, wirken Änderungen zuverlässig
 erst nach einem Neustart des Amiga.
@@ -866,7 +875,8 @@ Schutz vor Datenverlust (ab 0.2):
   - Hochgeladen wird nur, wenn die Datei auf dem Server noch die beim
     Abgleich gesehene ist. Sonst bleibt die Datei bis zum nächsten
     Abgleich liegen, der beide Fassungen behält.
-  - Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, und
+  - Namen, die sich nur in Groß-/Kleinschreibung unterscheiden (auch
+    Ä/ä), und
     Namen, die für das Dateisystem zu lang sind (klassisches FFS:
     30 Zeichen), werden übersprungen und gemeldet.
   - Nie abgeglichen werden .DS_Store, ._*, Thumbs.db, desktop.ini,

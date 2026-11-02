@@ -190,6 +190,8 @@ static void dispatch(WorkerMsg *m)
         }
         m->entries = NULL;
         m->n_entries = 0;
+        /* an empty listing too: the names remembered for it are stale */
+        if (n == 0) cs_list_dir(m->path, upath, (const char *const *)0, 0, (char *)0, 0, 0);
         if (n > 0) {
             out = (WEntry *)AllocVec((ULONG)n * sizeof(WEntry), MEMF_PUBLIC | MEMF_CLEAR);
             if (!out) {
@@ -197,8 +199,22 @@ static void dispatch(WorkerMsg *m)
                 m->result = ERROR_NO_FREE_STORE;
                 break;
             }
+            /* names; those that would be one file here (case, umlauts,
+             * lossy) get "_2" names that still lead to their own file */
+            {
+                const char **un = (const char **)AllocVec((ULONG)n * sizeof(char *), MEMF_PUBLIC);
+                if (un) {
+                    for (i = 0; i < n; i++) un[i] = entries[i].name;
+                    cs_list_dir(m->path, upath, un, n, out[0].name, sizeof(WEntry),
+                                sizeof(out[0].name));
+                    FreeVec(un);
+                } else {
+                    for (i = 0; i < n; i++)
+                        cs_list_name(m->path, upath, entries[i].name, out[i].name,
+                                     sizeof(out[i].name));
+                }
+            }
             for (i = 0; i < n; i++) {
-                cs_list_name(m->path, upath, entries[i].name, out[i].name, sizeof(out[i].name));
                 out[i].is_dir = entries[i].is_dir;
                 out[i].size = entries[i].size;
                 epoch_to_datestamp(entries[i].mtime, &out[i].mtime);

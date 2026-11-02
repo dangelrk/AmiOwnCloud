@@ -261,6 +261,12 @@ LONG vol_refresh(CNode *dir)
             ch = vol_new_node(dir, e->name, t, (const struct DateStamp *)0);
             if (!ch) continue; /* out of memory -- skip, retried next refresh */
         }
+        else if (u_strcmp(ch->name, e->name) != 0) {
+            /* same name apart from case: the server's spelling counts --
+             * the path to the server is built from it, and since
+             * cs_list_dir() a "_2" name may have moved to another file */
+            u_strncpy(ch->name, e->name, sizeof(ch->name));
+        }
 
         ch->seen = 1;
         ch->size = (t == CN_DIR) ? 0 : e->size;

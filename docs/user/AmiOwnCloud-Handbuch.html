@@ -499,6 +499,15 @@ Aminet <code>util/libs/codesets</code>). Fehlt sie, gilt ISO-8859-1. Zeichen, di
 lokal nicht gibt (Emoji, <code>?</code>, chinesische Schrift), erscheinen als
 <code>_</code>; die Datei bleibt unter diesem Namen erreichbar, und der Abgleich ordnet
 sie wieder richtig zu.</p>
+
+<p><strong>Gleiche Namen bis auf Groß-/Kleinschreibung:</strong> Auf dem Server
+können <code>abc</code> und <code>ABC</code> (auch <code>Äpfel</code> und
+<code>äpfel</code>) nebeneinander liegen, auf dem Amiga wären sie eine Datei. Der
+Handler zeigt dann die erste (nach Zeichencode) unter ihrem Namen, die anderen als
+<code>abc_2</code>, <code>abc_3</code> usw., vor der Endung (<code>x_2.info</code>);
+ebenso zwei Namen, die beide als <code>_</code> erscheinen würden. Unter diesen
+Namen lassen sie sich lesen, schreiben, umbenennen und löschen. Der Abgleich überspringt
+solche Namen und meldet sie.</p>
 <p><strong>Wichtig:</strong> Der Worker liest die Datei nur einmal beim
 Start. Weil der Handler nicht ausgehängt werden kann, wirken Änderungen
 zuverlässig erst nach einem Neustart des Amiga.</p>
@@ -854,7 +863,7 @@ Liegt darin etwas Neues, wird er wieder angelegt.</li>
 <li>Hochgeladen wird nur, wenn die Datei auf dem Server noch die beim
 Abgleich gesehene ist. Sonst bleibt die Datei bis zum nächsten Abgleich
 liegen, der beide Fassungen behält.</li>
-<li>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, und Namen,
+<li>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden (auch Ä/ä), und Namen,
 die für das Dateisystem zu lang sind (klassisches FFS: 30 Zeichen), werden
 übersprungen und gemeldet.</li>
 <li>Nie abgeglichen werden <code>.DS_Store</code>, <code>._*</code>,
