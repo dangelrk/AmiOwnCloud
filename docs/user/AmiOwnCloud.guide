@@ -1235,6 +1235,9 @@ Versionsgeschichte
 
 Programme:
 
+  0.6 (02.11.2026)  Keine Änderungen an den Programmen; die
+                    Versionsnummer folgt dem gemeinsamen
+                    Release mit AmiCloud und AmiVCS.
   0.5 (01.11.2026)  Wird eine Anmeldung abgelehnt (falsches
                     Passwort), versuchen es Handler, Abgleich
                     und AmiOwnCloudSync mit denselben Zugangs-
