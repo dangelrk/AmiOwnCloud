@@ -47,7 +47,7 @@ Vorhandene Icons, Einstellungen und DOSDriver bleiben erhalten.
 Voraussetzungen
 ---------------
 
-  - AmigaOS 3.x, 68000 oder besser
+  - AmigaOS 3.x, 68020 oder besser
   - TCP/IP-Stack mit bsdsocket.library (z.B. Roadshow, AmiTCP, Miami)
   - AmiSSL 5 (amisslmaster.library)
   - ein Konto auf einem ownCloud/Nextcloud-Server, am besten mit
@@ -63,4 +63,5 @@ Lizenz
 Copyright (C) 2026 Ronny Krueger. Freie Software unter der GNU General
 Public License Version 3 oder neuer (siehe LICENSE), OHNE JEDE GEWÄHR.
 Enthält den JSON-Parser Parson (MIT-Lizenz, siehe THIRD-PARTY-NOTICES).
-Quellen: https://github.com/dangelrk/AmiOwnCloud
+Fehlermeldungen, Wünsche: amitools@planet-rk.de
+Die Quellen werden später auf GitHub veröffentlicht.

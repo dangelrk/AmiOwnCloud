@@ -130,7 +130,7 @@
 <div class="wrap">
 
 <h1 id="top">AmiOwnCloud</h1>
-<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Version 1.2 (23.10.2026)</p>
+<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Stand 07.11.2026 (Programmversion 0.8)</p>
 
 <p>Diese Seite entspricht inhaltlich dem AmigaGuide-Handbuch
 <code>AmiOwnCloud.guide</code>.</p>
@@ -212,11 +212,8 @@ Zugangsdaten (siehe <a href="#konfiguration">Konfiguration</a>).</p>
 └────────────────────────┘                    └──────────────────────────┘
 </pre>
 
-<p>AmiOwnCloud ist Teil einer Projektfamilie: <a
-href="https://github.com/dangelrk/AmiCloud">AmiCloud</a> (eigener Server),
-<a href="https://github.com/dangelrk/AmiVCS">AmiVCS</a>
-(Versionsverwaltung) und die gemeinsame Bibliothek <a
-href="https://github.com/dangelrk/AmiCloudCore">AmiCloudCore</a>. Mit dem
+<p>AmiOwnCloud ist Teil einer Projektfamilie: AmiCloud (eigener Server),
+AmiVCS (Versionsverwaltung) und die gemeinsame Bibliothek AmiCloudCore. Mit dem
 eigenen AmiCloud-Server hat AmiOwnCloud nichts zu tun.</p>
 
 <p class="backtotop"><a href="#top">nach oben</a></p>
@@ -282,7 +279,7 @@ enthält:</p>
 <tr><td><code>ReadMe</code>, <code>LICENSE</code>, <code>THIRD-PARTY-NOTICES</code></td><td>Kurzbeschreibung, Lizenztext, Lizenz der Fremdkomponente Parson (MIT)</td></tr>
 </table>
 
-<p>Archiv auspacken, z.&nbsp;B. <code>LhA x AmiOwnCloud-0.2.lha RAM:</code>.</p>
+<p>Archiv auspacken, z.&nbsp;B. <code>LhA x AmiOwnCloud.lha RAM:</code>.</p>
 <p>Alle Teile haben Workbench-Icons. Zum Installieren in der Schublade das
 Icon <strong>Install-AmiOwnCloud</strong> doppelt anklicken. Es startet den
 Commodore-Installer (bei AmigaOS&nbsp;3.2 in <code>SYS:System</code>, bei
@@ -290,6 +287,8 @@ Commodore-Installer (bei AmigaOS&nbsp;3.2 in <code>SYS:System</code>, bei
 Ohne Installer gibt es dasselbe als Shell-Skript:</p>
 <pre>CD RAM:AmiOwnCloud
 Execute Install-AmiOwnCloud.shell</pre>
+
+<p>Wer den Installer aus der Shell startet, wechselt vorher mit <code>CD</code> in die Schublade: Das Skript sucht seine Dateien relativ zum aktuellen Verzeichnis. Von einem anderen Verzeichnis aus bricht es mit einem Hinweis ab.</p>
 
 <p><strong>Aktualisieren:</strong> Eine neuere Version installiert man genauso –
 Archiv auspacken, Installer erneut starten. Er vergleicht bei jedem Programm
@@ -395,6 +394,8 @@ eintragen:</p>
 href="#amiowncloud-sync"><code>amiowncloud-sync</code></a> und <a
 href="#amiowncloud-synctest"><code>amiowncloud-synctest</code></a>. Handler, Commodity
 und Prefs-Programme gibt es nur für AmigaOS.</p>
+
+<p>Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt es die Amiga-Programme als Archiv auf Aminet.</p>
 
 <pre>git clone --recurse-submodules https://github.com/dangelrk/AmiOwnCloud.git
 cd AmiOwnCloud
@@ -1095,10 +1096,8 @@ Hand bleibt zu tun:</p>
 <!-- ============================================================ -->
 <h2 id="bauen">18. Bauen aus den Quellen</h2>
 
-<p>Quellen: <a
-href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOwnCloud</a>.
-Die gemeinsamen Bibliotheken kommen aus <a
-href="https://github.com/dangelrk/AmiCloudCore">AmiCloudCore</a>, das als
+<p>Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt es die Amiga-Programme als Archiv auf Aminet.
+Die gemeinsamen Bibliotheken kommen aus AmiCloudCore, das als
 Git-Submodul <code>core/</code> eingebunden ist – deshalb mit Submodul
 klonen:</p>
 <pre>git clone --recurse-submodules https://github.com/dangelrk/AmiOwnCloud.git</pre>
@@ -1145,13 +1144,13 @@ ist ein unabhängiges Projekt.</p>
 <!-- ============================================================ -->
 <h2 id="autor">20. Autor und Kontakt</h2>
 
-<p>Ronny Krueger. Projektseite, Quellen, Fehlermeldungen und Wünsche: <a
-href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOwnCloud</a>.</p>
+<p>Ronny Krueger. Fehlermeldungen und Wünsche: <a
+href="mailto:amitools@planet-rk.de">amitools@planet-rk.de</a>.</p>
 <table>
 <tr><th>Schwesterprojekt</th><th>Inhalt</th></tr>
-<tr><td><a href="https://github.com/dangelrk/AmiCloud">AmiCloud</a></td><td>eigener Cloud-Server mit Amiga-Werkzeugen</td></tr>
-<tr><td><a href="https://github.com/dangelrk/AmiVCS">AmiVCS</a></td><td>Versionsverwaltung</td></tr>
-<tr><td><a href="https://github.com/dangelrk/AmiCloudCore">AmiCloudCore</a></td><td>gemeinsame Bibliotheken</td></tr>
+<tr><td>AmiCloud</td><td>eigener Cloud-Server mit Amiga-Werkzeugen</td></tr>
+<tr><td>AmiVCS</td><td>Versionsverwaltung</td></tr>
+<tr><td>AmiCloudCore</td><td>gemeinsame Bibliotheken</td></tr>
 </table>
 
 <p class="backtotop"><a href="#top">nach oben</a></p>
@@ -1161,6 +1160,7 @@ href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOw
 
 <table>
 <tr><th>Programme</th><th>Änderungen</th></tr>
+<tr><td>0.8 (07.11.2026)</td><td>Handbuch überarbeitet. Der Installer meldet es jetzt, wenn er nicht aus seiner Schublade gestartet wird, statt mit „object in use“ abzubrechen.</td></tr>
 <tr><td>0.7 (02.11.2026)</td><td>Namen, die sich nur in Groß-/Kleinschreibung unterscheiden (auch Umlaute): <code>OWNCLOUD:</code> zeigt den zweiten als <code>name_2</code>, jeder führt zu seiner Datei; der Abgleich überspringt auch Umlaut-Paare.</td></tr>
 <tr><td>0.6 (02.11.2026)</td><td>Keine Änderungen an den Programmen; die Versionsnummer folgt dem gemeinsamen Release mit AmiCloud und AmiVCS.</td></tr>
 <tr><td>0.5 (01.11.2026)</td><td>Wird eine Anmeldung abgelehnt (falsches Passwort), versuchen es Handler, Abgleich und AmiOwnCloudSync mit denselben Zugangsdaten 15 Minuten lang nicht erneut. Vorher löste ein falsches Passwort schnell die Brute-Force-Sperre von ownCloud aus.</td></tr>
@@ -1171,6 +1171,7 @@ href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOw
 </table>
 <table>
 <tr><th>Handbuch</th><th>Änderungen</th></tr>
+<tr><td>1.3 (07.11.2026)</td><td>Mindestprozessor 68020 überall genannt, Archivnamen wie auf Aminet, Quellen folgen später auf GitHub, neue Kontaktadresse, Hinweis zum Start des Installers aus der Shell.</td></tr>
 <tr><td>1.2 (23.10.2026)</td><td>Programme umbenannt, damit sie nicht mit AmiCloud verwechselt werden: <code>webdavsync</code> → <code>amiowncloud-sync</code>, <code>webdavsynctest</code> → <code>amiowncloud-synctest</code>, AmiCloudSync → AmiOwnCloudSync, AmiCloudSyncPrefs → AmiOwnCloudSyncPrefs, OwnCloudPrefs → AmiOwnCloudPrefs, <code>owncloud-handler</code>/<code>-worker</code> → <code>amiowncloud-handler</code>/<code>-worker</code>; Konfiguration <code>owncloud.cfg</code> → <code>amiowncloud.cfg</code>, <code>AmiCloudSync.cfg</code> → <code>AmiOwnCloudSync.cfg</code>, <code>webdavsync.cfg</code> → <code>amiowncloud-sync.cfg</code>. Das Laufwerk heißt weiter <code>OWNCLOUD:</code>.</td></tr>
 <tr><td>1.1 (23.10.2026)</td><td>Langsame Verbindungen: <code>timeout</code>, <code>cache_ttl</code>, Fortsetzen von Downloads, <code>Break</code>/<kbd>Ctrl-C</kbd>, <code>T:AmiOwnCloud-unsaved</code>.</td></tr>
 <tr><td>1.0 (27.09.2026)</td><td>AmiOwnCloud als eigenes Projekt; neues Handbuch <code>AmiOwnCloud.guide</code> / <code>AmiOwnCloud-Handbuch.html</code> (ersetzt AmiCloudSync.guide / AmiCloudSync-Handbuch.html), deckt Handler, OwnCloudPrefs, AmiCloudSync, AmiCloudSyncPrefs, webdavsync und webdavsynctest ab. Neu: Installationsschublade mit Install-AmiOwnCloud / Uninstall-AmiOwnCloud, webdavsync auch für den Amiga.</td></tr>
@@ -1178,7 +1179,7 @@ href="https://github.com/dangelrk/AmiOwnCloud">https://github.com/dangelrk/AmiOw
 </table>
 
 <footer>
-AmiOwnCloud – Handbuch 1.2 (23.10.2026). Inhaltsgleich mit dem
+AmiOwnCloud – Handbuch 1.3 (07.11.2026). Inhaltsgleich mit dem
 AmigaGuide-Handbuch <code>docs/user/AmiOwnCloud.guide</code>. Lizenz:
 GPL-3.0-or-later.
 </footer>

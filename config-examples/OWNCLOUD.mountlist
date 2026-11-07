@@ -3,7 +3,7 @@
 /* OWNCLOUD: als klassischer Mountlist-Eintrag (dieselben Werte wie der
  * DOSDriver handler/owncloudhandler/mount/OWNCLOUD).
  * Voraussetzung: L:amiowncloud-handler und L:amiowncloud-worker installiert,
- * ENV:amiowncloud.cfg vorhanden (siehe docs/INSTALL.md).
+ * ENV:amiowncloud.cfg vorhanden (siehe AmiOwnCloud.guide).
  * Mounten ohne DOSDriver:
  *   Mount OWNCLOUD: FROM <Pfad>/OWNCLOUD.mountlist
  * oder diesen Eintrag an DEVS:MountList anhaengen, dann genuegt

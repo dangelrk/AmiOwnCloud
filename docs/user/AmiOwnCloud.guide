@@ -1,5 +1,5 @@
 @database "AmiOwnCloud.guide"
-@$VER: AmiOwnCloud.guide 1.2 (23.10.2026)
+@$VER: AmiOwnCloud.guide 1.3 (07.11.2026)
 @author "Ronny Krueger"
 @(c) "2026 Ronny Krueger, GPL-3.0-or-later"
 @wordwrap
@@ -11,7 +11,7 @@
                    ownCloud/Nextcloud für AmigaOS
                    ------------------------------
 
-  Handbuch-Version 1.0 (27.09.2026)
+  Handbuch 1.3 (07.11.2026), Programme 0.8
 
   @{" Einführung            " link Einfuehrung}  Was ist AmiOwnCloud?
   @{" Voraussetzungen       " link Voraussetzungen}  Was wird gebraucht?
@@ -98,7 +98,7 @@ Voraussetzungen
 
 Amiga:
 
-  - AmigaOS 3.x, Prozessor 68000 oder besser. Die Programme sind für
+  - AmigaOS 3.x, Prozessor 68020 oder besser. Die Programme sind für
     kleine Systeme ausgelegt (GadTools statt MUI).
 
   - Ein TCP/IP-Stack mit bsdsocket.library (Version 4 oder neuer),
@@ -162,6 +162,11 @@ beantworten):
 
   CD RAM:AmiOwnCloud
   Execute Install-AmiOwnCloud.shell
+
+Wer den Installer aus der Shell startet, wechselt vorher mit CD in die
+Schublade: Das Skript sucht seine Dateien relativ zum aktuellen
+Verzeichnis. Von einem anderen Verzeichnis aus bricht es mit einem
+Hinweis ab.
 
 Aktualisieren: eine neuere Version installiert man genauso - Archiv
 auspacken, Installer erneut starten. Er vergleicht bei jedem Programm
@@ -277,6 +282,9 @@ Auf dem PC gibt es nur die beiden Shell-Befehle
 @{" amiowncloud-sync " link Webdavsync} und
 @{" amiowncloud-synctest " link Webdavsynctest}. Handler, Commodity und
 Prefs-Programme gibt es nur für AmigaOS.
+
+Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt
+es die Amiga-Programme als Archiv auf Aminet.
 
 Bauen und installieren (Einzelheiten in docs/BUILD.md):
 
@@ -1150,9 +1158,8 @@ Auf dem Server wird nichts gelöscht.
 Bauen aus den Quellen
 ---------------------
 
-Die Quellen liegen auf GitHub:
-
-  https://github.com/dangelrk/AmiOwnCloud
+Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt
+es die Amiga-Programme als Archiv auf Aminet.
 
 Die gemeinsamen Bibliotheken kommen aus dem Projekt AmiCloudCore, das
 als Git-Submodul core/ eingebunden ist. Deshalb mit Submodul klonen:
@@ -1225,15 +1232,15 @@ Autor und Kontakt
 
   Ronny Krueger
 
-Projektseite, Quellen, Fehlermeldungen und Wünsche:
+Fehlermeldungen und Wünsche:
 
-  https://github.com/dangelrk/AmiOwnCloud
+  amitools@planet-rk.de
 
 Schwesterprojekte:
 
-  https://github.com/dangelrk/AmiCloud       eigener Cloud-Server
-  https://github.com/dangelrk/AmiVCS         Versionsverwaltung
-  https://github.com/dangelrk/AmiCloudCore   gemeinsame Bibliotheken
+  AmiCloud       eigener Cloud-Server
+  AmiVCS         Versionsverwaltung
+  AmiCloudCore   gemeinsame Bibliotheken
 
 @endnode
 
@@ -1245,6 +1252,9 @@ Versionsgeschichte
 
 Programme:
 
+  0.8 (07.11.2026)  Handbuch überarbeitet. Der Installer
+                    meldet es, wenn er nicht aus seiner
+                    Schublade gestartet wird.
   0.7 (02.11.2026)  Namen, die sich nur in Groß-/Klein-
                     schreibung unterscheiden (auch Umlaute):
                     OWNCLOUD: zeigt den zweiten als
@@ -1282,6 +1292,10 @@ Programme:
 
 Handbuch:
 
+  1.3 (07.11.2026)  Mindestprozessor 68020 überall genannt,
+                    Quellen folgen später auf GitHub, neue
+                    Kontaktadresse, Hinweis zum Start des
+                    Installers aus der Shell.
   1.2 (23.10.2026)  Programme umbenannt, damit sie nicht mit AmiCloud
                     verwechselt werden: webdavsync -> amiowncloud-sync,
                     webdavsynctest -> amiowncloud-synctest,
