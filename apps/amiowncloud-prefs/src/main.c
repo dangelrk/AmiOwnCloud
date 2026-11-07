@@ -28,6 +28,7 @@
 #include "amicloud.h"
 #include "config.h"
 #include "prefsgui.h"
+#include "winpos.h"
 
 #include <exec/types.h>
 #include <intuition/intuition.h>
@@ -132,9 +133,12 @@ int main(int argc, char *argv[])
     gad = prefsgui_use_save_cancel_row(&lay, 8, winw - 16, GID_USE, GID_SAVE, GID_CANCEL);
     if (!gad) goto fail;
 
+    {
+        WORD left = 60, top = 40;
+        ac_winpos_load("AmiOwnCloud/Windows/AmiOwnCloudPrefs", prefsgui_screen(), winw, winh, &left, &top);
     win = OpenWindowTags(NULL,
-        WA_Left,      60,
-        WA_Top,       40,
+        WA_Left,      left,
+        WA_Top,       top,
         WA_Width,     winw,
         WA_Height,    winh,
         WA_IDCMP,     IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | IDCMP_GADGETUP,
@@ -143,6 +147,7 @@ int main(int argc, char *argv[])
         WA_Title,     (ULONG)"OwnCloud-Einstellungen",
         WA_PubScreen, (ULONG)prefsgui_screen(),
         TAG_DONE);
+    }
     if (!win) goto fail;
 
     GT_RefreshWindow(win, NULL);
@@ -175,6 +180,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    ac_winpos_save("AmiOwnCloud/Windows/AmiOwnCloudPrefs", win);
     CloseWindow(win);
     FreeGadgets(glist);
     prefsgui_screen_close();

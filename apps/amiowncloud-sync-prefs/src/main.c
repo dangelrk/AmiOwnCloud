@@ -35,6 +35,7 @@
 #include "amicloud.h"
 #include "config.h"
 #include "prefsgui.h"
+#include "winpos.h"
 #include "pairs.h"
 
 #include <exec/types.h>
@@ -212,9 +213,12 @@ static int run_pair_dialog(const SyncPair *existing, SyncPair *out)
         lay.context = gad;
     }
 
+    {
+        WORD left = 80, top = 80;
+        ac_winpos_load("AmiOwnCloud/Windows/AmiOwnCloudSyncPrefs.Pair", prefsgui_screen(), winw, winh, &left, &top);
     win = OpenWindowTags(NULL,
-        WA_Left,      80,
-        WA_Top,       80,
+        WA_Left,      left,
+        WA_Top,       top,
         WA_Width,     winw,
         WA_Height,    winh,
         WA_IDCMP,     IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | IDCMP_GADGETUP,
@@ -223,6 +227,7 @@ static int run_pair_dialog(const SyncPair *existing, SyncPair *out)
         WA_Title,     (ULONG)(existing ? "Ordnerpaar bearbeiten" : "Ordnerpaar hinzuf\xfcgen"),
         WA_PubScreen, (ULONG)prefsgui_screen(),
         TAG_DONE);
+    }
     if (!win) { FreeGadgets(glist); return 0; }
 
     GT_RefreshWindow(win, NULL);
@@ -245,6 +250,7 @@ static int run_pair_dialog(const SyncPair *existing, SyncPair *out)
         if (!out->local[0] || !out->remote[0]) result = 0; /* refuse an empty pair silently */
     }
 
+    ac_winpos_save("AmiOwnCloud/Windows/AmiOwnCloudSyncPrefs.Pair", win);
     CloseWindow(win);
     FreeGadgets(glist);
     return result;
@@ -397,9 +403,12 @@ int main(int argc, char *argv[])
     gad = prefsgui_use_save_cancel_row(&lay, 8, winw - 16, GID_USE, GID_SAVE, GID_CANCEL);
     if (!gad) goto fail;
 
+    {
+        WORD left = 50, top = 30;
+        ac_winpos_load("AmiOwnCloud/Windows/AmiOwnCloudSyncPrefs", prefsgui_screen(), winw, winh, &left, &top);
     win = OpenWindowTags(NULL,
-        WA_Left,      50,
-        WA_Top,       30,
+        WA_Left,      left,
+        WA_Top,       top,
         WA_Width,     winw,
         WA_Height,    winh,
         WA_IDCMP,     IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | IDCMP_GADGETUP,
@@ -408,6 +417,7 @@ int main(int argc, char *argv[])
         WA_Title,     (ULONG)"AmiOwnCloudSync-Einstellungen",
         WA_PubScreen, (ULONG)prefsgui_screen(),
         TAG_DONE);
+    }
     if (!win) goto fail;
 
     GT_RefreshWindow(win, NULL);
@@ -483,6 +493,7 @@ int main(int argc, char *argv[])
     }
 
     free_lv_list();
+    ac_winpos_save("AmiOwnCloud/Windows/AmiOwnCloudSyncPrefs", win);
     CloseWindow(win);
     FreeGadgets(glist);
     pairs_free(&pl);

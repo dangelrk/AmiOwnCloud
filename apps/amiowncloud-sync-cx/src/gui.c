@@ -5,6 +5,10 @@
  * gui.c -- see gui.h.
  */
 #include "gui.h"
+#include "../../../core/common/include/common/winpos.h"
+
+/* where the window was left, see winpos.h */
+#define WINPOS_VAR "AmiOwnCloud/Windows/AmiOwnCloudSync"
 
 #include <exec/types.h>
 #include <exec/lists.h>
@@ -156,7 +160,7 @@ static struct NewMenu g_newmenu[] = {
 void gui_close(void)
 {
     free_lv_list();
-    if (g_win)   { ClearMenuStrip(g_win); CloseWindow(g_win); g_win = NULL; }
+    if (g_win)   { ac_winpos_save(WINPOS_VAR, g_win); ClearMenuStrip(g_win); CloseWindow(g_win); g_win = NULL; }
     if (g_menu)  { FreeMenus(g_menu); g_menu = NULL; }
     if (g_glist) { FreeGadgets(g_glist); g_glist = NULL; }
     if (g_vi)    { FreeVisualInfo(g_vi); g_vi = NULL; }
@@ -241,9 +245,12 @@ int gui_open(const PairList *pl, const char *title)
     if (!gad) { gui_close(); return 0; }
     g_gad[GID_STATUS] = gad;
 
+    {
+        WORD left = 40, top = 40;
+        ac_winpos_load(WINPOS_VAR, g_screen, winw, winh, &left, &top);
     g_win = OpenWindowTags(NULL,
-        WA_Left,        40,
-        WA_Top,         40,
+        WA_Left,        left,
+        WA_Top,         top,
         WA_Width,       winw,
         WA_Height,      winh,
         WA_IDCMP,       IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | IDCMP_GADGETUP | IDCMP_MENUPICK,
@@ -252,6 +259,7 @@ int gui_open(const PairList *pl, const char *title)
         WA_Title,       (ULONG)title,
         WA_PubScreen,   (ULONG)g_screen,
         TAG_DONE);
+    }
     if (!g_win) { gui_close(); return 0; }
 
     GT_RefreshWindow(g_win, NULL);
