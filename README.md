@@ -6,6 +6,10 @@ folder-sync commodity (AmiOwnCloudSync) with GadTools preferences editors, and
 the portable command-line tools `amiowncloud-sync`/`amiowncloud-synctest` for AmigaOS,
 macOS, Linux and Windows. Written in C99, built with vbcc for the Amiga.*
 
+> **Status:** experimental. Developed with the help of Claude (an AI assistant
+> by Anthropic), primarily for the author's own use. Try it with copies of
+> your data first; use at your own risk.
+
 AmiOwnCloud bindet einen vorhandenen ownCloud- oder Nextcloud-Server an
 AmigaOS 3.x an – über WebDAV, dieselbe Schnittstelle, die auch die
 offiziellen Clients benutzen. Ein eigener Server gehört nicht dazu; man

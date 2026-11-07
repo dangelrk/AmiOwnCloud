@@ -1,5 +1,5 @@
 @database "AmiOwnCloud.guide"
-@$VER: AmiOwnCloud.guide 1.3 (07.11.2026)
+@$VER: AmiOwnCloud.guide 1.4 (07.11.2026)
 @author "Ronny Krueger"
 @(c) "2026 Ronny Krueger, GPL-3.0-or-later"
 @wordwrap
@@ -11,7 +11,11 @@
                    ownCloud/Nextcloud für AmigaOS
                    ------------------------------
 
-  Handbuch 1.3 (07.11.2026), Programme 0.8
+  Handbuch 1.4 (07.11.2026), Programme 0.9
+
+Experimentelle Software: entwickelt mit Hilfe von Claude (KI-Assistent
+von Anthropic), in erster Linie für den Eigengebrauch des Autors. Bitte
+zuerst mit Kopien der Daten ausprobieren; Benutzung auf eigene Gefahr.
 
   @{" Einführung            " link Einfuehrung}  Was ist AmiOwnCloud?
   @{" Voraussetzungen       " link Voraussetzungen}  Was wird gebraucht?
@@ -1252,6 +1256,11 @@ Versionsgeschichte
 
 Programme:
 
+  0.9 (07.11.2026)  OWNCLOUD: legt leere Dateien jetzt auch
+                    auf dem Server an (Copy einer leeren
+                    Datei, mit MODE_NEWFILE geleerte Datei).
+                    SetFileSize verlängert mit Nullen.
+                    Hinweis auf den experimentellen Status.
   0.8 (07.11.2026)  Handbuch überarbeitet. Der Installer
                     meldet es, wenn er nicht aus seiner
                     Schublade gestartet wird.

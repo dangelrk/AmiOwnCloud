@@ -528,6 +528,12 @@ static void do_find(struct DosPacket *pkt, LONG mode)
     of = (OpenFile *)AllocVec(sizeof(OpenFile), MEMF_PUBLIC | MEMF_CLEAR);
     if (!of) {
         if (mode == ACTION_FINDOUTPUT) node->excl_lock = 0;
+        if (created_now) {
+            /* The node only existed in the cache for this open -- don't
+             * leave a file in the tree that the server never saw. */
+            vol_unlink(node);
+            vol_free_node(node);
+        }
         pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_NO_FREE_STORE; return;
     }
     of->node = node;
@@ -541,6 +547,11 @@ static void do_find(struct DosPacket *pkt, LONG mode)
         of->loaded = 0;
     } else {
         of->loaded = 1; /* new or truncated: empty, and complete */
+        /* Opening a new file, or MODE_NEWFILE on an existing one, already
+         * changes the server state even if nothing is written before the
+         * Close (Copy of an empty file, emptying a file): act_end() must
+         * upload the (empty) contents. */
+        of->dirty = 1;
     }
 
     node->open_count++;
@@ -832,6 +843,9 @@ void act_set_file_size(struct DosPacket *pkt)
     if (newsize > of->alloc && !vol_grow_buf(&of->data, &of->alloc, of->size, newsize)) {
         pkt->dp_Res1 = DOSFALSE; pkt->dp_Res2 = ERROR_DISK_FULL; return;
     }
+    /* Extending: the new bytes are zeros, not whatever the buffer held
+     * (fresh AllocVec memory, or data cut off by an earlier truncate). */
+    if (newsize > of->size) u_memset(of->data + of->size, 0, (ULONG)(newsize - of->size));
     of->size = newsize;
     if (of->pos > of->size) of->pos = of->size;
     of->dirty = 1;

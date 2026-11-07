@@ -11,6 +11,13 @@ Nextcloud-Server über WebDAV (der Server gehört nicht dazu):
   amiowncloud-sync         Shell-Befehl: einmaliger Abgleich eines Ordners
   amiowncloud-synctest     Shell-Befehl: Testsuite gegen einen echten Server
 
+Hinweis
+-------
+Experimentelle Software, entwickelt mit Hilfe von Claude (KI-Assistent
+von Anthropic) und in erster Linie für den Eigengebrauch des Autors
+geschrieben. Bitte zuerst mit Kopien der Daten ausprobieren; Benutzung
+auf eigene Gefahr.
+
 Inhalt der Schublade
 --------------------
 
