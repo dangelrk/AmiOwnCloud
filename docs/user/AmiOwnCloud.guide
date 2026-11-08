@@ -1,5 +1,5 @@
 @database "AmiOwnCloud.guide"
-@$VER: AmiOwnCloud.guide 1.4 (07.11.2026)
+@$VER: AmiOwnCloud.guide 1.5 (08.11.2026)
 @author "Ronny Krueger"
 @(c) "2026 Ronny Krueger, GPL-3.0-or-later"
 @wordwrap
@@ -11,7 +11,7 @@
                    ownCloud/Nextcloud für AmigaOS
                    ------------------------------
 
-  Handbuch 1.4 (07.11.2026), Programme 0.9
+  Handbuch 1.5 (08.11.2026), Programme 0.10
 
 Experimentelle Software: entwickelt mit Hilfe von Claude (KI-Assistent
 von Anthropic), in erster Linie für den Eigengebrauch des Autors. Bitte
@@ -287,8 +287,8 @@ Auf dem PC gibt es nur die beiden Shell-Befehle
 @{" amiowncloud-synctest " link Webdavsynctest}. Handler, Commodity und
 Prefs-Programme gibt es nur für AmigaOS.
 
-Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt
-es die Amiga-Programme als Archiv auf Aminet.
+Die Quellen liegen auf GitHub, https://github.com/dangelrk/AmiOwnCloud;
+die Amiga-Programme gibt es auch als Archiv auf Aminet.
 
 Bauen und installieren (Einzelheiten in docs/BUILD.md):
 
@@ -1162,8 +1162,8 @@ Auf dem Server wird nichts gelöscht.
 Bauen aus den Quellen
 ---------------------
 
-Die Quellen werden später auf GitHub veröffentlicht. Bis dahin gibt
-es die Amiga-Programme als Archiv auf Aminet.
+Die Quellen liegen auf GitHub, https://github.com/dangelrk/AmiOwnCloud;
+die Amiga-Programme gibt es auch als Archiv auf Aminet.
 
 Die gemeinsamen Bibliotheken kommen aus dem Projekt AmiCloudCore, das
 als Git-Submodul core/ eingebunden ist. Deshalb mit Submodul klonen:
@@ -1240,6 +1240,10 @@ Fehlermeldungen und Wünsche:
 
   amitools@planet-rk.de
 
+Quellen und Fehlerberichte (Issues) auf GitHub:
+
+  https://github.com/dangelrk/AmiOwnCloud
+
 Schwesterprojekte:
 
   AmiCloud       eigener Cloud-Server
@@ -1256,6 +1260,10 @@ Versionsgeschichte
 
 Programme:
 
+  0.10 (08.11.2026) AmiOwnCloudPrefs, AmiOwnCloudSyncPrefs und
+                    das Fenster der Sync-Commodity merken ihre
+                    Position. TLS-Fehler wegen einer falschen
+                    Amiga-Uhr werden verständlich gemeldet.
   0.9 (07.11.2026)  OWNCLOUD: legt leere Dateien jetzt auch
                     auf dem Server an (Copy einer leeren
                     Datei, mit MODE_NEWFILE geleerte Datei).
@@ -1301,6 +1309,8 @@ Programme:
 
 Handbuch:
 
+  1.5 (08.11.2026)  Quellen und Fehlerberichte auf GitHub
+                    verlinkt.
   1.3 (07.11.2026)  Mindestprozessor 68020 überall genannt,
                     Quellen folgen später auf GitHub, neue
                     Kontaktadresse, Hinweis zum Start des
