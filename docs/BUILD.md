@@ -82,7 +82,7 @@ Voraussetzungen: C99-Compiler, `make`, libcurl (mit Entwickler-Headern) und
 | macOS (Homebrew) | `brew install curl pkg-config` |
 | Debian/Ubuntu | `sudo apt install build-essential pkg-config libcurl4-openssl-dev` |
 | Fedora/RHEL | `sudo dnf install gcc make pkgconf-pkg-config libcurl-devel` |
-| Windows (MSYS2) | siehe unten – **ungetestet** |
+| Windows | Qt mit MinGW, siehe unten |
 
 Die Makefiles rufen `gcc` auf; unter macOS ist das der Clang der
 Xcode-Kommandozeilenwerkzeuge (`xcode-select --install`).
@@ -97,24 +97,54 @@ sudo make install              # nach /usr/local/bin
 
 Ergebnis: `bin/pc/amiowncloud-sync` und `bin/pc/amiowncloud-synctest`.
 
-**Getestet** wurde der PC-Build bisher nur unter macOS (Apple Silicon).
-Linux und Windows sind in den Makefiles vorgesehen, aber nicht
-tatsächlich gebaut worden.
+**Getestet** wurde der PC-Build unter macOS (Apple Silicon) und Windows 11.
+Linux ist in den Makefiles vorgesehen, aber nicht tatsächlich gebaut
+worden.
 
-### Windows (MSYS2) – ungetestet
+### Windows (nativ mit MinGW aus Qt)
 
-Die Programme verwenden POSIX-Funktionen für das lokale Dateisystem. Am
-aussichtsreichsten ist deshalb die MSYS2-Umgebung **„MSYS“**:
+Gebaut unter Windows 11 mit dem MinGW 15.1 (64 Bit), das der Qt Online
+Installer mitbringt. Es entstehen native Windows-Programme; MSYS2 wird nicht
+gebraucht.
+
+Voraussetzungen:
+
+- **MinGW, CMake, Ninja** über den Qt Online Installer (unter „Build
+  Tools“: „MinGW 15.1.0 64-bit“, „CMake“, „Ninja“; Qt selbst wird für
+  AmiOwnCloud nicht gebraucht)
+- **Git for Windows**: gebaut wird in der Git-Bash (die Makefiles brauchen
+  `sh`, `sed` und `date`)
+- **libcurl**, einmal aus dem Quelltext (https://curl.se/download/) mit
+  demselben MinGW übersetzt: statisch und mit der Windows-eigenen TLS
+  (Schannel, Zertifikate aus dem Windows-Zertifikatspeicher). Die Programme
+  brauchen dann keine zusätzlichen DLLs. In der Git-Bash, mit dem `PATH`
+  wie unten:
+
+  ```sh
+  cmake -S curl-8.23.0 -B build-curl -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=C:/winbuild/curl \
+    -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_CURL_EXE=OFF \
+    -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DBUILD_LIBCURL_DOCS=OFF \
+    -DBUILD_MISC_DOCS=OFF -DENABLE_CURL_MANUAL=OFF \
+    -DCURL_USE_SCHANNEL=ON -DCURL_USE_OPENSSL=OFF -DCURL_USE_LIBPSL=OFF \
+    -DCURL_USE_LIBSSH2=OFF -DUSE_LIBIDN2=OFF -DUSE_WIN32_IDN=ON \
+    -DUSE_NGHTTP2=OFF -DCURL_ZLIB=OFF -DCURL_BROTLI=OFF -DCURL_ZSTD=OFF \
+    -DCURL_DISABLE_LDAP=ON -DCURL_USE_PKGCONFIG=OFF
+  cmake --build build-curl && cmake --install build-curl
+  ```
+
+Bauen in der Git-Bash:
 
 ```sh
-pacman -S gcc make pkgconf libcurl-devel
-make pc
+export PATH="/c/Qt/Tools/mingw1510_64/bin:/c/Qt/Tools/CMake_64/bin:/c/Qt/Tools/Ninja:$PATH"
+CURL=C:/winbuild/curl
+mingw32-make pc PKG_CF="-I$CURL/include -DCURL_STATICLIB" \
+  PKG_LF="-L$CURL/lib -lcurl -lnormaliz -lbcrypt -ladvapi32 -lcrypt32 -lsecur32 -lws2_32 -liphlpapi"
 ```
 
-Dort verhalten sich die Programme wie unter Linux (Konfiguration in
-`~/.amiowncloud-syncrc`). In den Umgebungen „MINGW64“/„UCRT64“ würden sie als
-native Windows-Programme übersetzt (Konfiguration dann `amiowncloud-sync.cfg` im
-aktuellen Verzeichnis) – auch das ist ungetestet.
+Ergebnis: `bin/pc/amiowncloud-sync.exe` und `bin/pc/amiowncloud-synctest.exe`,
+die nur Windows-eigene DLLs brauchen. Ihre Konfiguration suchen sie unter
+Windows als `amiowncloud-sync.cfg` im aktuellen Verzeichnis.
 
 ## Amiga: Cross-Compile mit vbcc (von macOS, Linux oder Windows)
 
