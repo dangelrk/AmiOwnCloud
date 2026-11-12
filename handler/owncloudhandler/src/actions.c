@@ -92,7 +92,7 @@ static int resolve_walk(CNode *base, const char *cpath, CNode **out_dir, char *o
     const char *p = cpath;
     char comp[CNODE_MAXNAME + 1];
     char pending[CNODE_MAXNAME + 1];
-    int is_parent;
+    int is_parent, more;
     int have_pending = 0;
 
     out_leaf[0] = '\0';
@@ -119,7 +119,8 @@ static int resolve_walk(CNode *base, const char *cpath, CNode **out_dir, char *o
         if (colon) { cur = g_root; p = colon + 1; }
     }
 
-    while (path_next_component(&p, comp, sizeof(comp), &is_parent)) {
+    while ((more = path_next_component(&p, comp, sizeof(comp), &is_parent)) != 0) {
+        if (more < 0) { *err = ERROR_INVALID_COMPONENT_NAME; return 0; }
         if (have_pending) {
             CNode *next = vol_find_child(cur, pending);
             if (!next || next->type != CN_DIR) {

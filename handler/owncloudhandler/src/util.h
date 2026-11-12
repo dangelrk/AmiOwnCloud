@@ -55,6 +55,8 @@ void  fill_bstr_field(char *field, ULONG field_size, const char *cstr);
  * empty (leading '/', or "//") -- Amiga's "empty component means go to the
  * parent directory" convention, see docs/handler-plan.md "Pfadauflösung".
  * Returns 0 once *path is exhausted (nothing left to extract). */
+/* returns 1 for a component, 0 at the end, -1 if it is longer than
+ * compsz - 1 (ERROR_INVALID_COMPONENT_NAME -- never shortened) */
 int   path_next_component(const char **path, char *comp, ULONG compsz, int *is_parent);
 
 #endif /* OWNCLOUDHANDLER_UTIL_H */

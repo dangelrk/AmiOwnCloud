@@ -222,6 +222,20 @@ static void dispatch(WorkerMsg *m)
                 strncpy(out[i].comment, entries[i].comment, sizeof(out[i].comment) - 1); /* always "" */
                 strncpy(out[i].md5, entries[i].md5, sizeof(out[i].md5) - 1); /* always "" */
             }
+            /* a server name longer than a FileInfoBlock holds (106) is
+             * left out instead of shown shortened -- the short name would
+             * lead nowhere, or to a different file */
+            {
+                int j = 0;
+                for (i = 0; i < n; i++) {
+                    char lname[512];
+                    cs_from_utf8(entries[i].name, lname, sizeof(lname));
+                    if (strlen(lname) > sizeof(out[0].name) - 1) continue;
+                    if (j != i) out[j] = out[i];
+                    j++;
+                }
+                n = j;
+            }
             m->entries = out;
             m->n_entries = n;
         }

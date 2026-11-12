@@ -37,6 +37,7 @@ zuerst mit Kopien der Daten ausprobieren; Benutzung auf eigene Gefahr.
   Anhang:
 
   @{" Fehlersuche           " link Fehlersuche}
+  @{" Lange Dateinamen      " link Dateinamen}
   @{" Bekannte Grenzen      " link Grenzen}
   @{" Deinstallation        " link Deinstallation}
   @{" Bauen                 " link Bauen}  aus den Quellen
@@ -1010,7 +1011,7 @@ Rückgabewert: 0 = alle bestanden, 1 = mindestens eine fehlgeschlagen.
 @endnode
 
 @node Fehlersuche "Fehlersuche"
-@next Grenzen
+@next Dateinamen
 @prev Webdavsynctest
 
 Fehlersuche
@@ -1091,9 +1092,45 @@ Falsche Dateizeiten auf OWNCLOUD:
 
 @endnode
 
+@node Dateinamen "Lange Dateinamen (FFS: 30 Zeichen)"
+@toc Main
+@prev Fehlersuche
+@next Grenzen
+
+LANGE DATEINAMEN
+
+Das klassische Amiga-Dateisystem (FFS und OFS) speichert höchstens
+30 Zeichen pro Datei- oder Ordnername. Längere Namen kürzt es ohne
+Warnung - beim Anlegen und beim Öffnen. Zwei Dateien mit gleichem
+Anfang landen so in derselben Datei, und die Endung geht verloren.
+Ein Icon braucht fünf Zeichen dazu (".info"): eine Datei mit Icon
+sollte auf FFS höchstens 25 Zeichen haben.
+
+@{b}Was AmiOwnCloud tut@{ub}
+  - Der Abgleich (AmiOwnCloudSync, amiowncloud-sync) prüft, wie lange
+    Namen das lokale Laufwerk speichert. Längere Namen vom Server
+    werden übersprungen und gemeldet - weder heruntergeladen noch auf
+    dem Server gelöscht.
+  - OWNCLOUD: zeigt Namen bis 106 Zeichen. Längere Servernamen
+    erscheinen dort nicht, und ein neuer Name über 106 Zeichen wird
+    abgelehnt. Wer von OWNCLOUD: mit Copy auf ein FFS-Laufwerk
+    kopiert, bekommt die Kürzung von FFS.
+
+Der ownCloud-Server selbst kennt keine Grenze: Namen, die am PC
+entstehen, können länger sein. Wer seine Dateien auch auf einem
+Amiga mit FFS braucht, hält sie am besten bei höchstens 30 Zeichen.
+
+@{b}Lange Namen auf dem Amiga@{ub}
+Ab AmigaOS 3.2 kann FFS lange Namen (bis 107 Zeichen), wenn die
+Partition mit dem Dateisystemtyp DOS\7 (oder DOS\6) formatiert ist.
+SFS und PFS3 können ebenfalls lange Namen. Die Programme erkennen das
+selbst und nutzen dann die volle Länge.
+
+@endnode
+
 @node Grenzen "Bekannte Grenzen"
 @next Deinstallation
-@prev Fehlersuche
+@prev Dateinamen
 
 Bekannte Grenzen
 ----------------

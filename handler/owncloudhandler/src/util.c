@@ -115,15 +115,14 @@ int path_next_component(const char **path, char *comp, ULONG compsz, int *is_par
     len = slash ? (ULONG)(slash - p) : u_strlen(p);
     *is_parent = (len == 0);
 
+    *path = slash ? slash + 1 : p + u_strlen(p);
     if (*is_parent) {
         comp[0] = '\0';
     } else {
-        ULONG cl = len;
-        if (cl > compsz - 1) cl = compsz - 1;
-        u_memcpy(comp, p, cl);
-        comp[cl] = '\0';
+        /* never shorten a name: a shortened one would be a different file */
+        if (len > compsz - 1) { comp[0] = '\0'; return -1; }
+        u_memcpy(comp, p, len);
+        comp[len] = '\0';
     }
-
-    *path = slash ? slash + 1 : p + u_strlen(p);
     return 1;
 }

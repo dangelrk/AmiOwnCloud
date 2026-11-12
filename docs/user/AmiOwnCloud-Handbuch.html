@@ -1072,6 +1072,15 @@ gemerkten Stand werden als Konflikt behandelt.</p>
 <p class="backtotop"><a href="#top">nach oben</a></p>
 
 <!-- ============================================================ -->
+<h3 id="dateinamen">Lange Dateinamen (FFS: 30 Zeichen)</h3>
+<p>Das klassische Amiga-Dateisystem (FFS und OFS) speichert höchstens <strong>30&nbsp;Zeichen</strong> pro Datei- oder Ordnername. Längere Namen kürzt es ohne Warnung – beim Anlegen und beim Öffnen. Zwei Dateien mit gleichem Anfang landen so in derselben Datei, und die Endung geht verloren. Ein Icon braucht fünf Zeichen dazu (<code>.info</code>): eine Datei mit Icon sollte auf FFS höchstens 25&nbsp;Zeichen haben.</p>
+<ul>
+<li>Der Abgleich (AmiOwnCloudSync, <code>amiowncloud-sync</code>) prüft, wie lange Namen das lokale Laufwerk speichert. Längere Namen vom Server werden übersprungen und gemeldet – weder heruntergeladen noch auf dem Server gelöscht.</li>
+<li><code>OWNCLOUD:</code> zeigt Namen bis 106&nbsp;Zeichen. Längere Servernamen erscheinen dort nicht, und ein neuer Name über 106&nbsp;Zeichen wird abgelehnt. Wer von <code>OWNCLOUD:</code> mit <code>Copy</code> auf ein FFS-Laufwerk kopiert, bekommt die Kürzung von FFS.</li>
+</ul>
+<p>Der ownCloud-Server selbst kennt keine Grenze: Namen, die am PC entstehen, können länger sein. Wer seine Dateien auch auf einem Amiga mit FFS braucht, hält sie am besten bei höchstens 30&nbsp;Zeichen.</p>
+<p><strong>Lange Namen auf dem Amiga:</strong> Ab AmigaOS&nbsp;3.2 kann FFS lange Namen (bis 107&nbsp;Zeichen), wenn die Partition mit dem Dateisystemtyp <code>DOS\7</code> (oder <code>DOS\6</code>) formatiert ist. SFS und PFS3 können ebenfalls lange Namen. Die Programme erkennen das selbst und nutzen dann die volle Länge.</p>
+
 <h2 id="deinstallation">17. Deinstallation</h2>
 
 <pre>Execute Uninstall-AmiOwnCloud</pre>
