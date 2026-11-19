@@ -30,7 +30,7 @@ Requirements
 ------------
 - AmigaOS 3.x, 68020 or better (since 0.2), no FPU needed
 - a TCP/IP stack with bsdsocket.library (Roadshow, AmiTCP, Miami, ...)
-- AmiSSL 5 (Aminet util/libs/AmiSSL-v5-OS3.lha)
+- AmiSSL 5.27 or newer (Aminet util/libs/AmiSSL-v5-OS3.lha)
 - optional: codesets.library 6 or newer for umlauts in other charsets
   than ISO-8859-1 (util/libs/codesets-6.22.lha)
 - optional: xvs.library for the virus check of downloads

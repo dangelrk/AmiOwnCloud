@@ -52,7 +52,7 @@ Echo ""
 
 If NOT EXISTS LIBS:amisslmaster.library
   Echo "Hinweis: LIBS:amisslmaster.library nicht gefunden."
-  Echo "         Alle Programme brauchen AmiSSL 5 und einen TCP/IP-Stack"
+  Echo "         Alle Programme brauchen AmiSSL 5.27 und einen TCP/IP-Stack"
   Echo "         mit bsdsocket.library (z.B. Roadshow, AmiTCP, Miami)."
   Echo ""
 EndIf

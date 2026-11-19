@@ -56,7 +56,7 @@ Voraussetzungen
 
   - AmigaOS 3.x, 68020 oder besser
   - TCP/IP-Stack mit bsdsocket.library (z.B. Roadshow, AmiTCP, Miami)
-  - AmiSSL 5 (amisslmaster.library)
+  - AmiSSL 5.27 oder neuer (amisslmaster.library)
   - ein Konto auf einem ownCloud/Nextcloud-Server, am besten mit
     App-Passwort
   - MUI wird NICHT benötigt (GadTools/Commodities)

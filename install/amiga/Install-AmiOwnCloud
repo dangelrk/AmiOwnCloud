@@ -119,10 +119,10 @@
 (message "\nAmiOwnCloud @VERSION@ - ownCloud/Nextcloud\n\n"
          "Laufwerk OWNCLOUD:, Ordnerabgleich im\n"
          "Hintergrund und Shell-Befehle (WebDAV).\n"
-         "Benötigt TCP/IP-Stack und AmiSSL 5,\n"
+         "Benötigt TCP/IP-Stack und AmiSSL 5.27,\n"
          "MUI wird nicht gebraucht."
          (if (= 0 (exists "LIBS:amisslmaster.library" (noreq)))
-           "\n\nAmiSSL 5 wurde nicht gefunden\n(Installation geht trotzdem)."
+           "\n\nAmiSSL 5.27 wurde nicht gefunden\n(Installation geht trotzdem)."
            "")
          (if (= 0 (exists "LIBS:codesets.library" (noreq)))
            "\n\ncodesets.library fehlt (Umlaute in Namen;\nAminet util/libs/codesets)."

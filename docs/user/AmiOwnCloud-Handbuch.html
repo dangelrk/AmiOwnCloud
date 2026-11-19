@@ -130,7 +130,7 @@
 <div class="wrap">
 
 <h1 id="top">AmiOwnCloud</h1>
-<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Stand 08.11.2026 (Programmversion 0.10)</p>
+<p class="subtitle">Handbuch — ownCloud/Nextcloud für AmigaOS · Stand 19.11.2026 (Programmversion 0.11)</p>
 
 <div class="callout"><strong>Hinweis:</strong> Experimentelle Software, entwickelt mit Hilfe von Claude (KI-Assistent von Anthropic) und in erster Linie für den Eigengebrauch des Autors geschrieben. Bitte zuerst mit Kopien der Daten ausprobieren; Benutzung auf eigene Gefahr.</div>
 
@@ -1171,6 +1171,7 @@ href="mailto:amitools@planet-rk.de">amitools@planet-rk.de</a>. Quellen und Fehle
 
 <table>
 <tr><th>Programme</th><th>Änderungen</th></tr>
+<tr><td>0.11 (19.11.2026)</td><td>Namen über 30 Zeichen auf klassischem FFS werden nicht mehr still gekürzt: <code>amiowncloud-sync</code> überspringt und meldet sie, der Probelauf erkennt die Grenze am Disktyp. <code>OWNCLOUD:</code> lehnt Namen über 106 Zeichen ab. Neuer Handbuchabschnitt „Lange Dateinamen“. Benötigt jetzt AmiSSL 5.27 oder neuer.</td></tr>
 <tr><td>0.10 (08.11.2026)</td><td>AmiOwnCloudPrefs, AmiOwnCloudSyncPrefs und das Fenster der Sync-Commodity merken ihre Position. TLS-Fehler wegen einer falschen Amiga-Uhr werden verständlich gemeldet.</td></tr>
 <tr><td>0.9 (07.11.2026)</td><td><code>OWNCLOUD:</code> legt leere Dateien jetzt auch auf dem Server an (<code>Copy</code> einer leeren Datei, mit <code>MODE_NEWFILE</code> geleerte Datei). <code>SetFileSize</code> verlängert mit Nullen. Hinweis auf den experimentellen Status ergänzt.</td></tr>
 <tr><td>0.8 (07.11.2026)</td><td>Handbuch überarbeitet. Der Installer meldet es jetzt, wenn er nicht aus seiner Schublade gestartet wird, statt mit „object in use“ abzubrechen.</td></tr>

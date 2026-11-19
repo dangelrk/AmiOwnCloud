@@ -1,5 +1,5 @@
 @database "AmiOwnCloud.guide"
-@$VER: AmiOwnCloud.guide 1.5 (08.11.2026)
+@$VER: AmiOwnCloud.guide 1.6 (19.11.2026)
 @author "Ronny Krueger"
 @(c) "2026 Ronny Krueger, GPL-3.0-or-later"
 @wordwrap
@@ -11,7 +11,7 @@
                    ownCloud/Nextcloud für AmigaOS
                    ------------------------------
 
-  Handbuch 1.5 (08.11.2026), Programme 0.10
+  Handbuch 1.6 (19.11.2026), Programme 0.11
 
 Experimentelle Software: entwickelt mit Hilfe von Claude (KI-Assistent
 von Anthropic), in erster Linie für den Eigengebrauch des Autors. Bitte
@@ -1297,6 +1297,14 @@ Versionsgeschichte
 
 Programme:
 
+  0.11 (19.11.2026) Namen über 30 Zeichen auf klassischem FFS
+                    werden nicht mehr still gekürzt:
+                    amiowncloud-sync überspringt und meldet
+                    sie, der Probelauf erkennt die Grenze am
+                    Disktyp. OWNCLOUD: lehnt Namen über 106
+                    Zeichen ab. Neuer Handbuchabschnitt
+                    "Lange Dateinamen". Benötigt jetzt
+                    AmiSSL 5.27 oder neuer.
   0.10 (08.11.2026) AmiOwnCloudPrefs, AmiOwnCloudSyncPrefs und
                     das Fenster der Sync-Commodity merken ihre
                     Position. TLS-Fehler wegen einer falschen
